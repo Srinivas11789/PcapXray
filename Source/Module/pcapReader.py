@@ -41,6 +41,8 @@ class pcapReader():
 # Module Driver
 def main():
     pcapfile = pcapReader('test.pcap')
-    print pcapfile.fetch_specific_protocol("TCP","HTTP")
+    pcapfile.fetch_specific_protocol("TCP","HTTP")
+    print pcapfile.payloadExchange
+
 
 main()
