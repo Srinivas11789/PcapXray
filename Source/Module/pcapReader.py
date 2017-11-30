@@ -24,8 +24,9 @@ class pcapReader():
         else:
             port = None
         # Packet Iteration
-        for session in self.packets.sessions():
-            for each_session in session:
+        sessions = self.packets.sessions()
+        for session in sessions:
+            for each_session in sessions[session]:
                 for packet in each_session:
                     #print packet.show()
                     if (packet.haslayer(TCP)):
