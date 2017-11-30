@@ -1,0 +1,6 @@
+# Dependancy Modules
+
+# Pcap Reader and Packet Handler
+scapy
+pcapy
+dnet #libdnet
