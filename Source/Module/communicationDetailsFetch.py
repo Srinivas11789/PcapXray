@@ -1,5 +1,6 @@
 # Library Import
 import ipwhois
+import dns
 import socket
 
 # Module Import
@@ -10,10 +11,11 @@ import pcapReader
 
 class trafficDetailsFetch():
 
-    def __init__(self, ips):
-        self.ips = ips
+    def __init__(self, ips, protocol):
+        self.ips = ips[protocol]
         self.dns_details = {}
         self.ip_whois_details = {}
+        self.dns()
 
     def ip_type(self): # Public or Private Ips
         for ip in self.ips:
@@ -44,7 +46,7 @@ class trafficDetailsFetch():
     def dns(self):
         for ip in self.ips:
             try:
-                dns_info = socket.getaddrinfo(ip)
+                dns_info = socket.gethostbyaddr(ip)[0]
             except:
                 dns_info = ""
             self.dns_details[ip] = dns_info
@@ -52,7 +54,7 @@ class trafficDetailsFetch():
 def main():
     capture = pcapReader.pcapReader("test.pcap")
     capture.fetch_specific_protocol("TCP","HTTPS")
-    details = trafficDetailsFetch(capture.server_addresses)
+    details = trafficDetailsFetch(capture.server_addresses, "HTTPS")
     print details.dns_details
 
 main()
