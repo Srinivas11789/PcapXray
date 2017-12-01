@@ -38,11 +38,14 @@ class pcapReader():
                                 self.payloadExchange[protocol].append("\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")))
                         if packet[layer].dport == port:
                             self.server_addresses[protocol].append(packet.getlayer(IP).dst)
+                            self.server_addresses[protocol] = list(set(self.server_addresses[protocol]))
+                    else:
+                        return None
 
 # Module Driver
 def main():
     pcapfile = pcapReader('test.pcap')
-    pcapfile.fetch_specific_protocol("TCP","HTTP")
+    pcapfile.fetch_specific_protocol("TCP","HTTPS")
     print pcapfile.server_addresses
 
 
