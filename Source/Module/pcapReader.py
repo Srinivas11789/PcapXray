@@ -37,9 +37,7 @@ class pcapReader():
                             if packet.haslayer(Raw):
                                 self.payloadExchange[protocol].append("\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")))
                         if packet[layer].dport == port:
-                            self.server_addresses[protocol].append(packet.getlayer(IP).src)
-                    else:
-                        return None
+                            self.server_addresses[protocol].append(packet.getlayer(IP).dst)
 
 # Module Driver
 def main():

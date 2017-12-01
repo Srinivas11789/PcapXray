@@ -2,5 +2,11 @@
 
 # Pcap Reader and Packet Handler
 scapy
-pcapy
-dnet #libdnet
+
+# Not Needed for Linux, Needed only for MAC when Scapy is not properly downloaded
+#pcapy
+#dnet #libdnet
+
+# ipwhois
+ipwhois
+
