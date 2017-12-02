@@ -42,13 +42,13 @@ class pcapReader():
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["payloadExchange"] = {}
                                         """
 
-    def fetch_specific_protocol(self, layer, protocol):
+    def fetch_specific_protocol(self, ip, layer, protocol):
         # Protocol Packet Store
         #self.packetDB[protocol] = []
         #self.payloadExchange[protocol] = []
         #self.server_addresses[protocol] = []
         # Protocol with Well Known Ports
-        if protocol not in self.packetDB[layer]:
+        if protocol not in self.packetDB[ip][layer]:
             self.packetDB[layer][protocol] = {}
         if protocol == "HTTP":
             port = 80
