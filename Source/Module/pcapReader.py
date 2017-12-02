@@ -76,7 +76,7 @@ class pcapReader():
                             if "server_addresses" not in self.packetDB[ip][layer][protocol]:
                                 self.packetDB[ip][layer][protocol]["server_addresses"] = []
                             self.packetDB[ip][layer][protocol]["server_addresses"].append(packet.getlayer(IP).dst)
-                            self.packetDB[ip][layer][protocol]["server_addresses"] = list(set(self.server_addresses[protocol]))
+                            self.packetDB[ip][layer][protocol]["server_addresses"] = list(set(self.packetDB[ip][layer][protocol]["server_addresses"]))
                     else:
                         return None
 
