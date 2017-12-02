@@ -19,23 +19,23 @@ class pcapReader():
             for each_session in sessions[session]:
                 for packet in each_session:
                         if IPAddress(packet.getlayer(IP).src).is_private():
-                            if not self.packetDB[packet.getlayer(IP).src]:
+                            if packet.getlayer(IP).src not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).src] = {}
                                 if packet.haslayer(TCP):
-                                    if not self.packetDB[packet.getlayer(IP).dst]["TCP"]:
+                                    if "TCP" not in self.packetDB[packet.getlayer(IP).src]:
                                         self.packetDB[packet.getlayer(IP).src]["TCP"] = {}
                                 if packet.haslayer(UDP):
-                                    if not self.packetDB[packet.getlayer(IP).dst]["UDP"]:
+                                    if "UDP" not in self.packetDB[packet.getlayer(IP).src]:
                                         self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
                         if IPAddress(packet.getlayer(IP).dst).is_private():
-                            if not self.packetDB[packet.getlayer(IP).dst]:
+                            if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
                                 if packet.haslayer(TCP):
-                                    if not self.packetDB[packet.getlayer(IP).dst]["TCP"]:
-                                        self.packetDB[packet.getlayer(IP).src]["TCP"] = {}
+                                    if "TCP" not in self.packetDB[packet.getlayer(IP).dst]:
+                                        self.packetDB[packet.getlayer(IP).dst]["TCP"] = {}
                                 if packet.haslayer(UDP):
-                                    if not self.packetDB[packet.getlayer(IP).dst]["UDP"]:
-                                        self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
+                                    if "UDP" not in self.packetDB[packet.getlayer(IP).dst]:
+                                        self.packetDB[packet.getlayer(IP).dst]["UDP"] = {}
                                         """
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["packets"] = {}
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["server_addresses"] = {}
@@ -63,17 +63,17 @@ class pcapReader():
                 for packet in each_session:
                     if (packet.haslayer(layer)):
                         if packet[layer].dport == port or packet[layer].sport == port:
-                            if not self.packetDB[layer][protocol]["packets"]:
+                            if "packets" not in self.packetDB[layer][protocol]:
                                 self.packetDB[layer][protocol]["packets"] = []
                             self.packetDB[layer][protocol]["packets"].append(packet)
                             # Only for HTTP and HTTPS
                             if packet.haslayer(Raw):
-                                if not self.packetDB[layer][protocol]["payloads"]:
+                                if "payloads" not in self.packetDB[layer][protocol]:
                                     self.packetDB[layer][protocol]["payloads"] = []
                                 self.packetDB[layer][protocol]["payloads"].append("\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")))
                         #Destination Server Address
                         if packet[layer].dport == port:
-                            if not self.packetDB[layer][protocol]["server_addresses"]:
+                            if "server_addresses" not in self.packetDB[layer][protocol]:
                                 self.packetDB[layer][protocol]["server_addresses"] = []
                                 self.packetDB[layer][protocol]["server_addresses"].append(packet.getlayer(IP).dst)
                             self.packetDB[layer][protocol]["server_addresses"] = list(set(self.server_addresses[protocol]))
