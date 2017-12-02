@@ -10,3 +10,6 @@ scapy
 # ipwhois
 ipwhois
 
+#netaddr - IP addresses handling
+netaddr
+
