@@ -83,7 +83,8 @@ class pcapReader():
 # Module Driver
 def main():
     pcapfile = pcapReader('test.pcap')
-    pcapfile.fetch_specific_protocol("TCP","HTTPS")
+    for ip in pcapfile.packetDB:
+        pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
     print pcapfile.packetDB
 
 
