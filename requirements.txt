@@ -10,3 +10,5 @@ scapy
 # ipwhois
 ipwhois
 
+#Network X
+networkx
