@@ -48,7 +48,7 @@ class pcapReader():
         #self.payloadExchange[protocol] = []
         #self.server_addresses[protocol] = []
         # Protocol with Well Known Ports
-        if not self.packetDB[layer][protocol]:
+        if protocol not in self.packetDB[layer]:
             self.packetDB[layer][protocol] = {}
         if protocol == "HTTP":
             port = 80
