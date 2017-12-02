@@ -49,7 +49,7 @@ class pcapReader():
         #self.server_addresses[protocol] = []
         # Protocol with Well Known Ports
         if protocol not in self.packetDB[ip][layer]:
-            self.packetDB[layer][protocol] = {}
+            self.packetDB[ip][layer][protocol] = {}
         if protocol == "HTTP":
             port = 80
         elif protocol == "HTTPS":
@@ -62,21 +62,21 @@ class pcapReader():
             for each_session in sessions[session]:
                 for packet in each_session:
                     if (packet.haslayer(layer)):
-                        if packet[layer].dport == port or packet[layer].sport == port:
-                            if "packets" not in self.packetDB[layer][protocol]:
-                                self.packetDB[layer][protocol]["packets"] = []
-                            self.packetDB[layer][protocol]["packets"].append(packet)
+                        if packet[layer].dport == port or packet[ip][layer].sport == port:
+                            if "packets" not in self.packetDB[ip][layer][protocol]:
+                                self.packetDB[ip][layer][protocol]["packets"] = []
+                            self.packetDB[ip][layer][protocol]["packets"].append(packet)
                             # Only for HTTP and HTTPS
                             if packet.haslayer(Raw):
-                                if "payloads" not in self.packetDB[layer][protocol]:
-                                    self.packetDB[layer][protocol]["payloads"] = []
-                                self.packetDB[layer][protocol]["payloads"].append("\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")))
+                                if "payloads" not in self.packetDB[ip][layer][protocol]:
+                                    self.packetDB[ip][layer][protocol]["payloads"] = []
+                                self.packetDB[ip][layer][protocol]["payloads"].append("\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")))
                         #Destination Server Address
                         if packet[layer].dport == port:
-                            if "server_addresses" not in self.packetDB[layer][protocol]:
-                                self.packetDB[layer][protocol]["server_addresses"] = []
-                                self.packetDB[layer][protocol]["server_addresses"].append(packet.getlayer(IP).dst)
-                            self.packetDB[layer][protocol]["server_addresses"] = list(set(self.server_addresses[protocol]))
+                            if "server_addresses" not in self.packetDB[ip][layer][protocol]:
+                                self.packetDB[ip][layer][protocol]["server_addresses"] = []
+                                self.packetDB[ip][layer][protocol]["server_addresses"].append(packet.getlayer(IP).dst)
+                            self.packetDB[ip][layer][protocol]["server_addresses"] = list(set(self.server_addresses[protocol]))
                     else:
                         return None
 
