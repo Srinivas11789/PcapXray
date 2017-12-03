@@ -35,7 +35,7 @@ class plotLan:
 
         # draw graph
         pos = nx.shell_layout(G)
-        nx.draw(G, pos)
+        nx.draw(G, pos, with_labels=True)
 
         # show graph
         plt.show()
@@ -47,3 +47,5 @@ def main():
     for ip in pcapfile.packetDB:
         pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
     network = plotLan(pcapfile.packetDB)
+
+main()
