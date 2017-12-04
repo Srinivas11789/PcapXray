@@ -1,8 +1,8 @@
-from tkinter import *
-from tkinter import ttk
+from Tkinter import *
+import  ttk
 
 
-def calculate(*args):
+def pcap_analyse(*args):
     try:
         value = float(feet.get())
         meters.set((0.3048 * value * 10000.0 + 0.5) / 10000.0)
@@ -29,6 +29,6 @@ ttk.Label(mainframe, text="Enter pcap file path: ").grid(column=1, row=1, sticky
 for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
 
 file_entry.focus()
-base.bind('<Return>', calculate)
+base.bind('<Return>', pcap_analyse)
 
 base.mainloop()
