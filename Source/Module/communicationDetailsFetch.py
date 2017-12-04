@@ -12,7 +12,7 @@ import pcapReader
 class trafficDetailsFetch():
 
     def __init__(self, ips, protocol):
-        self.ips = ips[protocol]
+        self.ips = ips
         self.dns_details = {}
         self.ip_whois_details = {}
         self.dns()
@@ -57,4 +57,4 @@ def main():
     details = trafficDetailsFetch(capture.server_addresses, "HTTPS")
     print details.dns_details
 
-main()
+#main()

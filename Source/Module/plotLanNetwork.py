@@ -65,12 +65,12 @@ class plotLan:
               if "TCP" in self.packetDB[node]:
                 if "HTTPS" in self.packetDB[node]["TCP"]:
                     if "server_addresses" in self.packetDB[node]["TCP"]["HTTPS"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"], "HTTPS").dns()
+                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"], "HTTPS").dns_details
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
                             f.edge(node, 'defaultGateway', label='HTTPS: '+dest+": "+name_servers[dest])
                 if "HTTP" in self.packetDB[node]["TCP"]:
                     if "server_addresses" in self.packetDB[node]["TCP"]["HTTP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]["TCP"]["HTTP"]["server_addresses"], "HTTP").dns()
+                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]["TCP"]["HTTP"]["server_addresses"], "HTTP").dns_details
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["server_addresses"]:
                             f.edge(node, 'defaultGateway', label='HTTP: '+dest+": "+name_servers[dest])
 
