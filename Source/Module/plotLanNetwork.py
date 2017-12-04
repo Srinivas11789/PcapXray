@@ -62,6 +62,9 @@ class plotLan:
                 if "HTTPS" in self.packetDB[node]["TCP"]:
                     for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
                         f.edge(node, 'defaultGateway', label='HTTPS: '+dest)
+                if "HTTP" in self.packetDB[node]["TCP"]:
+                    for dest in self.packetDB[node]["TCP"]["HTTP"]["server_addresses"]:
+                        f.edge(node, 'defaultGateway', label='HTTP: '+dest)
 
         f.view()
 
