@@ -59,6 +59,7 @@ class plotLan:
 
         for node in nodes:
             if node in self.packetDB:
+              if "TCP" in self.packetDB[node]:
                 if "HTTPS" in self.packetDB[node]["TCP"]:
                     if "server_addresses" in self.packetDB[node]["TCP"]["HTTPS"]:
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
@@ -74,7 +75,8 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('test.pcap')
+    pcapfile = pcapReader.pcapReader('lanExample.pcap')
+    #print pcapfile.packetDB
     for ip in pcapfile.packetDB:
         pcapfile.fetch_specific_protocol(ip,"TCP","HTTPS")
         pcapfile.fetch_specific_protocol(ip, "TCP","HTTP")

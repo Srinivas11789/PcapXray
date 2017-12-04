@@ -18,25 +18,25 @@ class pcapReader():
         for session in sessions:
             for each_session in sessions[session]:
                 for packet in each_session:
-                        if IPAddress(packet.getlayer(IP).src).is_private():
+                        if packet.haslayer(IP) and IPAddress(packet.getlayer(IP).src).is_private():
                             if packet.getlayer(IP).src not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).src] = {}
-                                if packet.haslayer(TCP):
-                                    if "TCP" not in self.packetDB[packet.getlayer(IP).src]:
+                            if packet.haslayer(TCP) and "TCP" not in self.packetDB[packet.getlayer(IP).src]:
                                         self.packetDB[packet.getlayer(IP).src]["TCP"] = {}
-                                if packet.haslayer(UDP):
-                                    if "UDP" not in self.packetDB[packet.getlayer(IP).src]:
+                            if packet.haslayer(UDP) and "UDP" not in self.packetDB[packet.getlayer(IP).src]:
                                         self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
-                        if IPAddress(packet.getlayer(IP).dst).is_private():
+                           # print self.packetDB["192.168.15.4"]
+                        """
+                        if packet.haslayer(IP) and IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
-                                if packet.haslayer(TCP):
+                            if packet.haslayer(TCP):
                                     if "TCP" not in self.packetDB[packet.getlayer(IP).dst]:
                                         self.packetDB[packet.getlayer(IP).dst]["TCP"] = {}
-                                if packet.haslayer(UDP):
+                            if packet.haslayer(UDP):
                                     if "UDP" not in self.packetDB[packet.getlayer(IP).dst]:
                                         self.packetDB[packet.getlayer(IP).dst]["UDP"] = {}
-                                        """
+                                        
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["packets"] = {}
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["server_addresses"] = {}
                                         self.packetDB[packet.getlayer(IP).src]["UDP"]["payloadExchange"] = {}
@@ -48,7 +48,7 @@ class pcapReader():
         #self.payloadExchange[protocol] = []
         #self.server_addresses[protocol] = []
         # Protocol with Well Known Ports
-        if protocol not in self.packetDB[ip][layer]:
+        if layer in self.packetDB[ip] and protocol not in self.packetDB[ip][layer]:
             self.packetDB[ip][layer][protocol] = {}
         if protocol == "HTTP":
             port = 80
@@ -61,8 +61,11 @@ class pcapReader():
         for session in sessions:
             for each_session in sessions[session]:
                 for packet in each_session:
-                    if (packet.haslayer(layer)):
+                    if packet.haslayer(IP): 
+                     if packet.getlayer(IP).src == ip or packet.getlayer(IP).dst == ip:
+                      if packet.haslayer(layer):
                         if packet[layer].dport == port or packet[layer].sport == port:
+                            #print self.packetDB[ip], ip, packet.show()
                             if "packets" not in self.packetDB[ip][layer][protocol]:
                                 self.packetDB[ip][layer][protocol]["packets"] = []
                             self.packetDB[ip][layer][protocol]["packets"].append(packet)
@@ -86,7 +89,7 @@ def main():
     pcapfile = pcapReader('test.pcap')
     for ip in pcapfile.packetDB:
         pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
-    print pcapfile.packetDB
+    #print pcapfile.packetDB
 
 
 #main()
