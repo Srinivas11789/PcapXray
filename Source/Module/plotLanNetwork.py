@@ -4,12 +4,13 @@ import pcapReader
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from graphviz import Graph
 
 class plotLan:
 
     def __init__(self, packetDB):
         self.packetDB = packetDB
-        self.draw_graph()
+        self.draw_graph2()
 
     def draw_graph(self):
 
@@ -39,6 +40,31 @@ class plotLan:
 
         # show graph
         plt.show()
+
+    def draw_graph2(self):
+        f = Digraph('network_diagram', filename='network.gv')
+        f.attr(rankdir='LR', size='8,5')
+
+        f.attr('node', shape='doublecircle')
+        f.node('defaultGateway')
+
+        f.attr('node', shape='circle')
+
+        # extract nodes from graph
+        nodes = self.packetDB.keys()
+
+        # add nodes
+        for node in nodes:
+            f.node(node)
+
+        for node in nodes:
+            if node in self.packetDB:
+                if "HTTPS" in self.packetDB[node]["TCP"]:
+                    for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
+                        f.edge(node, 'defaultGateway', label='HTTPS: '+dest)
+
+        f.view()
+
 
 
 def main():
