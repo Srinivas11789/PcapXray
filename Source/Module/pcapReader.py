@@ -62,7 +62,7 @@ class pcapReader():
             for each_session in sessions[session]:
                 for packet in each_session:
                     if (packet.haslayer(layer)):
-                        if packet[layer].dport == port or packet[ip][layer].sport == port:
+                        if packet[layer].dport == port or packet[layer].sport == port:
                             if "packets" not in self.packetDB[ip][layer][protocol]:
                                 self.packetDB[ip][layer][protocol]["packets"] = []
                             self.packetDB[ip][layer][protocol]["packets"].append(packet)
@@ -89,4 +89,4 @@ def main():
     print pcapfile.packetDB
 
 
-main()
+#main()

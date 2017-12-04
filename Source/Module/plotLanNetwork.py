@@ -4,7 +4,7 @@ import pcapReader
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from graphviz import Graph
+from graphviz import Digraph
 
 class plotLan:
 
@@ -60,11 +60,13 @@ class plotLan:
         for node in nodes:
             if node in self.packetDB:
                 if "HTTPS" in self.packetDB[node]["TCP"]:
-                    for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
-                        f.edge(node, 'defaultGateway', label='HTTPS: '+dest)
+                    if "server_addresses" in self.packetDB[node]["TCP"]["HTTPS"]:
+                        for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
+                            f.edge(node, 'defaultGateway', label='HTTPS: '+dest)
                 if "HTTP" in self.packetDB[node]["TCP"]:
-                    for dest in self.packetDB[node]["TCP"]["HTTP"]["server_addresses"]:
-                        f.edge(node, 'defaultGateway', label='HTTP: '+dest)
+                    if "server_addresses" in self.packetDB[node]["TCP"]["HTTP"]:
+                        for dest in self.packetDB[node]["TCP"]["HTTP"]["server_addresses"]:
+                            f.edge(node, 'defaultGateway', label='HTTP: '+dest)
 
         f.view()
 
@@ -74,7 +76,9 @@ def main():
     # draw example
     pcapfile = pcapReader.pcapReader('test.pcap')
     for ip in pcapfile.packetDB:
-        pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
+        pcapfile.fetch_specific_protocol(ip,"TCP","HTTPS")
+        pcapfile.fetch_specific_protocol(ip, "TCP","HTTP")
+
     network = plotLan(pcapfile.packetDB)
 
 main()
