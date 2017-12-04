@@ -1,7 +1,5 @@
 # Import Section - Dependant Module inclusion
 from scapy.all import *
-import sys
-import os
 from netaddr import *
 
 class pcapReader():
@@ -9,9 +7,9 @@ class pcapReader():
     def __init__(self, filename):
         # pcap file handle
         self.packets = rdpcap(filename)
+        print self.packets.summary()
         self.packetDB = {}
         self.private_ip_segregation()
-
 
     def private_ip_segregation(self):
         sessions = self.packets.sessions()
@@ -87,9 +85,9 @@ class pcapReader():
 # Module Driver
 def main():
     pcapfile = pcapReader('test.pcap')
-    for ip in pcapfile.packetDB:
-        pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
+    #for ip in pcapfile.packetDB:
+    #    pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
     #print pcapfile.packetDB
 
 
-#main()
+main()
