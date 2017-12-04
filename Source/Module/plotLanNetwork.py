@@ -7,11 +7,13 @@ import matplotlib.pyplot as plt
 
 from graphviz import Digraph
 
+
 class plotLan:
 
-    def __init__(self, packetDB):
+    def __init__(self, packetDB, filename):
         self.packetDB = packetDB
-        self.draw_graph2()
+        self.filename = filename
+        self.draw_graph2(self.filename)
 
     def draw_graph(self):
 
@@ -42,8 +44,8 @@ class plotLan:
         # show graph
         plt.show()
 
-    def draw_graph2(self):
-        f = Digraph('network_diagram', filename='network.gv')
+    def draw_graph2(self, filename):
+        f = Digraph('network_diagram', filename=filename)
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
@@ -76,6 +78,7 @@ class plotLan:
 
 
 
+
 def main():
     # draw example
     pcapfile = pcapReader.pcapReader('lanExample.pcap')
@@ -84,6 +87,6 @@ def main():
         pcapfile.fetch_specific_protocol(ip,"TCP","HTTPS")
         pcapfile.fetch_specific_protocol(ip, "TCP","HTTP")
 
-    network = plotLan(pcapfile.packetDB)
+    network = plotLan(pcapfile.packetDB, "network.gv")
 
 main()
