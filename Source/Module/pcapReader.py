@@ -6,10 +6,21 @@ class pcapReader():
 
     def __init__(self, filename):
         # pcap file handle
-        self.packets = rdpcap(filename)
-        print self.packets.summary()
+        self.packets = sniff(offline=filename,filter="host 192.168.15.4")
+        #wrpcap('httponly.pcap',self.packets)
+        #http = rdpcap('httponly.pcap')
+        self.packets.conversations(type="jpg", target="> test.jpg")
+        #print self.packets.summary()
+        #self.packets = rdpcap(filename)
+        #print self.packets.summary()
+        #for packet in self.packets:
+        #    print packet.summary()
+        #    print "..."
+        #self.packets.conversations(type="jpg", target="> test.jpg")
         self.packetDB = {}
-        self.private_ip_segregation()
+        #self.private_ip_segregation()
+
+    """
 
     def private_ip_segregation(self):
         sessions = self.packets.sessions()
@@ -84,7 +95,7 @@ class pcapReader():
 
 # Module Driver
 def main():
-    pcapfile = pcapReader('test.pcap')
+    pcapfile = pcapReader('lanExample.pcap')
     #for ip in pcapfile.packetDB:
     #    pcapfile.fetch_specific_protocol(ip, "TCP","HTTPS")
     #print pcapfile.packetDB

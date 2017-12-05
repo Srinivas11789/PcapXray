@@ -1,6 +1,8 @@
 from Tkinter import *
 import  ttk
-import Image, ImageTk, rsvg, cairo
+from PIL import Image, ImageTk
+from cairocffi import cairo
+import rsvg
 
 def pcap_analyse(filename):
     try:
