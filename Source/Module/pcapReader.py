@@ -25,7 +25,10 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
-                            if packet.haslayer
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).dst == 80:
+                                if "HTTP" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = []
+                                self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"].append(packet)
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
@@ -35,6 +38,10 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).dst]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).dst]:
                                 self.packetDB[packet.getlayer(IP).dst]["Ethernet"] = packet.getlayer(Ether).dst
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).src == 80:
+                                if "HTTP" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"] = []
+                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"].append(packet)
 
 
 # Sniff Packets with Filter
@@ -60,7 +67,4 @@ class pcapReader():
 def main():
     pcapfile = pcapReader('lanExample.pcap')
     print pcapfile.packetDB
-    pcapfile.populate("HTTP")
-    print pcapfile.packetDB
-
 main()
