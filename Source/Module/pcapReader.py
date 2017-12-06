@@ -23,8 +23,8 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["TCP"] = {}
                             if packet.haslayer(UDP) and "UDP" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
-                            if packet.haslayer(Ethernet) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
-                                self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ethernet).src
+                            if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
+                                self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
@@ -32,8 +32,8 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).dst]["TCP"] = {}
                             if packet.haslayer(UDP) and "UDP" not in self.packetDB[packet.getlayer(IP).dst]:
                                 self.packetDB[packet.getlayer(IP).dst]["UDP"] = {}
-                            if packet.haslayer(Ethernet) and "Ethernet" not in self.packetDB[packet.getlayer(IP).dst]:
-                                self.packetDB[packet.getlayer(IP).dst]["Ethernet"] = packet.getlayer(Ethernet).dst
+                            if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).dst]:
+                                self.packetDB[packet.getlayer(IP).dst]["Ethernet"] = packet.getlayer(Ether).dst
 
 
 # Sniff Packets with Filter
@@ -44,7 +44,7 @@ class pcapReader():
             filter = filter+" and "+protocol
         if port is not "":
             filter = filter+" and "+"port "+port
-        return sniff(offline=self.filename, filter=filter)
+        return sniff(offline=self.file, filter=filter)
 
 # Populate the JSON database for specific protocols
     def populate(self, protocol):
