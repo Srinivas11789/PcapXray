@@ -29,6 +29,21 @@ class pcapReader():
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = []
                                 self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"].append(packet)
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).dport == 443:
+                                if "HTTPS" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTPS"] = []
+                                if packet.getlayer(IP).dst not in self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTPS"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTPS"].append(packet.getlayer(IP).dst)
+                            if packet.haslayer(TCP):
+                                if "PortsConnected" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"] = []
+                                port = packet.getlayer(TCP).dst
+                                if port not in self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"].append(port)
+                            #HTTPS
+                            #Tor
+                            #Malicious
+                            # HTTP Payload Decrypt
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
@@ -42,6 +57,17 @@ class pcapReader():
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"] = []
                                 self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"].append(packet)
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).sport == 443:
+                                if "HTTPS" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"] = []
+                                if packet.getlayer(IP).src not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"]:
+                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"].append(packet.getlayer(IP).src)
+                            if packet.haslayer(TCP):
+                                if "PortsConnected" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"] = []
+                                port = packet.getlayer(TCP).src
+                                if port not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"].append(port)
 
 
 # Sniff Packets with Filter
