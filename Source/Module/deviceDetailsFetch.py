@@ -1,7 +1,7 @@
 # Library Import
 import urllib2
 import json
-
+import codecs
 # Module Import
 import pcapReader
 
@@ -14,14 +14,14 @@ class fetchDeviceDetails:
     def oui_identification(self):
         apiRequest = urllib2.Request(self.url, headers={'User-Agent':'PcapXray'})
         apiResponse = urllib2.urlopen(apiRequest)
-        return json.loads(apiResponse)
+        return json.loads(apiResponse.read())
 
 def main():
     filename = "test.pcap"
-    pcapfile = pcapReader('test.pcap')
+    pcapfile = pcapReader.pcapReader('test.pcap')
     for ip in pcapfile.packetDB:
         macObj = fetchDeviceDetails(pcapfile.packetDB[ip])
-        macObj.oui_identification()
+        print macObj.oui_identification()
 main()
 
 # MAC Oui Identification Module

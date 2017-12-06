@@ -110,4 +110,4 @@ class pcapReader():
 def main():
     pcapfile = pcapReader('lanExample.pcap')
     print pcapfile.packetDB
-main()
+#main()

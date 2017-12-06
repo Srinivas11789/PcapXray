@@ -12,11 +12,15 @@ class trafficDetailsFetch():
 
     def __init__(self, ipDB):
         self.ips = []
-        for entry in ipDB["PortsConnected"]:
-            self.ips.append(entry[0])
-        self.ip_details = {}
+        if "PortsConnected" in ipDB["TCP"]:
+           for entry in ipDB["TCP"]["PortsConnected"]:
+                self.ips.append(entry[0])
+        if "PortsConnected" in ipDB["UDP"]:
+           for entry in ipDB["UDP"]["PortsConnected"]:
+                self.ips.append(entry[0])
+        self.ip_details = {key: {} for key in self.ips}
         self.dns()
-        self.ip_whois_details()
+        self.whois_info_fetch()
 
     # whois_info_fetch
     #        - Input    : Domain Name and IP address
@@ -32,10 +36,9 @@ class trafficDetailsFetch():
          if "whois" not in self.ip_details[ip]:
             self.ip_details[ip]["whois"] = ""
          try:
-           whois_info = ipwhois.IPWhois(ip).lookup_rdap()
-           self.ip_details[ip] = whois_info
+            whois_info = ipwhois.IPWhois(ip).lookup_rdap()
          except:
-             self.ip_details[ip] = ""
+            whois_info = "NoWhoIsInfo"
          self.ip_details[ip]["whois"] = whois_info
 
     def dns(self):
@@ -45,14 +48,15 @@ class trafficDetailsFetch():
             try:
                 dns_info = socket.gethostbyaddr(ip)[0]
             except:
-                dns_info = ""
+                dns_info = "NotResolvable"
             self.ip_details[ip]["dns"] = dns_info
 
 def main():
-    capture = pcapReader("test.pcap")
+    capture = pcapReader.pcapReader("test.pcap")
+    print capture.packetDB
     for ip in capture.packetDB:
         details = trafficDetailsFetch(capture.packetDB[ip])
         print details.ip_details
         print "\n"
 
-main()
+#main()
