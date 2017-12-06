@@ -25,7 +25,7 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
-                            if packet.haslayer(TCP) and packet.getlayer(TCP).dst == 80:
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).dport == 80:
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = []
                                 self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"].append(packet)
@@ -38,7 +38,7 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).dst]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).dst]:
                                 self.packetDB[packet.getlayer(IP).dst]["Ethernet"] = packet.getlayer(Ether).dst
-                            if packet.haslayer(TCP) and packet.getlayer(TCP).src == 80:
+                            if packet.haslayer(TCP) and packet.getlayer(TCP).sport == 80:
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"] = []
                                 self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"].append(packet)
