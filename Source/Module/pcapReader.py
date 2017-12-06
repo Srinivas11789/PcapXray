@@ -37,9 +37,17 @@ class pcapReader():
                             if packet.haslayer(TCP):
                                 if "PortsConnected" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"] = []
-                                port = packet.getlayer(TCP).dst
-                                if port not in self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"]:
-                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"].append(port)
+                                port = packet.getlayer(TCP).dport
+                                ip = packet.getlayer(IP).dst
+                                if (ip,port) not in self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["PortsConnected"].append((ip,port))
+                            if packet.haslayer(UDP):
+                                if "PortsConnected" not in self.packetDB[packet.getlayer(IP).src]["UDP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"] = []
+                                port = packet.getlayer(UDP).dport
+                                if (ip,port) not in self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"].append((ip,port))
+
                             #HTTPS
                             #Tor
                             #Malicious
@@ -65,9 +73,17 @@ class pcapReader():
                             if packet.haslayer(TCP):
                                 if "PortsConnected" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"] = []
-                                port = packet.getlayer(TCP).src
-                                if port not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"]:
-                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"].append(port)
+                                port = packet.getlayer(TCP).sport
+                                ip = packet.getlayer(IP).src
+                                if (ip,port) not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"].append((ip,port))
+                            if packet.haslayer(UDP):
+                                if "PortsConnected" not in self.packetDB[packet.getlayer(IP).dst]["UDP"]:
+                                        self.packetDB[packet.getlayer(IP).dst]["UDP"]["PortsConnected"] = []
+                                port = packet.getlayer(UDP).sport
+                                ip = packet.getlayer(IP).src
+                                if (ip, port) not in self.packetDB[packet.getlayer(IP).dst]["UDP"]["PortsConnected"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["UDP"]["PortsConnected"].append((ip, port))
 
 
 # Sniff Packets with Filter
