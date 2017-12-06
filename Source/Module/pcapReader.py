@@ -25,6 +25,7 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
+                            if packet.haslayer
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
@@ -48,10 +49,12 @@ class pcapReader():
 
 # Populate the JSON database for specific protocols
     def populate(self, protocol):
+        if protocol == "HTTP":
+            port = 80
         for ip in self.packetDB:
             if protocol not in self.packetDB[ip]:
                 self.packetDB[ip][protocol] = {}
-            self.packetDB[ip][protocol] = self.packet_filter(ip, protocol)
+            self.packetDB[ip][protocol] = self.packet_filter(ip, port=80)
 
 # Module Driver
 def main():
