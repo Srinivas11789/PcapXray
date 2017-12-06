@@ -8,12 +8,12 @@ class pcapReader():
         self.file = filename
         self.packets = rdpcap(filename)
         self.packetDB = {}
-        self.private_ip_segregation()
+        self.read_pcap_and_fill_db()
 
 # Private IP Segregation or LAN IP Identification Method
 # A LAN Map tool to plot from the perspective of LAN Hosts
 # Build a JSON Database of Private IPS
-    def private_ip_segregation(self):
+    def read_pcap_and_fill_db(self):
                 for packet in self.packets:
                     if packet.haslayer(IP):
                         if IPAddress(packet.getlayer(IP).src).is_private():
@@ -45,6 +45,7 @@ class pcapReader():
                                 if "PortsConnected" not in self.packetDB[packet.getlayer(IP).src]["UDP"]:
                                     self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"] = []
                                 port = packet.getlayer(UDP).dport
+                                ip = packet.getlayer(IP).dst
                                 if (ip,port) not in self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"]:
                                     self.packetDB[packet.getlayer(IP).src]["UDP"]["PortsConnected"].append((ip,port))
 
@@ -69,7 +70,7 @@ class pcapReader():
                                 if "HTTPS" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"] = []
                                 if packet.getlayer(IP).src not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"]:
-                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"].append(packet.getlayer(IP).src)
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"].append(packet.getlayer(IP).src)
                             if packet.haslayer(TCP):
                                 if "PortsConnected" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["PortsConnected"] = []

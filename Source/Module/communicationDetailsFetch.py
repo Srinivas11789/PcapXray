@@ -6,23 +6,17 @@ import socket
 # Module Import
 import pcapReader
 
-
 # Class Communication or Traffic Details Fetch
 
 class trafficDetailsFetch():
 
-    def __init__(self, ips, protocol):
-        self.ips = ips
-        self.dns_details = {}
-        self.ip_whois_details = {}
+    def __init__(self, ipDB):
+        self.ips = []
+        for entry in ipDB["PortsConnected"]:
+            self.ips.append(entry[0])
+        self.ip_details = {}
         self.dns()
-
-    def ip_type(self): # Public or Private Ips
-        for ip in self.ips:
-            if ip in range(172,192):
-                print "IP is Private"
-            else:
-                print "Ip is Public"
+        self.ip_whois_details()
 
     # whois_info_fetch
     #        - Input    : Domain Name and IP address
@@ -35,26 +29,30 @@ class trafficDetailsFetch():
     #
     def whois_info_fetch(self):
        for ip in self.ips:
+         if "whois" not in self.ip_details[ip]:
+            self.ip_details[ip]["whois"] = ""
          try:
            whois_info = ipwhois.IPWhois(ip).lookup_rdap()
            self.ip_details[ip] = whois_info
          except:
              self.ip_details[ip] = ""
-
-
+         self.ip_details[ip]["whois"] = whois_info
 
     def dns(self):
         for ip in self.ips:
+            if "dns" not in self.ip_details[ip]:
+                self.ip_details[ip]["dns"] = ""
             try:
                 dns_info = socket.gethostbyaddr(ip)[0]
             except:
                 dns_info = ""
-            self.dns_details[ip] = dns_info
+            self.ip_details[ip]["dns"] = dns_info
 
 def main():
-    capture = pcapReader.pcapReader("test.pcap")
-    capture.fetch_specific_protocol("TCP","HTTPS")
-    details = trafficDetailsFetch(capture.server_addresses, "HTTPS")
-    print details.dns_details
+    capture = pcapReader("test.pcap")
+    for ip in capture.packetDB:
+        details = trafficDetailsFetch(capture.packetDB[ip])
+        print details.ip_details
+        print "\n"
 
-#main()
+main()
