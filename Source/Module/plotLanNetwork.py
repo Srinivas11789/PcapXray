@@ -1,6 +1,7 @@
 #File Import
 import pcapReader
 import communicationDetailsFetch
+import torTrafficHandle
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -68,6 +69,7 @@ class plotLan:
 
         # extract nodes from graph
         nodes = self.packetDB.keys()
+        tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB)
 
         if option == "All":
             # add nodes
@@ -82,6 +84,8 @@ class plotLan:
                         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
                             f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + name_servers[dest]["dns"], color = "green")
+                    for tor in tor_identify[node]:
+                        f.edge(node, 'defaultGateway', label='TOR: ' + tor ,color="red")
 
         self.apply_styles(f,self.styles)
 
