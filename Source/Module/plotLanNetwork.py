@@ -69,7 +69,7 @@ class plotLan:
 
         # extract nodes from graph
         nodes = self.packetDB.keys()
-        tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB)
+        tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         if option == "All":
             # add nodes
