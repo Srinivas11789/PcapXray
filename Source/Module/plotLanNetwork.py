@@ -76,16 +76,17 @@ class plotLan:
             for node in nodes:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
-                    if "HTTPS" in self.packetDB[node]["TCP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
-                        for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' + dest + ": " + name_servers[dest]["dns"], color = "blue")
+                    #if "HTTPS" in self.packetDB[node]["TCP"]:
+                        #name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                    #    for dest in self.packetDB[node]["TCP"]["HTTPS"]:
+                    #        f.edge(node, 'defaultGateway', label='HTTPS: ' +dest, color = "blue")
                     if "HTTP" in self.packetDB[node]["TCP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                        print self.packetDB[node]["TCP"]["HTTP"]["Server"]
+                        #name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
-                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + name_servers[dest]["dns"], color = "green")
-                    for tor in tor_identify[node]:
-                        f.edge(node, 'defaultGateway', label='TOR: ' + tor ,color="red")
+                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest, color = "green")
+                    #for tor in tor_identify[node]:
+                    #   f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="red")
 
         self.apply_styles(f,self.styles)
 
@@ -94,7 +95,8 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('test.pcap')
+    pcapfile = pcapReader.pcapReader('lanExample.pcap')
+    print "Reading Done...."
     network = plotLan(pcapfile.packetDB, "network.gv", "All")
 
 main()

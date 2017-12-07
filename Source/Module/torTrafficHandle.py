@@ -12,10 +12,14 @@ class torTrafficHandle():
         self.possible_tor_traffic = {}
         self.tor_nodes = []
         self.get_consensus_data()
+        sessions = []
         for ip in packetDB:
             if ip not in self.possible_tor_traffic:
                 self.possible_tor_traffic[ip] = []
-            sessions = packetDB[ip]["TCP"]["PortsConnected"] + packetDB[ip]["UDP"]["PortsConnected"]
+            if "TCP" in packetDB[ip]:
+                sessions = sessions + packetDB[ip]["TCP"]["PortsConnected"]
+            if "UDP" in packetDB[ip]:
+                sessions = sessions + packetDB[ip]["UDP"]["PortsConnected"]
             self.tor_traffic_detection(ip, sessions)
 
     def get_consensus_data(self):
