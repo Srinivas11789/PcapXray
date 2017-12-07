@@ -20,7 +20,7 @@ class torTrafficHandle():
 
     def get_consensus_data(self):
         try:
-            for desc in stem.descriptor.remote.get_consensus().run():
+            for desc in remote.get_consensus().run():
                 self.tor_nodes.append((desc.address, desc.or_port))
         except Exception as exc:
             print("Unable to retrieve the consensus: %s" % exc)
@@ -31,12 +31,12 @@ class torTrafficHandle():
                 self.possible_tor_traffic[ip].append(connection)
 
 def main():
-     tor_capture = pcapReader.pcapReader("torExample.pcap")
+     tor_capture = pcapReader.pcapReader("torexample.pcapng")
      print tor_capture.packetDB
      tor_identify = torTrafficHandle(tor_capture.packetDB)
      print tor_identify.possible_tor_traffic
 
-main()g
+#main()
 
 
 
