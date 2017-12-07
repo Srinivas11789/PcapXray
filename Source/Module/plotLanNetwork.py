@@ -10,42 +10,51 @@ from graphviz import Digraph
 
 class plotLan:
 
-    def __init__(self, packetDB, filename):
+    def __init__(self, packetDB, filename, option="All"):
         self.packetDB = packetDB
         self.filename = filename
-        self.draw_graph2(self.filename)
+        self.draw_graph2(self.filename, option)
 
-    def draw_graph(self):
+        self.styles = {
+            'graph': {
+                'label': 'A Fancy Graph',
+                'fontsize': '16',
+                'fontcolor': 'white',
+                'bgcolor': '#333333',
+                'rankdir': 'BT',
+            },
+            'nodes': {
+                'fontname': 'Helvetica',
+                'shape': 'hexagon',
+                'fontcolor': 'white',
+                'color': 'white',
+                'style': 'filled',
+                'fillcolor': '#006699',
+            },
+            'edges': {
+                'style': 'dashed',
+                'color': 'white',
+                'arrowhead': 'open',
+                'fontname': 'Courier',
+                'fontsize': '12',
+                'fontcolor': 'white',
+            }
+        }
 
-        # extract nodes from graph
-        nodes = self.packetDB.keys()
+    def apply_styles(self, graph):
+        graph.graph_attr.update(
+            ('graph' in self.styles and self.styles['graph']) or {}
+        )
+        graph.node_attr.update(
+            ('nodes' in self.styles and self.styles['nodes']) or {}
+        )
+        graph.edge_attr.update(
+            ('edges' in self.styles and self.styles['edges']) or {}
+        )
+        return graph
 
-        # create networkx graph
-        G=nx.Graph()
-
-        # add nodes
-        for node in nodes:
-            G.add_node(node)
-
-        G.add_node("defaultGateway")
-
-        # add edges
-        # HTTPS and HTTP traffic
-        for node in nodes:
-            if node in self.packetDB:
-                if "HTTPS" in self.packetDB[node]["TCP"]:
-                    for dest in self.packetDB[node]["TCP"]["HTTPS"]["server_addresses"]:
-                        G.add_edge(node, "defaultGateway")
-
-        # draw graph
-        pos = nx.shell_layout(G)
-        nx.draw(G, pos, with_labels=True)
-
-        # show graph
-        plt.show()
-
-    def draw_graph2(self, filename):
-        f = Digraph('network_diagram', filename=filename)
+    def draw_graph(self, filename, option="All"):
+        f = Digraph('network_diagram - '+option, filename=filename)
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
@@ -56,11 +65,32 @@ class plotLan:
         # extract nodes from graph
         nodes = self.packetDB.keys()
 
-        # add nodes
-        for node in nodes:
-            f.node(node)
+        if option == "All":
+            # add nodes
+            for node in nodes:
+                f.node(node)
+                if "TCP" in self.packetDB[node]:
+                    if "HTTPS" in self.packetDB[node]["TCP"]:
+                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                        for dest in self.packetDB[node]:
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' + dest + ": " + name_servers[dest]["dns"])
 
-        for node in nodes:
+        self.apply_styles(f)
+
+        f.view()
+
+
+
+
+def main():
+    # draw example
+    pcapfile = pcapReader.pcapReader('test.pcap')
+    network = plotLan(pcapfile.packetDB, "network.gv", "All")
+
+main()
+
+"""
+    for node in nodes:
             if node in self.packetDB:
               if "TCP" in self.packetDB[node]:
                 if "HTTPS" in self.packetDB[node]["TCP"]:
@@ -73,20 +103,4 @@ class plotLan:
                         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]["TCP"]["HTTP"]["server_addresses"], "HTTP").dns_details
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["server_addresses"]:
                             f.edge(node, 'defaultGateway', label='HTTP: '+dest+": "+name_servers[dest])
-
-        f.view()
-
-
-
-
-def main():
-    # draw example
-    pcapfile = pcapReader.pcapReader('lanExample.pcap')
-    #print pcapfile.packetDB
-    for ip in pcapfile.packetDB:
-        pcapfile.fetch_specific_protocol(ip,"TCP","HTTPS")
-        pcapfile.fetch_specific_protocol(ip, "TCP","HTTP")
-
-    network = plotLan(pcapfile.packetDB, "network.gv")
-
-main()
+"""
