@@ -2,6 +2,7 @@
 import pcapReader
 import communicationDetailsFetch
 import torTrafficHandle
+import maliciousTrafficIdentifier
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -69,8 +70,8 @@ class plotLan:
 
         # extract nodes from graph
         nodes = self.packetDB.keys()
-        name_servers =
-        mal_identify = maliciousTrafficIdentifier(self.packetDB, dns_details)
+        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
+        mal_identify = maliciousTrafficIdentifier(self.packetDB, name_servers)
         tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         if option == "All":

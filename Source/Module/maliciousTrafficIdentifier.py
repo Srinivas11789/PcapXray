@@ -29,6 +29,6 @@ def main():
     mal_identify = maliciousTrafficIdentifier(malicious_capture.packetDB, dns_details)
     print mal_identify.possible_malicious_traffic
 
-main()
+#main()
 
 

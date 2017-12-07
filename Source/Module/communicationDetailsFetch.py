@@ -38,14 +38,14 @@ class trafficDetailsFetch():
     #        - Output   : Returns the whois data obtained from whois.com and ipwhois
     #
     def whois_info_fetch(self, ip, ips):
-       for i in self.ips:
+       for i in ips:
          if "whois" not in self.communication_details[ip]["ip_details"][i]:
              self.communication_details[ip]["ip_details"][i]["whois"] = ""
          try:
             whois_info = ipwhois.IPWhois(ip).lookup_rdap()
          except:
             whois_info = "NoWhoIsInfo"
-            self.communication_details[ip]["ip_details"][i]["whois"] = whois_info
+         self.communication_details[ip]["ip_details"][i]["whois"] = whois_info
 
     def dns(self, ip, ips):
         for i in ips:
@@ -61,7 +61,7 @@ def main():
     capture = pcapReader.pcapReader("test.pcap")
     print capture.packetDB
     details = trafficDetailsFetch(capture.packetDB)
-    print details.ip_details
+    print details.communication_details
     print "\n"
 
-#main()
+main()
