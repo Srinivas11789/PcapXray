@@ -16,10 +16,10 @@ class trafficDetailsFetch():
             if ip not in self.communication_details:
                 self.communication_details[ip] = {}
             ips = []
-            if "PortsConnected" in packetDB[ip]["TCP"]:
+            if "TCP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["TCP"]:
                 for entry in packetDB[ip]["TCP"]["PortsConnected"]:
                         ips.append(entry[0])
-            if "PortsConnected" in packetDB[ip]["UDP"]:
+            if "UDP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["UDP"]:
                 for entry in packetDB[ip]["UDP"]["PortsConnected"]:
                         ips.append(entry[0])
             if "ip_details" not in self.communication_details[ip]:

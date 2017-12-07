@@ -9,10 +9,14 @@ class maliciousTrafficIdentifier:
 
     def __init__(self, packetDB, dns_details):
         self.possible_malicious_traffic = {}
+        sessions = []
         for ip in packetDB:
             if ip not in self.possible_malicious_traffic:
                 self.possible_malicious_traffic[ip] = []
-            sessions = packetDB[ip]["TCP"]["PortsConnected"] + packetDB[ip]["UDP"]["PortsConnected"]
+            if "TCP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["TCP"]:
+                 sessions = packetDB[ip]["TCP"]["PortsConnected"]
+            if "UDP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["UDP"]["PortsConnected"]:
+                 sessions = sessions + packetDB[ip]["UDP"]["PortsConnected"]
             self.malicious_traffic_detection(ip, sessions, dns_details)
 
     def malicious_traffic_detection(self, ip, sessions, dns):

@@ -74,6 +74,8 @@ class plotLan:
         mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers).possible_malicious_traffic
         tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
+        print "Starting Graph Plotting"
+
         if option == "All":
             # add nodes
             for node in nodes:
@@ -128,7 +130,7 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('test.pcap')
+    pcapfile = pcapReader.pcapReader('lanExample.pcap')
     print "Reading Done...."
     network = plotLan(pcapfile.packetDB, "network.gv", "All")
 
