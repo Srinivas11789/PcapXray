@@ -16,11 +16,11 @@ class trafficDetailsFetch():
             if ip not in self.communication_details:
                 self.communication_details[ip] = {}
             ips = []
-            if "PortsConnected" in packetDB["TCP"]:
-                for entry in packetDB["TCP"]["PortsConnected"]:
+            if "PortsConnected" in packetDB[ip]["TCP"]:
+                for entry in packetDB[ip]["TCP"]["PortsConnected"]:
                         ips.append(entry[0])
-            if "PortsConnected" in packetDB["UDP"]:
-                for entry in packetDB["UDP"]["PortsConnected"]:
+            if "PortsConnected" in packetDB[ip]["UDP"]:
+                for entry in packetDB[ip]["UDP"]["PortsConnected"]:
                         ips.append(entry[0])
             if "ip_details" not in self.communication_details[ip]:
                 self.communication_details[ip]["ip_details"] = {}
@@ -52,7 +52,7 @@ class trafficDetailsFetch():
             if "dns" not in self.communication_details[ip]["ip_details"][i]:
                 self.communication_details[ip]["ip_details"][i]["dns"] = ""
             try:
-                dns_info = socket.gethostbyaddr(ip)[0]
+                dns_info = socket.gethostbyaddr(i)[0]
             except:
                 dns_info = "NotResolvable"
             self.communication_details[ip]["ip_details"][i]["dns"] = dns_info
@@ -64,4 +64,4 @@ def main():
     print details.communication_details
     print "\n"
 
-main()
+#main()

@@ -71,7 +71,7 @@ class plotLan:
         # extract nodes from graph
         nodes = self.packetDB.keys()
         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
-        mal_identify = maliciousTrafficIdentifier(self.packetDB, name_servers)
+        mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers)
         tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         if option == "All":
@@ -81,10 +81,10 @@ class plotLan:
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[dest]["dns"], color = "blue")
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[node]["ip_details"][dest]["dns"], color = "blue")
                     if "HTTP" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
-                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+name_servers[dest]["dns"], color = "green")
+                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+name_servers[node]["ip_details"][dest]["dns"], color = "green")
                     for tor in tor_identify[node]:
                        f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
 
@@ -125,7 +125,7 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('torexample.pcapng')
+    pcapfile = pcapReader.pcapReader('test.pcap')
     print "Reading Done...."
     network = plotLan(pcapfile.packetDB, "network.gv", "All")
 
