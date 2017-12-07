@@ -27,8 +27,13 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
                             if packet.haslayer(TCP) and packet.getlayer(TCP).dport == 80:
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
-                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = []
-                                self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"].append(packet)
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = {}
+                                if "Server" not in self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]["Server"] = []
+                                if "Payload" not in self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]:
+                                    self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]["Payload"] = []
+                                self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]["Server"].append(packet.getlayer(IP).dst)
+                                self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"]["Payload"].append(packet)
                             if packet.haslayer(TCP) and packet.getlayer(TCP).dport == 443:
                                 if "HTTPS" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTPS"] = []
@@ -65,7 +70,12 @@ class pcapReader():
                             if packet.haslayer(TCP) and packet.getlayer(TCP).sport == 80:
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"] = []
-                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"].append(packet)
+                                if "Server" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]["Server"] = []
+                                if "Payload" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]:
+                                    self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]["Payload"] = []
+                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]["Server"].append(packet.getlayer(IP).src)
+                                self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTP"]["Payload"].append(packet)
                             if packet.haslayer(TCP) and packet.getlayer(TCP).sport == 443:
                                 if "HTTPS" not in self.packetDB[packet.getlayer(IP).dst]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).dst]["TCP"]["HTTPS"] = []

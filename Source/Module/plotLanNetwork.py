@@ -30,14 +30,6 @@ class plotLan:
                 'color': 'white',
                 'style': 'filled',
                 'fillcolor': '#006699',
-            },
-            'edges': {
-                'style': 'dashed',
-                'color': 'white',
-                'arrowhead': 'open',
-                'fontname': 'Courier',
-                'fontsize': '12',
-                'fontcolor': 'white',
             }
         }
         self.draw_graph(self.filename, option)
@@ -49,8 +41,19 @@ class plotLan:
         graph.node_attr.update(
             ('nodes' in styles and styles['nodes']) or {}
         )
+        return graph
+
+    def apply_custom_style(self, graph, color):
+        style = {'edges': {
+                'style': 'dashed',
+                'color': color,
+                'arrowhead': 'open',
+                'fontname': 'Courier',
+                'fontsize': '12',
+                'fontcolor': color,
+        }}
         graph.edge_attr.update(
-            ('edges' in styles and styles['edges']) or {}
+            ('edges' in style and style['edges']) or {}
         )
         return graph
 
@@ -74,13 +77,15 @@ class plotLan:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' + dest + ": " + name_servers[dest]["dns"])
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' + dest + ": " + name_servers[dest]["dns"], color = "blue")
+                    if "HTTP" in self.packetDB[node]["TCP"]:
+                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                        for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
+                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + name_servers[dest]["dns"], color = "green")
 
         self.apply_styles(f,self.styles)
 
         f.view()
-
-
 
 
 def main():
