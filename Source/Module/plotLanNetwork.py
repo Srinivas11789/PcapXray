@@ -20,15 +20,15 @@ class plotLan:
             'graph': {
                 'label': 'A Fancy Graph',
                 'fontsize': '16',
-                'fontcolor': 'white',
+                'fontcolor': 'grey',
                 'bgcolor': '#333333',
                 'rankdir': 'BT',
             },
             'nodes': {
                 'fontname': 'Helvetica',
-                'shape': 'hexagon',
+                'shape': 'circle',
                 'fontcolor': 'white',
-                'color': 'white',
+                'color': 'yellow',
                 'style': 'filled',
                 'fillcolor': '#006699',
             }
@@ -69,6 +69,8 @@ class plotLan:
 
         # extract nodes from graph
         nodes = self.packetDB.keys()
+        name_servers =
+        mal_identify = maliciousTrafficIdentifier(self.packetDB, dns_details)
         tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         if option == "All":
@@ -77,15 +79,44 @@ class plotLan:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
                             f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[dest]["dns"], color = "blue")
                     if "HTTP" in self.packetDB[node]["TCP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
                             f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+name_servers[dest]["dns"], color = "green")
                     for tor in tor_identify[node]:
-                       f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="red")
+                       f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
+
+
+        if option == "HTTP":
+            for node in nodes:
+                f.node(node)
+                if "HTTP" in self.packetDB[node]["TCP"]:
+                    name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                    for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
+                        f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + name_servers[dest]["dns"],color="green")
+
+        if option == "HTTPS":
+            for node in nodes:
+                f.node(node)
+                if "TCP" in self.packetDB[node]:
+                    if "HTTPS" in self.packetDB[node]["TCP"]:
+                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
+                        for dest in self.packetDB[node]["TCP"]["HTTPS"]:
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[dest]["dns"], color = "blue")
+
+        if option == "Tor":
+            for node in nodes:
+                f.node(node)
+                for tor in tor_identify[node]:
+                    f.edge(node, 'defaultGateway', label='TOR: ' + str(tor), color="white")
+
+        if option == "Malicious":
+            for node in nodes:
+                f.node(node)
+                for tor in tor_identify[node]:
+                    f.edge(node, 'defaultGateway', label='TOR: ' + str(tor), color="red")
+
 
         self.apply_styles(f,self.styles)
 
