@@ -13,7 +13,7 @@ class plotLan:
     def __init__(self, packetDB, filename, option="All"):
         self.packetDB = packetDB
         self.filename = filename
-        self.draw_graph2(self.filename, option)
+        #self.draw_graph(self.filename, option)
 
         self.styles = {
             'graph': {
@@ -40,16 +40,17 @@ class plotLan:
                 'fontcolor': 'white',
             }
         }
+        self.draw_graph(self.filename, option)
 
-    def apply_styles(self, graph):
+    def apply_styles(self, graph, styles):
         graph.graph_attr.update(
-            ('graph' in self.styles and self.styles['graph']) or {}
+            ('graph' in styles and styles['graph']) or {}
         )
         graph.node_attr.update(
-            ('nodes' in self.styles and self.styles['nodes']) or {}
+            ('nodes' in styles and styles['nodes']) or {}
         )
         graph.edge_attr.update(
-            ('edges' in self.styles and self.styles['edges']) or {}
+            ('edges' in styles and styles['edges']) or {}
         )
         return graph
 
@@ -72,10 +73,10 @@ class plotLan:
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
-                        for dest in self.packetDB[node]:
+                        for dest in self.packetDB[node]["TCP"]["HTTPS"]:
                             f.edge(node, 'defaultGateway', label='HTTPS: ' + dest + ": " + name_servers[dest]["dns"])
 
-        self.apply_styles(f)
+        self.apply_styles(f,self.styles)
 
         f.view()
 
