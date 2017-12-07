@@ -19,19 +19,19 @@ class plotLan:
 
         self.styles = {
             'graph': {
-                'label': 'A Fancy Graph',
+                'label': 'PcapGraph',
                 'fontsize': '16',
-                'fontcolor': 'grey',
-                'bgcolor': '#333333',
+                'fontcolor': 'black',
+                'bgcolor': 'grey',
                 'rankdir': 'BT',
             },
             'nodes': {
                 'fontname': 'Helvetica',
                 'shape': 'circle',
-                'fontcolor': 'white',
-                'color': 'yellow',
+                'fontcolor': 'black',
+                'color': ' black',
                 'style': 'filled',
-                'fillcolor': '#006699',
+                'fillcolor': 'yellow',
             }
         }
         self.draw_graph(self.filename, option)
@@ -71,7 +71,7 @@ class plotLan:
         # extract nodes from graph
         nodes = self.packetDB.keys()
         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
-        mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers)
+        mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers).possible_malicious_traffic
         tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         if option == "All":
@@ -87,6 +87,9 @@ class plotLan:
                             f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+name_servers[node]["ip_details"][dest]["dns"], color = "green")
                     for tor in tor_identify[node]:
                        f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
+
+                    for mal in mal_identify[node]:
+                        f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
 
 
         if option == "HTTP":
@@ -115,8 +118,8 @@ class plotLan:
         if option == "Malicious":
             for node in nodes:
                 f.node(node)
-                for tor in tor_identify[node]:
-                    f.edge(node, 'defaultGateway', label='TOR: ' + str(tor), color="red")
+                for mal in mal_identify[node]:
+                    f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
 
 
         self.apply_styles(f,self.styles)
