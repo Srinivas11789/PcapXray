@@ -1,6 +1,5 @@
 # Custom Module Import
 import pcapReader
-import communicationDetailsFetch
 
 # Library Import
 
@@ -19,7 +18,7 @@ class maliciousTrafficIdentifier:
     def malicious_traffic_detection(self, ip, sessions, dns):
         well_known_ports = [20,21,22,23,25,53,80,443]
         for connection in sessions:
-            if dns[connection[0]] == "NotResolvable" or connection[1] not in well_known_ports:
+            if (connection[0] in dns and dns[connection[0]] == "NotResolvable") or connection[1] not in well_known_ports:
                 self.possible_malicious_traffic[ip].append(connection)
 
 
@@ -30,6 +29,6 @@ def main():
     mal_identify = maliciousTrafficIdentifier(malicious_capture.packetDB, dns_details)
     print mal_identify.possible_malicious_traffic
 
-
+main()
 
 
