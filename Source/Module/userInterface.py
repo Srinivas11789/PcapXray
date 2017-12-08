@@ -1,8 +1,10 @@
 from Tkinter import *
 import ttk
 import pcapReader
+import plotLanNetwork
 import time
 import threading
+from PIL import Image,ImageTk
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -31,15 +33,16 @@ class pcapXrayGui:
         self.SecondFrame.columnconfigure(10, weight=1)
         self.SecondFrame.rowconfigure(10, weight=1)
         self.label = ttk.Label(self.SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
-        option = StringVar()
+        self.option = StringVar()
         options = {'All','HTTP','HTTPS','Tor','Malicious'}
-        option.set('HTTPS')
-        ttk.OptionMenu(self.SecondFrame,option,*options).grid(column=1, row=10,sticky="W, E")
+        self.option.set('Tor')
+        ttk.OptionMenu(self.SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
 
         self.ThirdFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
                         \n 1. Web Traffic\n 2. Tor Traffic \n 3. Malicious Traffic \n 4. Device/Traffic Details\n\nPlease contact me @ spg349@nyu.edu for any bugs or problems !
                       """
+
         self.label = ttk.Label(self.ThirdFrame, text="Description: \nPcapXray tools is an aid for Network Forensics or Any Network Analysis!\n"+description, style="BW.TLabel").grid(column=10, row=10,sticky="W")
         self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(10, weight=1)
@@ -52,7 +55,11 @@ class pcapXrayGui:
         t = threading.Thread(None, progress_bar, ())
         t.start()
         capture_read = pcapReader.pcapReader(self.pcap_file.get())
-        print capture_read.packetDB
+        diag1 = threading.Thread(plotLanNetwork.plotLan, (capture_read.packetDB, "network111", self.option.get()))
+        while diag1.is_alive():
+            self.base.update()
+        image = ImageTk.PhotoImage(Image.open("network111Tor.png"))
+        self.label = ttk.Label(self.ThirdFrame, image=image, style="BW.TLabel").grid(column=10, row=10,sticky="W")
         self.progressbar.stop()
 
 def main():

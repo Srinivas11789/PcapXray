@@ -12,9 +12,9 @@ from graphviz import Digraph
 
 class plotLan:
 
-    def __init__(self, packetDB, filename, option="All"):
+    def __init__(self, packetDB, filename, option="Tor"):
         self.packetDB = packetDB
-        self.filename = filename
+        self.filename = filename+option
         #self.draw_graph(self.filename, option)
 
         self.styles = {
