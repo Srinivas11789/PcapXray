@@ -22,7 +22,7 @@ class pcapXrayGui:
         self.pcap_file = StringVar()
         self.label = ttk.Label(self.InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.file_entry = ttk.Entry(self.InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
-        self.counter = 0
+        self.counter = "0"
         self.progressbar = ttk.Progressbar(self.InitFrame, orient="horizontal", length=200, variable=self.counter,value=0, maximum=200,  mode="indeterminate")
         self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
@@ -47,10 +47,8 @@ class pcapXrayGui:
 
 
     def pcap_analyse(self):
-        def progress_bar():
-            self.progressbar.start()
-        t = threading.Thread(None, progress_bar, ())
-        t.start()
+        print self.pcap_file.get()
+        self.progressbar.start()
         capture_read = pcapReader.pcapReader(self.pcap_file.get())
         print capture_read.packetDB
         self.progressbar.stop()
