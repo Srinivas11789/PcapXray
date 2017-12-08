@@ -60,7 +60,7 @@ class plotLan:
         return graph
 
     def draw_graph(self, filename, option="All"):
-        f = Digraph('network_diagram - '+option, filename=filename)
+        f = Digraph('network_diagram - '+option, filename=filename, format='png')
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
@@ -127,13 +127,13 @@ class plotLan:
 
 
         self.apply_styles(f,self.styles)
+        f.render()
 
-        f.view()
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('lanExample.pcap')
+    pcapfile = pcapReader.pcapReader('test.pcap')
     print "Reading Done...."
-    network = plotLan(pcapfile.packetDB, "network.gv", "All")
+    network = plotLan(pcapfile.packetDB, "network123", "All")
 
 main()
