@@ -23,7 +23,7 @@ class pcapXrayGui:
         self.label = ttk.Label(self.InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.file_entry = ttk.Entry(self.InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.counter = 0
-        self.progressbar = ttk.Progressbar(self.InitFrame, orient="horizontal", length=200, variable=self.counter, maximum=100,  mode="determinate")
+        self.progressbar = ttk.Progressbar(self.InitFrame, orient="horizontal", length=200, variable=self.counter,value=0, maximum=200,  mode="indeterminate")
         self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
         self.SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
@@ -45,21 +45,14 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(10, weight=1)
         self.ThirdFrame.rowconfigure(10, weight=1)
 
-        self.bytes = 0
-        self.maxbytes = 0
-
-    def progress_bar(self):
-            for i in range(100):
-                self.counter = self.counter + i
-                time.sleep(1)
-
 
     def pcap_analyse(self):
-        t = threading.Thread(None, self.progress_bar, ())
+        def progress_bar():
+            self.progressbar.start()
+        t = threading.Thread(None, progress_bar, ())
         t.start()
-        progress = threading.Thread(target=self.progress_bar(), args=())
-        progress.start()
         capture_read = pcapReader.pcapReader(self.pcap_file.get())
+        print capture_read.packetDB
         self.progressbar.stop()
 
 def main():
