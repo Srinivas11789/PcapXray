@@ -47,8 +47,10 @@ class pcapXrayGui:
 
 
     def pcap_analyse(self):
-        print self.pcap_file.get()
-        self.progressbar.start()
+        def progress_bar():
+            self.progressbar.start()
+        t = threading.Thread(None, progress_bar, ())
+        t.start()
         capture_read = pcapReader.pcapReader(self.pcap_file.get())
         print capture_read.packetDB
         self.progressbar.stop()
