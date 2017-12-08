@@ -1,7 +1,7 @@
 from Tkinter import *
 import ttk
 import pcapReader
-import plotLanNetwork
+#import plotLanNetwork
 import time
 import threading
 from PIL import Image,ImageTk
@@ -72,11 +72,12 @@ class pcapXrayGui:
         self.label.grid_forget()
         #image_window = ttk.Frame(self.ThirdCanvas)
         #self.ThirdCanvas.create_window(0,0,window=image_window,anchor='nw')
-        image = ImageTk.PhotoImage(Image.open("network123.png").resize((700,700)))
-        self.label = ttk.Label(self.ThirdFrame,image=image,relief=RAISED)
-        self.label.image = image
+        self.image = ImageTk.PhotoImage(Image.open("testImage.png").resize((700,700)).convert('RGB'))
+        self.label = ttk.Label(self.ThirdFrame,image=self.image,relief=RAISED)
+        self.label.image = self.image
         #self.label.grid(sticky="W")
-        self.label.pack(fill=X,expand=1)
+        self.label.pack(fill=X,expand=1, padx=10, pady=10)
+        #elf.ThirdFrame.update()
         #self.label.pack()
         #w = Canvas(self.ThirdFrame, width=50,height=50)
         #w.create_image(0,0,image=image)
