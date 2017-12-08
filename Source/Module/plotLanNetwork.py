@@ -71,8 +71,10 @@ class plotLan:
         # extract nodes from graph
         nodes = self.packetDB.keys()
         name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
-        mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers).possible_malicious_traffic
-        tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
+        if option == "Malicious" or option == "All":
+            mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers).possible_malicious_traffic
+        if option == "Tor" or option == "All":
+            tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         print "Starting Graph Plotting"
 

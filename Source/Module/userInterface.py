@@ -1,53 +1,81 @@
 from Tkinter import *
-import  ttk
-from PIL import Image, ImageTk
-from cairocffi import cairo
-import rsvg
+import ttk
 
-def pcap_analyse(filename):
-    try:
-        tk_image = svgPhotoImage(filename)
-        mainframe.configure(image=tk_image)
-    except ValueError:
-        pass
+class pcapXrayGui:
+    def __init__(self, base):
+        self.base = base
+        base.title("PcapXray")
+        base.resizable(width=FALSE, height=FALSE)
+        Label(base, text="PcapXray Tool - A LAN Network Analyzer")
 
-def svgPhotoImage(file_name):
-            "Returns a ImageTk.PhotoImage object represeting the svg file"
-            # Based on pygame.org/wiki/CairoPygame and http://bit.ly/1hnpYZY
-            svg = rsvg.Handle(file=file_name)
-            width, height = svg.get_dimension_data()[:2]
-            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(width), int(height))
-            context = cairo.Context(surface)
-            # context.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
-            svg.render_cairo(context)
-            tk_image = ImageTk.PhotoImage('RGBA')
-            image = Image.frombuffer('RGBA', (width, height), surface.get_data(), 'raw', 'BGRA', 0, 1)
-            tk_image.paste(image)
-            return (tk_image)
+        style = ttk.Style()
+        style.configure("BW.TLabel", foreground="black", background="white")
+        style.configure("BW.TEntry", foreground="black", background="white")
 
+        self.InitFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
+        self.InitFrame.grid(column=10, row=10, sticky=(N, W, E, S))
+        self.InitFrame.columnconfigure(10, weight=1)
+        self.InitFrame.rowconfigure(10, weight=1)
+        pcap_file = StringVar()
+        self.label = ttk.Label(self.InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
+        self.file_entry = ttk.Entry(self.InitFrame, width=30,textvariable=pcap_file,style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, sticky="W, E")
 
-base = Tk()
-base.title("PcaXray - A Network Traffic Analysis Tool")
-
-mainframe = ttk.Frame(base, padding="10 10 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
-
-pcap_file = StringVar()
-
-file_entry = ttk.Entry(mainframe, width=10, textvariable=pcap_file)
-file_entry.grid(column=2, row=1, sticky=(W, E))
-
-ttk.Button(mainframe, text="Analyze!", command=pcap_analyse).grid(column=3, row=3, sticky=W)
-
-ttk.Label(mainframe, text="Enter pcap file path: ").grid(column=1, row=1, sticky=W)
-
-for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
-
-file_entry.focus()
-base.bind('<Return>', pcap_analyse("network.gv"))
-
-base.mainloop()
+        self.SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
+        self.SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
+        self.SecondFrame.columnconfigure(10, weight=1)
+        self.SecondFrame.rowconfigure(10, weight=1)
+        self.label = ttk.Label(self.SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
+        option = StringVar()
+        options = {'All','HTTP','HTTPS','Tor','Malicious'}
+        option.set('HTTPS')
+        ttk.OptionMenu(self.SecondFrame,option,*options).grid(column=1, row=10,sticky="W, E")
+        #ttk.Label(self.SecondFrame, text="", style="BW.TLabel").grid(column=2, row=10,sticky="E")
 
 
+        self.ThirdFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
+        description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
+                        \n 1. Web Traffic\n 2. Tor Traffic \n 3. Malicious Traffic \n 4. Device/Traffic Details\n\nPlease contact me @ spg349@nyu.edu for any bugs or problems !
+                      """
+        self.label = ttk.Label(self.ThirdFrame, text="Description: \nPcapXray tools is an aid for Network Forensics or Any Network Analysis!\n"+description, style="BW.TLabel").grid(column=10, row=10,sticky="W")
+        self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
+        self.ThirdFrame.columnconfigure(10, weight=1)
+        self.ThirdFrame.rowconfigure(10, weight=1)
+
+    def pcap_analyse(self):
+        print "Hi"
+
+def main():
+    base = Tk()
+    pcapgui =pcapXrayGui(base)
+    base.mainloop()
+
+main()
+"""
+def main():
+    base = Tk()
+    base.title("PcapXray - A Network Traffic Analysis Tool")
+
+    mainframe = ttk.Frame(base, padding="10 10 12 12")
+    mainframe.grid(column=10, row=10, sticky=(N, W, E, S))
+    mainframe.columnconfigure(0, weight=1)
+    mainframe.rowconfigure(0, weight=1)
+
+    pcap_file = StringVar()
+
+    file_entry = ttk.Entry(mainframe, width=10, textvariable=pcap_file)
+    file_entry.grid(column=2, row=1, sticky=(W, E))
+
+    ttk.Button(mainframe, text="Analyze!", command=pcap_analyse).grid(column=3, row=1, sticky=W)
+
+    ttk.Label(mainframe, text="Enter pcap file path: ").grid(column=1, row=1, sticky=W)
+
+    for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
+
+    file_entry.focus()
+    base.bind('<Return>', pcap_analyse("network.gv"))
+
+    base.mainloop()
+
+main()
+"""
