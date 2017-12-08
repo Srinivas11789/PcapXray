@@ -9,8 +9,8 @@ class pcapXrayGui:
         Label(base, text="PcapXray Tool - A LAN Network Analyzer")
 
         style = ttk.Style()
-        style.configure("BW.TLabel", foreground="black", background="white")
-        style.configure("BW.TEntry", foreground="black", background="white")
+        style.configure("BW.TLabel", foreground="black")
+        style.configure("BW.TEntry", foreground="black")
 
         self.InitFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         self.InitFrame.grid(column=10, row=10, sticky=(N, W, E, S))
@@ -19,7 +19,7 @@ class pcapXrayGui:
         pcap_file = StringVar()
         self.label = ttk.Label(self.InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.file_entry = ttk.Entry(self.InitFrame, width=30,textvariable=pcap_file,style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
-        self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, sticky="W, E")
+        self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
 
         self.SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         self.SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
