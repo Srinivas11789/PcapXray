@@ -1,5 +1,8 @@
 from Tkinter import *
 import ttk
+import pcapReader
+import time
+import threading
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -16,11 +19,13 @@ class pcapXrayGui:
         self.InitFrame.grid(column=10, row=10, sticky=(N, W, E, S))
         self.InitFrame.columnconfigure(10, weight=1)
         self.InitFrame.rowconfigure(10, weight=1)
-        pcap_file = StringVar()
+        self.pcap_file = StringVar()
         self.label = ttk.Label(self.InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
-        self.file_entry = ttk.Entry(self.InitFrame, width=30,textvariable=pcap_file,style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.file_entry = ttk.Entry(self.InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.counter = 0
+        self.progressbar = ttk.Progressbar(self.InitFrame, orient="horizontal", length=200, variable=self.counter, maximum=100,  mode="determinate")
         self.button = ttk.Button(self.InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
-
+        self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
         self.SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         self.SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         self.SecondFrame.columnconfigure(10, weight=1)
@@ -30,8 +35,6 @@ class pcapXrayGui:
         options = {'All','HTTP','HTTPS','Tor','Malicious'}
         option.set('HTTPS')
         ttk.OptionMenu(self.SecondFrame,option,*options).grid(column=1, row=10,sticky="W, E")
-        #ttk.Label(self.SecondFrame, text="", style="BW.TLabel").grid(column=2, row=10,sticky="E")
-
 
         self.ThirdFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
@@ -42,8 +45,22 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(10, weight=1)
         self.ThirdFrame.rowconfigure(10, weight=1)
 
+        self.bytes = 0
+        self.maxbytes = 0
+
+    def progress_bar(self):
+            for i in range(100):
+                self.counter = self.counter + i
+                time.sleep(1)
+
+
     def pcap_analyse(self):
-        print "Hi"
+        t = threading.Thread(None, self.progress_bar, ())
+        t.start()
+        progress = threading.Thread(target=self.progress_bar(), args=())
+        progress.start()
+        capture_read = pcapReader.pcapReader(self.pcap_file.get())
+        self.progressbar.stop()
 
 def main():
     base = Tk()
