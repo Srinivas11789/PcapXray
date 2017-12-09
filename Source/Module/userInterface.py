@@ -48,10 +48,16 @@ class pcapXrayGui:
         self.label = ttk.Label(self.ThirdFrame, text="Description: \nPcapXray tools is an aid for Network Forensics or Any Network Analysis!\n"+description, style="BW.TLabel")
         self.label.grid(column=10, row=10,sticky="W")
         #self.label.pack(fill=BOTH, expand=YES)
+
+        self.xscrollbar = Scrollbar(self.ThirdFrame, orient=HORIZONTAL)
+        self.xscrollbar.grid(row=100, column=0, sticky=E + W)
+        self.yscrollbar = Scrollbar(self.ThirdFrame, orient=VERTICAL)
+        self.yscrollbar.grid(row=0, column=100, sticky=N + S)
+
         self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         #self.ThirdFrame.pack(fill=BOTH,expand=YES)
-        self.ThirdFrame.columnconfigure(100, weight=1)
-        self.ThirdFrame.rowconfigure(100, weight=1)
+        self.ThirdFrame.columnconfigure(0, weight=1)
+        self.ThirdFrame.rowconfigure(0, weight=1)
         #self.ThirdCanvas.grid(column=10, row=30, sticky=(N, W, E, S))
         #self.scrollHort.grid(column=10, row=30, sticky='ew')
 
@@ -70,20 +76,31 @@ class pcapXrayGui:
         #while diag1.is_alive():
         #    self.base.update()
         self.label.grid_forget()
+
+        canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        #canvas.pack(fill = BOTH, expand = True)
+        File = "testImage.png"
+        self.img = ImageTk.PhotoImage(Image.open(File).resize((900,900),Image.ANTIALIAS).convert('RGB'))
+        canvas.create_image(0,0, image=self.img)
+        canvas.config(scrollregion=canvas.bbox(ALL))
+        self.xscrollbar.config(command=canvas.xview)
+        self.yscrollbar.config(command=canvas.yview)
+
         #image_window = ttk.Frame(self.ThirdCanvas)
         #self.ThirdCanvas.create_window(0,0,window=image_window,anchor='nw')
-        self.image = ImageTk.PhotoImage(Image.open("testImage.png").resize((700,700)).convert('RGB'))
-        self.label = ttk.Label(self.ThirdFrame,image=self.image,relief=RAISED)
-        self.label.image = self.image
+        #self.image = ImageTk.PhotoImage(Image.open("testImage.png").resize((700,700)).convert('RGB'))
+        #self.label = ttk.Label(self.ThirdFrame,image=self.image,relief=RAISED)
+        #self.label.image = self.image
         #self.label.grid(sticky="W")
-        self.label.pack(fill=X,expand=1, padx=10, pady=10)
+        #self.label.pack(fill=X,expand=1, padx=10, pady=10)
         #elf.ThirdFrame.update()
         #self.label.pack()
         #w = Canvas(self.ThirdFrame, width=50,height=50)
         #w.create_image(0,0,image=image)
         #self.label.pack(fill=BOTH, expand=1)
         #self.base.update()
-        self.progressbar.stop()
+        #self.progressbar.stop()
 
 def main():
     base = Tk()
