@@ -24,6 +24,7 @@ class plotLan:
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
                 'rankdir': 'BT',
+                'dpi':'300'
             },
             'nodes': {
                 'fontname': 'Helvetica',
@@ -60,7 +61,7 @@ class plotLan:
         return graph
 
     def draw_graph(self, filename, option="All"):
-        f = Digraph('network_diagram - '+option, filename=filename, format='png')
+        f = Digraph('network_diagram - '+option, filename=filename, engine="dot", format="png")
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
@@ -134,6 +135,6 @@ def main():
     # draw example
     pcapfile = pcapReader.pcapReader('test.pcap')
     print "Reading Done...."
-    network = plotLan(pcapfile.packetDB, "network123", "All")
+    network = plotLan(pcapfile.packetDB, "network12345", "All")
 
 main()
