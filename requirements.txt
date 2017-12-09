@@ -10,5 +10,17 @@ scapy
 # ipwhois
 ipwhois
 
-#Network X
+#netaddr - IP addresses handling
+netaddr
+
+#Pillow - Image Processing
+pillow
+
+#Tor
+stem
+
+#Graphics
 networkx
+graphviz
+matplotlib
+
