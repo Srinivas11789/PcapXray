@@ -83,7 +83,7 @@ class plotLan:
             # add nodes
             for node in self.nodes:
                 detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
-                curr_node = node+detail
+                curr_node = node+detail["result"]["company"]
                 f.node(curr_node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
@@ -121,9 +121,11 @@ class plotLan:
 
         if option == "Tor":
             for node in self.nodes:
-                f.node(node)
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                curr_node = node+"\n"+detail["result"]["company"]
+                f.node(curr_node)
                 for tor in self.tor_identify[node]:
-                    f.edge(node, 'defaultGateway', label='TOR: ' + str(tor), color="white")
+                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(tor), color="white")
 
         if option == "Malicious":
             for node in self.nodes:
