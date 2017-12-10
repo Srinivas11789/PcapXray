@@ -4,6 +4,7 @@ import pcapReader
 import plotLanNetwork
 import time
 import threading
+import Queue
 from PIL import Image,ImageTk
 
 class pcapXrayGui:
@@ -59,16 +60,26 @@ class pcapXrayGui:
         self.ThirdFrame.rowconfigure(0, weight=1)
 
     def pcap_analyse(self):
-        self.progressbar.start()
-        self.base.update()
-        print self.option.get()
-        self.capture_read = pcapReader.pcapReader(self.pcap_file.get())
+        #self.progressbar.start()
+        #self.base.update()
+        result = Queue.Queue()
+        packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
+        packet_read.start()
+        while packet_read.is_alive():
+              self.progressbar.start()
+              self.base.update()
         self.progressbar.stop()
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read.packetDB, self.pcap_file.get().replace(".pcap",""),self.option.get(),))
+        #packet_read.join()
+        self.capture_read = result.get()
+        self.option.trace("w",self.map_select)
+        self.option.set("Tor")
+
+    def generate_graph(self):
+        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.option.get(),))
         t1.start()
         while t1.is_alive():
-            self.progressbar.start()
-            self.base.update()
+              self.progressbar.start()
+              self.base.update()
         self.progressbar.stop()
         self.label.grid_forget()
         canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
@@ -78,12 +89,11 @@ class pcapXrayGui:
         canvas.config(scrollregion=canvas.bbox(ALL))
         self.xscrollbar.config(command=canvas.xview)
         self.yscrollbar.config(command=canvas.yview)
-        self.option.trace("w",self.map_select)
 
     def map_select(self, *args):
         print self.option.get()
-        self.pcap_analyse()
-        self.progressbar.stop()
+        self.generate_graph()
+        #self.progressbar.stop()
     
 #    def show_graph(self):
 
