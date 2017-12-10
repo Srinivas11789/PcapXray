@@ -83,6 +83,7 @@ class pcapXrayGui:
     def map_select(self, *args):
         print self.option.get()
         self.pcap_analyse()
+        self.progressbar.stop()
     
 #    def show_graph(self):
 
