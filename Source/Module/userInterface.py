@@ -111,13 +111,6 @@ class pcapXrayGui:
     def map_select(self, *args):
         print self.option.get()
         self.generate_graph()
-        #self.progressbar.stop()
-    
-#    def show_graph(self):
-
- #       self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
-   #     canvas.create_image(0,0, image=self.img)
-  #      self.base.update()
 
 def main():
     base = Tk()
