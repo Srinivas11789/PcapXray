@@ -22,7 +22,7 @@ def main():
     for ip in pcapfile.packetDB:
         macObj = fetchDeviceDetails(pcapfile.packetDB[ip])
         print macObj.oui_identification()
-main()
+#main()
 
 # MAC Oui Identification Module
 # LAN IP and Getway Identification
