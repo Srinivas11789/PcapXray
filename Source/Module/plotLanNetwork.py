@@ -8,7 +8,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from graphviz import Digraph
-
+import threading
 
 class plotLan:
 
@@ -34,8 +34,13 @@ class plotLan:
                 'fillcolor': 'yellow',
             }
         }
-        self.draw_graph(self.filename, option)
 
+        self.nodes = self.packetDB.keys()
+        self.name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
+        self.mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, self.name_servers).possible_malicious_traffic
+        self.tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
+        self.draw_graph(self.nodes, self.name_servers, self.mal_identify, self.tor_identify, self.filename, option)
+    
     def apply_styles(self, graph, styles):
         graph.graph_attr.update(
             ('graph' in styles and styles['graph']) or {}
@@ -59,7 +64,7 @@ class plotLan:
         )
         return graph
 
-    def draw_graph(self, filename, option="All"):
+    def draw_graph(self, nodes, name_servers, mal_identify, tor_identify, filename, option="All"):
         f = Digraph('network_diagram - '+option, filename=filename, engine="dot", format="png")
         f.attr(rankdir='LR', size='8,5')
 
@@ -67,14 +72,6 @@ class plotLan:
         f.node('defaultGateway')
 
         f.attr('node', shape='circle')
-
-        # extract nodes from graph
-        nodes = self.packetDB.keys()
-        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
-        if option == "Malicious" or option == "All" or option == "HTTP" or option == "HTTPS":
-            mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, name_servers).possible_malicious_traffic
-        if option == "Tor" or option == "All":
-            tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
 
         print "Starting Graph Plotting"
 
@@ -85,10 +82,10 @@ class plotLan:
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[node]["ip_details"][dest]["dns"], color = "blue")
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
                     if "HTTP" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
-                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+name_servers[node]["ip_details"][dest]["dns"], color = "green")
+                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "green")
                     for tor in tor_identify[node]:
                        f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
 
@@ -99,19 +96,18 @@ class plotLan:
         if option == "HTTP":
             for node in nodes:
                 f.node(node)
-                if "HTTP" in self.packetDB[node]["TCP"]:
-                    name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
-                    for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
-                        f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + name_servers[dest]["dns"],color="green")
+                if "TCP" in self.packetDB[node]:
+                    if "HTTP" in self.packetDB[node]["TCP"]:
+                        for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
+                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + self.name_servers[node]["ip_details"][dest]["dns"],color="green")
 
         if option == "HTTPS":
             for node in nodes:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
-                        name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB[node]).ip_details
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+name_servers[dest]["dns"], color = "blue")
+                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
 
         if option == "Tor":
             for node in nodes:

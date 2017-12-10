@@ -58,21 +58,14 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
 
-
     def pcap_analyse(self):
         self.progressbar.start()
         self.base.update()
-        capture_read = pcapReader.pcapReader(self.pcap_file.get())
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get().replace(".pcap",""),"Tor",))
+        print self.option.get()
+        self.capture_read = pcapReader.pcapReader(self.pcap_file.get())
+        self.progressbar.stop()
+        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read.packetDB, self.pcap_file.get().replace(".pcap",""),self.option.get(),))
         t1.start()
-        #t2 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTP",))
-        #t2.start()
-        #t3 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTPS",))
-        #t3.start()
-        #t4 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"Tor",))
-        #t4.start()
-        #t5 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(), "Malicious",))
-        #t5.start()
         while t1.is_alive():
             self.progressbar.start()
             self.base.update()
@@ -85,7 +78,17 @@ class pcapXrayGui:
         canvas.config(scrollregion=canvas.bbox(ALL))
         self.xscrollbar.config(command=canvas.xview)
         self.yscrollbar.config(command=canvas.yview)
+        self.option.trace("w",self.map_select)
 
+    def map_select(self, *args):
+        print self.option.get()
+        self.pcap_analyse()
+    
+#    def show_graph(self):
+
+ #       self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
+   #     canvas.create_image(0,0, image=self.img)
+  #      self.base.update()
 
 def main():
     base = Tk()
