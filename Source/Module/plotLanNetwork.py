@@ -3,6 +3,7 @@ import pcapReader
 import communicationDetailsFetch
 import torTrafficHandle
 import maliciousTrafficIdentifier
+import deviceDetailsFetch
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -81,19 +82,21 @@ class plotLan:
         if option == "All":
             # add nodes
             for node in self.nodes:
-                f.node(node)
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                curr_node = node+detail
+                f.node(curr_node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
+                            f.edge(curr_node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
                     if "HTTP" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
-                            f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "green")
+                            f.edge(curr_node, 'defaultGateway', label='HTTP: ' + dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "green")
                     for tor in self.tor_identify[node]:
-                       f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
+                       f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
 
                     for mal in self.mal_identify[node]:
-                        f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
+                        f.edge(curr_node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
 
 
         if option == "HTTP":
