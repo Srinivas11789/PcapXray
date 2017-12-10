@@ -7,6 +7,7 @@ import time
 import threading
 import Queue
 from PIL import Image,ImageTk
+import os
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -88,18 +89,20 @@ class pcapXrayGui:
             t.join()
             self.progressbar.stop()
             self.name_servers = result.get()
+        
+        if not os.path.exists("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png"):
+            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
+            t1.start()
+            self.progressbar.start()
+            while t1.is_alive():
+                 self.progressbar.update()
+            t1.join()
+            self.progressbar.stop()
 
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
-        t1.start()
-        self.progressbar.start()
-        while t1.is_alive():
-              self.progressbar.update()
-        t1.join()
-        self.progressbar.stop()
         self.label.grid_forget()
         canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
         canvas.create_image(0,0, image=self.img)
         canvas.config(scrollregion=canvas.bbox(ALL))
         self.xscrollbar.config(command=canvas.xview)

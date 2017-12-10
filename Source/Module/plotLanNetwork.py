@@ -10,12 +10,15 @@ import matplotlib.pyplot as plt
 
 from graphviz import Digraph
 import threading
+import os
 
 class plotLan:
 
     def __init__(self, packetDB, filename, name_servers, option="Tor"):
         self.packetDB = packetDB
-        self.filename = filename+option
+        if not os.path.exists("Report"):
+            os.makedirs("Report")
+        self.filename = "Report/"+filename+option
 
         self.styles = {
             'graph': {
