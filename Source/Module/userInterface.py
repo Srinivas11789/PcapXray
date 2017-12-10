@@ -2,6 +2,7 @@ from Tkinter import *
 import ttk
 import pcapReader
 import plotLanNetwork
+import communicationDetailsFetch
 import time
 import threading
 import Queue
@@ -58,16 +59,16 @@ class pcapXrayGui:
         self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
+        self.name_servers = ""
 
     def pcap_analyse(self):
-        #self.progressbar.start()
-        #self.base.update()
+        self.progressbar.start()
+        self.base.update()
         result = Queue.Queue()
         packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
         packet_read.start()
         while packet_read.is_alive():
-              self.progressbar.start()
-              self.base.update()
+              self.progressbar.step()
         self.progressbar.stop()
         #packet_read.join()
         self.capture_read = result.get()
@@ -75,7 +76,16 @@ class pcapXrayGui:
         self.option.set("Tor")
 
     def generate_graph(self):
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.option.get(),))
+        if self.name_servers == "":
+            result = Queue.Queue()
+            t = threading.Thread(target=communicationDetailsFetch.trafficDetailsFetch,args=(self.capture_read,result))
+            t.start()
+            while t.is_alive():
+                  self.progressbar.step()
+            self.progressbar.stop()
+            self.name_servers = result.get()
+
+        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
         t1.start()
         while t1.is_alive():
               self.progressbar.start()

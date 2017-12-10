@@ -2,15 +2,16 @@
 import ipwhois
 import dns
 import socket
-
+import Queue
 # Module Import
 import pcapReader
+import netaddr
 
 # Class Communication or Traffic Details Fetch
 
 class trafficDetailsFetch():
 
-    def __init__(self, packetDB):
+    def __init__(self, packetDB, out):
         self.communication_details = {}
         for ip in packetDB:
             if ip not in self.communication_details:
@@ -26,6 +27,7 @@ class trafficDetailsFetch():
                 self.communication_details[ip]["ip_details"] = {}
             self.communication_details[ip]["ip_details"] = {key: {} for key in ips}
             self.dns(ip, self.communication_details[ip]["ip_details"].keys())
+        out.put(self.communication_details)
             #self.whois_info_fetch(ip, self.communication_details[ip]["ip_details"].keys())
 
     # whois_info_fetch
@@ -58,10 +60,12 @@ class trafficDetailsFetch():
             self.communication_details[ip]["ip_details"][i]["dns"] = dns_info
 
 def main():
-    capture = pcapReader.pcapReader("test.pcap")
-    print capture.packetDB
-    details = trafficDetailsFetch(capture.packetDB)
-    print details.communication_details
+    out1 = Queue.Queue()
+    capture = pcapReader.pcapReader("lanExample.pcap", out1)
+    print "read"
+    out = Queue.Queue()
+    details = trafficDetailsFetch(out1.get(), out)
+    print out.get()
     print "\n"
 
 #main()

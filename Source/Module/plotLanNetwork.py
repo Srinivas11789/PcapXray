@@ -12,7 +12,7 @@ import threading
 
 class plotLan:
 
-    def __init__(self, packetDB, filename, option="Tor"):
+    def __init__(self, packetDB, filename, name_servers, option="Tor"):
         self.packetDB = packetDB
         self.filename = filename+option
 
@@ -36,10 +36,13 @@ class plotLan:
         }
 
         self.nodes = self.packetDB.keys()
-        self.name_servers = communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
-        self.mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, self.name_servers).possible_malicious_traffic
-        self.tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
-        self.draw_graph(self.nodes, self.name_servers, self.mal_identify, self.tor_identify, self.filename, option)
+        self.name_servers = name_servers
+        #communicationDetailsFetch.trafficDetailsFetch(self.packetDB).communication_details
+        if option == "Malicious" or option == "All":
+            self.mal_identify = maliciousTrafficIdentifier.maliciousTrafficIdentifier(self.packetDB, self.name_servers).possible_malicious_traffic
+        if option == "Tor" or option == "All":
+            self.tor_identify = torTrafficHandle.torTrafficHandle(self.packetDB).possible_tor_traffic
+        self.draw_graph(option)
     
     def apply_styles(self, graph, styles):
         graph.graph_attr.update(
@@ -64,8 +67,8 @@ class plotLan:
         )
         return graph
 
-    def draw_graph(self, nodes, name_servers, mal_identify, tor_identify, filename, option="All"):
-        f = Digraph('network_diagram - '+option, filename=filename, engine="dot", format="png")
+    def draw_graph(self,option="All"):
+        f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
@@ -77,7 +80,7 @@ class plotLan:
 
         if option == "All":
             # add nodes
-            for node in nodes:
+            for node in self.nodes:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
@@ -86,15 +89,15 @@ class plotLan:
                     if "HTTP" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTP"]["Server"]:
                             f.edge(node, 'defaultGateway', label='HTTP: ' + dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "green")
-                    for tor in tor_identify[node]:
+                    for tor in self.tor_identify[node]:
                        f.edge(node, 'defaultGateway', label='TOR: ' + str(tor) ,color="white")
 
-                    for mal in mal_identify[node]:
+                    for mal in self.mal_identify[node]:
                         f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
 
 
         if option == "HTTP":
-            for node in nodes:
+            for node in self.nodes:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTP" in self.packetDB[node]["TCP"]:
@@ -102,7 +105,7 @@ class plotLan:
                             f.edge(node, 'defaultGateway', label='HTTP: ' + dest + ": " + self.name_servers[node]["ip_details"][dest]["dns"],color="green")
 
         if option == "HTTPS":
-            for node in nodes:
+            for node in self.nodes:
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
@@ -110,15 +113,15 @@ class plotLan:
                             f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
 
         if option == "Tor":
-            for node in nodes:
+            for node in self.nodes:
                 f.node(node)
-                for tor in tor_identify[node]:
+                for tor in self.tor_identify[node]:
                     f.edge(node, 'defaultGateway', label='TOR: ' + str(tor), color="white")
 
         if option == "Malicious":
-            for node in nodes:
+            for node in self.nodes:
                 f.node(node)
-                for mal in mal_identify[node]:
+                for mal in self.mal_identify[node]:
                     f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
 
 
