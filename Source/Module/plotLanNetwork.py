@@ -15,7 +15,6 @@ class plotLan:
     def __init__(self, packetDB, filename, option="Tor"):
         self.packetDB = packetDB
         self.filename = filename+option
-        #self.draw_graph(self.filename, option)
 
         self.styles = {
             'graph': {
