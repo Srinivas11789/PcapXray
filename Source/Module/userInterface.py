@@ -42,7 +42,7 @@ class pcapXrayGui:
         ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
         self.option = StringVar()
         options = {'All','HTTP','HTTPS','Tor','Malicious'}
-        self.option.set('Tor')
+        #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
 
         # Third Frame with Results and Descriptioms
@@ -63,12 +63,12 @@ class pcapXrayGui:
 
     def pcap_analyse(self):
         self.progressbar.start()
-        self.base.update()
         result = Queue.Queue()
         packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
         packet_read.start()
         while packet_read.is_alive():
-              self.progressbar.step()
+            self.progressbar.update()
+        packet_read.join()
         self.progressbar.stop()
         #packet_read.join()
         self.capture_read = result.get()
@@ -80,16 +80,19 @@ class pcapXrayGui:
             result = Queue.Queue()
             t = threading.Thread(target=communicationDetailsFetch.trafficDetailsFetch,args=(self.capture_read,result))
             t.start()
+            self.progressbar.start()
             while t.is_alive():
-                  self.progressbar.step()
+                  self.progressbar.update()
+            t.join()
             self.progressbar.stop()
             self.name_servers = result.get()
 
         t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
         t1.start()
+        self.progressbar.start()
         while t1.is_alive():
-              self.progressbar.start()
-              self.base.update()
+              self.progressbar.update()
+        t1.join()
         self.progressbar.stop()
         self.label.grid_forget()
         canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
@@ -113,7 +116,7 @@ class pcapXrayGui:
 
 def main():
     base = Tk()
-    pcapgui =pcapXrayGui(base)
+    pcapXrayGui(base)
     base.mainloop()
 
 main()

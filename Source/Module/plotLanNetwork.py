@@ -110,7 +110,11 @@ class plotLan:
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
                         for dest in self.packetDB[node]["TCP"]["HTTPS"]:
-                            f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
+                            try:
+                               f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
+                            except:
+                                print self.name_servers[node]
+
 
         if option == "Tor":
             for node in self.nodes:
@@ -131,8 +135,9 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('test.pcap')
+    pcapfile = pcapReader.pcapReader('lanExample.pcap')
     print "Reading Done...."
-    network = plotLan(pcapfile.packetDB, "network12345", "All")
+    details = communicationDetailsFetch.trafficDetailsFetch(pcapfile.packetDB)
+    network = plotLan(pcapfile.packetDB, "network12345", details.communication_details,"HTTPS")
 
 #main()
