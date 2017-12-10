@@ -3,6 +3,7 @@ import ttk
 import pcapReader
 import plotLanNetwork
 import communicationDetailsFetch
+import reportGen
 import time
 import threading
 import Queue
@@ -73,6 +74,8 @@ class pcapXrayGui:
         self.progressbar.stop()
         #packet_read.join()
         self.capture_read = result.get()
+        reportThreadpcap = threading.Thread(target=reportGen.packetDetails,args=(self.capture_read,))
+        reportThreadpcap.start()
         #self.option.set("Tor")
         self.option.trace("w",self.map_select)
         #self.option.set("Tor")
@@ -89,6 +92,8 @@ class pcapXrayGui:
             t.join()
             self.progressbar.stop()
             self.name_servers = result.get()
+            reportThread = threading.Thread(target=reportGen.communicationDetailsReport,args=(self.name_servers,))
+            reportThread.start()
         
         if not os.path.exists("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png"):
             t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))

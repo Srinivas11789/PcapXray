@@ -87,7 +87,7 @@ class plotLan:
             for node in self.nodes:
                 detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
                 try:
-                    curr_node = node+detail["result"]["company"]
+                    curr_node = node+"\n"+detail
                 except:
                     curr_node = node
                 f.node(curr_node)
@@ -129,7 +129,7 @@ class plotLan:
             for node in self.nodes:
                 detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
                 try:
-                  curr_node = node+"\n"+detail["result"]["company"]
+                  curr_node = node+"\n"+detail
                 except:
                   curr_node = node
                 f.node(curr_node)
