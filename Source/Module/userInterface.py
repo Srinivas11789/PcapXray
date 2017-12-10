@@ -9,6 +9,7 @@ from PIL import Image,ImageTk
 class pcapXrayGui:
     def __init__(self, base):
         # Base Frame Configuration
+        self.base = base
         base.title("PcapXray")
         Label(base, text="PcapXray Tool - A LAN Network Analyzer")
 
@@ -27,7 +28,7 @@ class pcapXrayGui:
         self.pcap_file = StringVar()
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
-        self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200, variable=self.counter,value=0, maximum=200,  mode="indeterminate")
+        self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
         ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
 
@@ -36,11 +37,11 @@ class pcapXrayGui:
         SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
         SecondFrame.rowconfigure(10, weight=1)
-        ttk.Label(self.SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
+        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
         self.option = StringVar()
         options = {'All','HTTP','HTTPS','Tor','Malicious'}
         self.option.set('Tor')
-        ttk.OptionMenu(self.SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
+        ttk.OptionMenu(SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -62,20 +63,24 @@ class pcapXrayGui:
         self.progressbar.start()
         self.base.update()
         capture_read = pcapReader.pcapReader(self.pcap_file.get())
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"All",))
+        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get().replace(".pcap",""),"Tor",))
         t1.start()
-        t2 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTP",))
-        t2.start()
-        t3 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTPS",))
-        t3.start()
-        t4 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"Tor",))
-        t4.start()
-        t5 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(), "Malicious",))
-        t5.start()
+        #t2 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTP",))
+        #t2.start()
+        #t3 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"HTTPS",))
+        #t3.start()
+        #t4 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(),"Tor",))
+        #t4.start()
+        #t5 = threading.Thread(target=plotLanNetwork.plotLan, args=(capture_read.packetDB, self.pcap_file.get(), "Malicious",))
+        #t5.start()
+        while t1.is_alive():
+            self.progressbar.start()
+            self.base.update()
+        self.progressbar.stop()
         self.label.grid_forget()
         canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get()+self.option+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
         canvas.create_image(0,0, image=self.img)
         canvas.config(scrollregion=canvas.bbox(ALL))
         self.xscrollbar.config(command=canvas.xview)
@@ -87,4 +92,4 @@ def main():
     pcapgui =pcapXrayGui(base)
     base.mainloop()
 
-#main()
+main()
