@@ -41,9 +41,9 @@ class pcapXrayGui:
         SecondFrame.rowconfigure(10, weight=1)
         ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
         self.option = StringVar()
-        options = {'All','HTTP','HTTPS','Tor','Malicious'}
+        self.options = {'All','HTTP','HTTPS','Tor','Malicious'}
         #self.option.set('Tor')
-        ttk.OptionMenu(SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
+        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(column=1, row=10,sticky="W, E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -72,8 +72,10 @@ class pcapXrayGui:
         self.progressbar.stop()
         #packet_read.join()
         self.capture_read = result.get()
+        #self.option.set("Tor")
         self.option.trace("w",self.map_select)
-        self.option.set("Tor")
+        #self.option.set("Tor")
+        self.name_servers = ""
 
     def generate_graph(self):
         if self.name_servers == "":
