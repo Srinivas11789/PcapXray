@@ -18,7 +18,7 @@ class fetchDeviceDetails:
         try:
             apiResponse = urllib2.urlopen(apiRequest)
             details = json.loads(apiResponse.read())
-            reportThread = threading.Thread(target=reportGen.deviceDetailsReport,args=(details,))
+            reportThread = threading.Thread(target=reportGen.reportGen().deviceDetailsReport,args=(details,))
             reportThread.start()
             detail = details["result"]["company"]
         except:
