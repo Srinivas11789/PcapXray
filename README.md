@@ -22,6 +22,11 @@ Tool Highlights:
   * Possible Malicious traffic
   * Data Obtained from Packet in Report – Device/Traffic/Payloads
   * Device Details
+  
+# Tool Image:
+![Alt text](/Samples/screen1.png?raw=true)
+
+![Alt text](/Samples/screen2.png?raw=true)
 
 # Components:
 *	Network Diagram 
