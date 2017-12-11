@@ -14,8 +14,7 @@
 
 # Solution: Speed up the investigation process
 * Make a network diagram with the following features from a Pcap file
-
-# Tool Highlights:
+Tool Highlights:
 * Network Diagram – Summary Network Diagram of full network
 *	Information: 
   * Traffic with Server Details
