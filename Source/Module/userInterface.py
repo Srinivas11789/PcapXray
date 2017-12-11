@@ -1,5 +1,6 @@
 from Tkinter import *
 import ttk
+import tkMessageBox
 import pcapReader
 import plotLanNetwork
 import communicationDetailsFetch
@@ -64,22 +65,25 @@ class pcapXrayGui:
         self.name_servers = ""
 
     def pcap_analyse(self):
-        self.progressbar.start()
-        result = Queue.Queue()
-        packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
-        packet_read.start()
-        while packet_read.is_alive():
-            self.progressbar.update()
-        packet_read.join()
-        self.progressbar.stop()
-        #packet_read.join()
-        self.capture_read = result.get()
-        reportThreadpcap = threading.Thread(target=reportGen.reportGen().packetDetails,args=(self.capture_read,))
-        reportThreadpcap.start()
-        #self.option.set("Tor")
-        self.option.trace("w",self.map_select)
-        #self.option.set("Tor")
-        self.name_servers = ""
+        if os.path.exists(self.pcap_file.get()):
+            self.progressbar.start()
+            result = Queue.Queue()
+            packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
+            packet_read.start()
+            while packet_read.is_alive():
+                self.progressbar.update()
+            packet_read.join()
+            self.progressbar.stop()
+            #packet_read.join()
+            self.capture_read = result.get()
+            reportThreadpcap = threading.Thread(target=reportGen.reportGen().packetDetails,args=(self.capture_read,))
+            reportThreadpcap.start()
+            #self.option.set("Tor")
+            self.option.trace("w",self.map_select)
+            #self.option.set("Tor")
+            self.name_servers = ""
+        else:
+            tkMessageBox.showerror("Error","File Not Found !")
 
     def generate_graph(self):
         if self.name_servers == "":
