@@ -122,4 +122,4 @@ def main():
     pcapXrayGui(base)
     base.mainloop()
 
-main()
+#main()
