@@ -4,6 +4,8 @@ import json
 import codecs
 # Module Import
 import pcapReader
+import reportGen
+import threading
 
 class fetchDeviceDetails:
 
@@ -13,8 +15,15 @@ class fetchDeviceDetails:
 
     def oui_identification(self):
         apiRequest = urllib2.Request(self.url, headers={'User-Agent':'PcapXray'})
-        apiResponse = urllib2.urlopen(apiRequest)
-        return json.loads(apiResponse.read())
+        try:
+            apiResponse = urllib2.urlopen(apiRequest)
+            details = json.loads(apiResponse.read())
+            reportThread = threading.Thread(target=reportGen.reportGen().deviceDetailsReport,args=(details,))
+            reportThread.start()
+            detail = details["result"]["company"]
+        except:
+            detail = "No Match!"
+        return detail
 
 def main():
     filename = "test.pcap"
@@ -22,7 +31,7 @@ def main():
     for ip in pcapfile.packetDB:
         macObj = fetchDeviceDetails(pcapfile.packetDB[ip])
         print macObj.oui_identification()
-main()
+#main()
 
 # MAC Oui Identification Module
 # LAN IP and Getway Identification

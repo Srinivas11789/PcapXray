@@ -4,12 +4,13 @@ from netaddr import *
 
 class pcapReader():
 
-    def __init__(self, filename, out):
+    def __init__(self, filename, out=None):
         self.file = filename
         self.packets = rdpcap(filename)
         self.packetDB = {}
         self.read_pcap_and_fill_db()
-        out.put(self.packetDB)
+        if out:
+            out.put(self.packetDB)
 
 # Private IP Segregation or LAN IP Identification Method
 # A LAN Map tool to plot from the perspective of LAN Hosts

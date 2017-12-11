@@ -2,10 +2,13 @@ from Tkinter import *
 import ttk
 import pcapReader
 import plotLanNetwork
+import communicationDetailsFetch
+import reportGen
 import time
 import threading
 import Queue
 from PIL import Image,ImageTk
+import os
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -40,9 +43,9 @@ class pcapXrayGui:
         SecondFrame.rowconfigure(10, weight=1)
         ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
         self.option = StringVar()
-        options = {'All','HTTP','HTTPS','Tor','Malicious'}
-        self.option.set('Tor')
-        ttk.OptionMenu(SecondFrame,self.option,*options).grid(column=1, row=10,sticky="W, E")
+        self.options = {'All','HTTP','HTTPS','Tor','Malicious'}
+        #self.option.set('Tor')
+        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(column=1, row=10,sticky="W, E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -58,33 +61,53 @@ class pcapXrayGui:
         self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
+        self.name_servers = ""
 
     def pcap_analyse(self):
-        #self.progressbar.start()
-        #self.base.update()
+        self.progressbar.start()
         result = Queue.Queue()
         packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
         packet_read.start()
         while packet_read.is_alive():
-              self.progressbar.start()
-              self.base.update()
+            self.progressbar.update()
+        packet_read.join()
         self.progressbar.stop()
         #packet_read.join()
         self.capture_read = result.get()
+        reportThreadpcap = threading.Thread(target=reportGen.reportGen().packetDetails,args=(self.capture_read,))
+        reportThreadpcap.start()
+        #self.option.set("Tor")
         self.option.trace("w",self.map_select)
-        self.option.set("Tor")
+        #self.option.set("Tor")
+        self.name_servers = ""
 
     def generate_graph(self):
-        t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.option.get(),))
-        t1.start()
-        while t1.is_alive():
-              self.progressbar.start()
-              self.base.update()
-        self.progressbar.stop()
+        if self.name_servers == "":
+            result = Queue.Queue()
+            t = threading.Thread(target=communicationDetailsFetch.trafficDetailsFetch,args=(self.capture_read,result))
+            t.start()
+            self.progressbar.start()
+            while t.is_alive():
+                  self.progressbar.update()
+            t.join()
+            self.progressbar.stop()
+            self.name_servers = result.get()
+            reportThread = threading.Thread(target=reportGen.reportGen().communicationDetailsReport,args=(self.name_servers,))
+            reportThread.start()
+        
+        if not os.path.exists("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png"):
+            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
+            t1.start()
+            self.progressbar.start()
+            while t1.is_alive():
+                 self.progressbar.update()
+            t1.join()
+            self.progressbar.stop()
+
         self.label.grid_forget()
         canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
         canvas.create_image(0,0, image=self.img)
         canvas.config(scrollregion=canvas.bbox(ALL))
         self.xscrollbar.config(command=canvas.xview)
@@ -93,17 +116,10 @@ class pcapXrayGui:
     def map_select(self, *args):
         print self.option.get()
         self.generate_graph()
-        #self.progressbar.stop()
-    
-#    def show_graph(self):
-
- #       self.img = ImageTk.PhotoImage(Image.open(self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
-   #     canvas.create_image(0,0, image=self.img)
-  #      self.base.update()
 
 def main():
     base = Tk()
-    pcapgui =pcapXrayGui(base)
+    pcapXrayGui(base)
     base.mainloop()
 
 main()
