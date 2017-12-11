@@ -1,5 +1,6 @@
 # Report Generation
 import os, json
+from scapy.all import *
 
 class reportGen:
 
@@ -29,10 +30,11 @@ class reportGen:
             print "Could not create the report text file !!!!! Please debug error %s" % (str(e.message))
         for ip in packetDB:
             if "TCP" in packetDB[ip]:
-                if "HTTP" in packetDB[ip]:
+                if "HTTP" in packetDB[ip]["TCP"]:
                     text_handle.write("IP: %s ---> \n" % ip)
-                    for entry in packetDB[ip]["HTTP"]:
-                        text_handle.write("%s\n" % entry[TCP].payload)
+                    if "Payload" in packetDB[ip]["TCP"]["HTTP"]:
+                        for entry in packetDB[ip]["TCP"]["HTTP"]["Payload"]:
+                            text_handle.write("%s\n" % entry[TCP].payload)
 
 
 
