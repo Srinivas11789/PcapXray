@@ -35,7 +35,7 @@ Tool Highlights:
 * Tor Traffic
 * GUI – a gui with options to upload pcap file and display the network diagram
 
-# Python Libraries Used:  - All these libraries are required for functionality
+### Python Libraries Used:  - All these libraries are required for functionality
 * Tkinter and TTK – Install from pip or apt-get – Ensure Tkinter and graphviz is installed (Most Linux contain by default) 
   * apt install python-tk
   * apt install graphviz
@@ -48,6 +48,9 @@ Tool Highlights:
   *	pyGraphviz – plot graph
   *	Networkx – plot graph
   *	Matplotlib – plot graph
+  
+### Demo
+![Alt text](/Samples/demo.gif?raw=true)
  
 ### Challenges:
   * Unstability of the TK GUI:
