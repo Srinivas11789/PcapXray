@@ -51,6 +51,15 @@ Tool Highlights:
   
 ### Demo
 ![Alt text](/Samples/demo.gif?raw=true)
+
+### Getting started:
+* Clone the repository
+* pip install -r requirements.txt
+* python Source/main.py
+
+### Additional Information:
+* Tested on Linux
+* Options for Traffic include - Web (HTTP and HTTPS), Tor, Malicious
  
 ### Challenges:
   * Unstability of the TK GUI:
@@ -76,5 +85,6 @@ Tool Highlights:
 *	Change the database from JSON to sqlite or prominent database, due to memory hogging
 *	Change fronend to web based such as Django
 *	Make the application more stable
+*   More protocol support
 
 
