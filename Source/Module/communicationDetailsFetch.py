@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Library Import
 import ipwhois
 from dns import reversename, resolver
@@ -69,9 +70,9 @@ class trafficDetailsFetch():
 
 def main():
     capture = pcapReader.pcapReader("lanExample.pcap")
-    print "read"
+    print("read")
     details = trafficDetailsFetch(capture.packetDB)
-    print details.communication_details
-    print "\n"
+    print(details.communication_details)
+    print("\n")
 
 #main()

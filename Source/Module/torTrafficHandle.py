@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Custom Module Imports
 import pcapReader
 
@@ -36,9 +37,9 @@ class torTrafficHandle():
 
 def main():
      tor_capture = pcapReader.pcapReader("torexample.pcapng")
-     print tor_capture.packetDB
+     print(tor_capture.packetDB)
      tor_identify = torTrafficHandle(tor_capture.packetDB)
-     print tor_identify.possible_tor_traffic
+     print(tor_identify.possible_tor_traffic)
 
 #main()
 
