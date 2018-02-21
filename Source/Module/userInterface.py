@@ -1,3 +1,4 @@
+from __future__ import print_function
 from Tkinter import *
 import ttk
 import tkMessageBox
@@ -118,7 +119,7 @@ class pcapXrayGui:
         self.yscrollbar.config(command=canvas.yview)
 
     def map_select(self, *args):
-        print self.option.get()
+        print(self.option.get())
         self.generate_graph()
 
 def main():

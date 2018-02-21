@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Custom Module Import
 import pcapReader
 
@@ -28,10 +29,10 @@ class maliciousTrafficIdentifier:
 
 def main():
     malicious_capture = pcapReader.pcapReader("torexample.pcapng")
-    print malicious_capture.packetDB
+    print(malicious_capture.packetDB)
     dns_details = {}
     mal_identify = maliciousTrafficIdentifier(malicious_capture.packetDB, dns_details)
-    print mal_identify.possible_malicious_traffic
+    print(mal_identify.possible_malicious_traffic)
 
 #main()
 

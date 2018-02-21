@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Import Section - Dependant Module inclusion
 from scapy.all import *
 from netaddr import *
@@ -125,5 +126,5 @@ class pcapReader():
 # Module Driver
 def main():
     pcapfile = pcapReader('lanExample.pcap')
-    print pcapfile.packetDB
+    print(pcapfile.packetDB)
 #main()
