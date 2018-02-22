@@ -8,7 +8,10 @@ from Tkinter import *
 import ttk
 
 # Import Custom Modules - Self created by the author
-sys.path.insert(0, 'Module/')
+if sys.path[0]:
+    sys.path.insert(0,sys.path[0]+'/Module/')
+else:
+    sys.path.insert(0, 'Module/')
 import userInterface
 
 # Import 3rd party Libraries -- Needed to be installed using pip
