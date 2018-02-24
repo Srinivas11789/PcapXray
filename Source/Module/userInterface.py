@@ -42,11 +42,15 @@ class pcapXrayGui:
         SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
         SecondFrame.rowconfigure(10, weight=1)
-        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
+        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
         self.options = {'All','HTTP','HTTPS','Tor','Malicious'}
         #self.option.set('Tor')
-        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(column=1, row=10,sticky="W, E")
+        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
+        self.zoom = [900,900]
+        self.img = ""
+        ttk.Button(SecondFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
+        ttk.Button(SecondFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -107,19 +111,40 @@ class pcapXrayGui:
                  self.progressbar.update()
             t1.join()
             self.progressbar.stop()
+            self.label.grid_forget()
+            self.load_image()
+        else:
+            self.label.grid_forget()
+            self.load_image()
 
-        self.label.grid_forget()
-        canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
-        canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
-        canvas.create_image(0,0, image=self.img)
-        canvas.config(scrollregion=canvas.bbox(ALL))
-        self.xscrollbar.config(command=canvas.xview)
-        self.yscrollbar.config(command=canvas.yview)
+
+    def load_image(self):
+        self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
+        self.canvas.create_image(0,0, image=self.img)
+        self.canvas.config(scrollregion=self.canvas.bbox(ALL))
+        self.xscrollbar.config(command=self.canvas.xview)
+        self.yscrollbar.config(command=self.canvas.yview)
 
     def map_select(self, *args):
         print self.option.get()
         self.generate_graph()
+
+    def zoom_in(self):
+        print "zoomin"
+        self.zoom[0] += 100
+        self.zoom[1] += 100
+        if self.img:
+             self.load_image()
+
+    def zoom_out(self):
+        print "zoomout"
+        self.zoom[0] -= 100
+        self.zoom[1] -= 100
+        if self.img:
+             self.load_image()
+
 
 def main():
     base = Tk()
@@ -127,3 +152,4 @@ def main():
     base.mainloop()
 
 #main()
+
