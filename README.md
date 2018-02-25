@@ -16,8 +16,8 @@
 * Make a network diagram with the following features from a Pcap file
 Tool Highlights:
 * Network Diagram – Summary Network Diagram of full network
-*	Information: 
-  * Traffic with Server Details
+* Information: 
+  * Web Traffic with Server Details
   * Tor Traffic
   * Possible Malicious traffic
   * Data Obtained from Packet in Report – Device/Traffic/Payloads
@@ -87,4 +87,4 @@ Tool Highlights:
 *	Make the application more stable
 *   More protocol support
 
-
+[![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
