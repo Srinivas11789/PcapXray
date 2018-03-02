@@ -78,10 +78,13 @@ Tool Highlights:
   * Should be fixed by moving to a better structured TK implementation or Web GUI
 * Tk GUI Unstability:
   * Same reason as above
+* Code:
+  * clumsy and unstructured code flow
 
 *	Current Fix in rare occasions: If any of the above issue occurs the progress bar keeps running and no output is generated, a restart of the app would be required.
 
 ### Future:
+*   Structured and clean code flow
 *	Change the database from JSON to sqlite or prominent database, due to memory hogging
 *	Change fronend to web based such as Django
 *	Make the application more stable
