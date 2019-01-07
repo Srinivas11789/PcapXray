@@ -1,4 +1,5 @@
 from Tkinter import *
+import Tkinter, Tkconstants, tkFileDialog
 import ttk
 import tkMessageBox
 import pcapReader
@@ -36,7 +37,7 @@ class pcapXrayGui:
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
         # Browse button
         self.filename = StringVar()
-        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=2, row=0, padx=10, pady=10,sticky="E")
+        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=1, row=0, padx=10, pady=10,sticky="E")
         ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
 
@@ -68,7 +69,7 @@ class pcapXrayGui:
         self.name_servers = ""
 
     def browse_directory(self):
-        self.filename = filedialog.askdirectory()
+        self.filename = tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*")))
         print self.filename
 
     def pcap_analyse(self):
