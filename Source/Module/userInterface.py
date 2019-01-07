@@ -33,10 +33,10 @@ class pcapXrayGui:
         # Pcap File Entry
         self.pcap_file = StringVar()
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
-        ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.filename_field = ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
         # Browse button
-        self.filename = StringVar()
+        #self.filename = StringVar()
         ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=1, row=0, padx=10, pady=10,sticky="E")
         ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
@@ -69,8 +69,10 @@ class pcapXrayGui:
         self.name_servers = ""
 
     def browse_directory(self):
-        self.filename = tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*")))
-        print self.filename
+        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*"))))
+        self.filename_field.delete(0, END)
+        self.filename_field.insert(0, self.pcap_file)
+        print self.pcap_file
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
