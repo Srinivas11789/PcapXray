@@ -73,6 +73,7 @@ class pcapXrayGui:
         self.name_servers = ""
 
     def browse_directory(self):
+        # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
         self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*"))))
         #self.filename_field.delete(0, END)
         #self.filename_field.insert(0, self.pcap_file)
