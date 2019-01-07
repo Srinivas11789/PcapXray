@@ -34,6 +34,9 @@ class pcapXrayGui:
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
+        # Browse button
+        self.filename = StringVar()
+        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
 
@@ -63,6 +66,10 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
         self.name_servers = ""
+
+    def browse_directory(self):
+        self.filename = filedialog.askdirectory()
+        print self.filename
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
