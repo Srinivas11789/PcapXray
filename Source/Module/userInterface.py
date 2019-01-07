@@ -37,9 +37,9 @@ class pcapXrayGui:
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
         # Browse button
         #self.filename = StringVar()
-        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=1, row=0, padx=10, pady=10,sticky="E")
-        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
-        self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
+        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=2, row=0, padx=10, pady=10,sticky="E")
+        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=3, row=0, padx=10, pady=10,sticky="E")
+        self.progressbar.grid(column=4, row=0, padx=10, pady=10, sticky="E")
 
         # Second Frame with Options
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
@@ -70,8 +70,8 @@ class pcapXrayGui:
 
     def browse_directory(self):
         self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*"))))
-        self.filename_field.delete(0, END)
-        self.filename_field.insert(0, self.pcap_file)
+        #self.filename_field.delete(0, END)
+        #self.filename_field.insert(0, self.pcap_file)
         print self.pcap_file
 
     def pcap_analyse(self):
