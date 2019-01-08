@@ -19,7 +19,19 @@ RUN apt-get install -y libx11-dev
 
 # Fetching the latest source code from the github repo of devOps
 RUN git clone https://github.com/srinivas11789/PcapXray
+
+### Master branch changes - srinivas11789/pcapxray
 RUN pip install -r PcapXray/requirements.txt
 
 WORKDIR PcapXray/Source
 CMD python main.py
+
+### Develop/Beta branch changes - srinivas11789/pcapxray-beta
+#WORKDIR PcapXray
+#RUN git checkout develop
+
+#RUN pip install -r requirements.txt
+
+#WORKDIR Source
+#CMD python main.py
+
