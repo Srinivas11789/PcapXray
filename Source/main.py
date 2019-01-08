@@ -20,7 +20,8 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def main():
     base = Tk()
-    icon = PhotoImage(file='assets/logo.gif')
+    logo_file = os.path.join(os.path.dirname(__file__), 'Module/assets/logo.gif')
+    icon = PhotoImage(file=logo_file)
     base.tk.call('wm','iconphoto',base._w,icon)
     userInterface.pcapXrayGui(base)
     base.mainloop()
