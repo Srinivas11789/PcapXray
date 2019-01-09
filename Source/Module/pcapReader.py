@@ -21,6 +21,8 @@ class pcapReader():
                         if IPAddress(packet.getlayer(IP).src).is_private():
                             if packet.getlayer(IP).src not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).src] = {}
+                            if packet.haslayer(ICMP) and "ICMP" not in self.packetDB[packet.getlayer(IP).src]:
+                                self.packetDB[packet.getlayer(IP).src]["ICMP"] = {}
                             if packet.haslayer(TCP) and "TCP" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["TCP"] = {}
                             if packet.haslayer(UDP) and "UDP" not in self.packetDB[packet.getlayer(IP).src]:
@@ -65,6 +67,8 @@ class pcapReader():
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
+                            if packet.haslayer(ICMP) and "ICMP" not in self.packetDB[packet.getlayer(IP).dst]:
+                                self.packetDB[packet.getlayer(IP).dst]["ICMP"] = {}
                             if packet.haslayer(TCP) and "TCP" not in self.packetDB[packet.getlayer(IP).dst]:
                                 self.packetDB[packet.getlayer(IP).dst]["TCP"] = {}
                             if packet.haslayer(UDP) and "UDP" not in self.packetDB[packet.getlayer(IP).dst]:
