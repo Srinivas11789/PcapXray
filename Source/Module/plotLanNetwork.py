@@ -107,6 +107,12 @@ class plotLan:
 
         if option == "HTTP":
             for node in self.nodes:
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                try:
+                    node = node+"\n"+detail
+                except:
+                    print "OUI identification failed for "+ node
+                    pass
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTP" in self.packetDB[node]["TCP"]:
@@ -115,6 +121,12 @@ class plotLan:
 
         if option == "HTTPS":
             for node in self.nodes:
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                try:
+                    node = node+"\n"+detail
+                except:
+                    print "OUI identification failed for "+ node
+                    pass
                 f.node(node)
                 if "TCP" in self.packetDB[node]:
                     if "HTTPS" in self.packetDB[node]["TCP"]:
@@ -138,6 +150,12 @@ class plotLan:
 
         if option == "Malicious":
             for node in self.nodes:
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                try:
+                    node = node+"\n"+detail
+                except:
+                    print "OUI identification failed for "+ node
+                    pass
                 f.node(node)
                 for mal in self.mal_identify[node]:
                     f.edge(node, 'defaultGateway', label='MaliciousTraffic: ' + str(mal), color="red")
