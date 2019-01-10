@@ -55,12 +55,12 @@ def test_malicious_traffic_identifier():
     if mal_identify.possible_malicious_traffic:
         assert True
 
-def test_plot_lan_network():
-    pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
-    details = communicationDetailsFetch.trafficDetailsFetch(pcapfile.packetDB)
-    plotLanNetwork.plotLan(pcapfile.packetDB, "network12345", details.communication_details,"HTTPS")
-    if os.path.isfile(sys.path[1]+"/../Report/network12345"):
-        assert True
+#def test_plot_lan_network():
+#    pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
+#    details = communicationDetailsFetch.trafficDetailsFetch(pcapfile.packetDB)
+#    plotLanNetwork.plotLan(pcapfile.packetDB, "network12345", details.communication_details,"HTTPS")
+#    if os.path.isfile(sys.path[1]+"/../Report/network12345"):
+#        assert True
 
 def test_report_gen():
     pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
