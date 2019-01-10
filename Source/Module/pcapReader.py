@@ -159,11 +159,10 @@ class pcapReader():
             if count == maxi:
                 self.packetDB["gateway_mac"] = mac
         # Ensure there is not direct ip connects to gatway to confirm results
-        print self.highest_ethernet_destination
-        print self.packetDB["ip_control_lan"]
-        for ip in self.packetDB["ip_control_lan"]:
-            if self.packetDB["ip_control_lan"][ip] == self.packetDB["gateway_mac"]:
-                self.packetDB["gateway_ip"] = ip
+        if "ip_control_lan" in self.packetDB:
+            for ip in self.packetDB["ip_control_lan"]:
+                if self.packetDB["ip_control_lan"][ip] == self.packetDB["gateway_mac"]:
+                    self.packetDB["gateway_ip"] = ip
 
 
 # Module Driver
