@@ -76,7 +76,9 @@ class plotLan:
         f.attr(rankdir='LR', size='8,5')
 
         f.attr('node', shape='doublecircle')
-        f.node('defaultGateway')
+
+        detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB["gateway_mac"]).oui_identification()
+        f.node('defaultGateway'+'\n'+self.packetDB["gateway_mac"]+"\n"+self.packetDB["gateway_ip"]+"\n"+detail)
 
         f.attr('node', shape='circle')
 

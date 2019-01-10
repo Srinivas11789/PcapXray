@@ -10,7 +10,10 @@ import threading
 class fetchDeviceDetails:
 
     def __init__(self, ipObject):
-        self.mac = ipObject["Ethernet"]
+        if "Ethernet" in ipObject:
+            self.mac = ipObject["Ethernet"]
+        else:
+            self.mac = ipObject
         self.url = "http://macvendors.co/api/" + self.mac
 
     def oui_identification(self):

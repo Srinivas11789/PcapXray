@@ -8,16 +8,21 @@ class pcapReader():
         self.file = filename
         self.packets = rdpcap(filename)
         self.packetDB = {}
+        # Gateway calculate for the LAN
+        self.highest_ethernet_destination = {}
+        self.packetDB["gateway_mac"] = ""
+        self.packetDB["gateway_ip"] = ""
         self.read_pcap_and_fill_db()
         if out:
             out.put(self.packetDB)
+        self.find_gateway()
 
 # Private IP Segregation or LAN IP Identification Method
 # A LAN Map tool to plot from the perspective of LAN Hosts
 # Build a JSON Database of Private IPS
     def read_pcap_and_fill_db(self):
                 for packet in self.packets:
-                    if packet.haslayer(IP):
+                    if packet.haslayer(IP) and (packet.haslayer(TCP) or packet.haslayer(UDP)):
                         if IPAddress(packet.getlayer(IP).src).is_private():
                             if packet.getlayer(IP).src not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).src] = {}
@@ -27,6 +32,11 @@ class pcapReader():
                                 self.packetDB[packet.getlayer(IP).src]["UDP"] = {}
                             if packet.haslayer(Ether) and "Ethernet" not in self.packetDB[packet.getlayer(IP).src]:
                                 self.packetDB[packet.getlayer(IP).src]["Ethernet"] = packet.getlayer(Ether).src
+                            # Gateway calculation
+                            if packet.haslayer(Ether):
+                                if packet.getlayer(Ether).dst not in self.highest_ethernet_destination:
+                                    self.highest_ethernet_destination[packet.getlayer(Ether).dst] = 0
+                                self.highest_ethernet_destination[packet.getlayer(Ether).dst] += 1
                             if packet.haslayer(TCP) and packet.getlayer(TCP).dport == 80:
                                 if "HTTP" not in self.packetDB[packet.getlayer(IP).src]["TCP"]:
                                     self.packetDB[packet.getlayer(IP).src]["TCP"]["HTTP"] = {}
@@ -62,6 +72,7 @@ class pcapReader():
                             #Tor
                             #Malicious
                             # HTTP Payload Decrypt
+                        
                         if IPAddress(packet.getlayer(IP).dst).is_private():
                             if packet.getlayer(IP).dst not in self.packetDB:
                                 self.packetDB[packet.getlayer(IP).dst] = {}
@@ -101,6 +112,17 @@ class pcapReader():
                                 ip = packet.getlayer(IP).src
                                 if (ip, port) not in self.packetDB[packet.getlayer(IP).dst]["UDP"]["PortsConnected"]:
                                     self.packetDB[packet.getlayer(IP).dst]["UDP"]["PortsConnected"].append((ip, port))
+                    
+                    # Ip Control Packets within LAN --> ICMP/IGMP
+                    if packet.haslayer(IP) and not (packet.haslayer(TCP) or packet.haslayer(UDP)):
+                            if "ip_control_lan" not in self.packetDB:
+                                self.packetDB["ip_control_lan"] = {}
+                            if IPAddress(packet.getlayer(IP).src).is_private() and packet.getlayer(IP).src not in self.packetDB["ip_control_lan"]:
+                                self.packetDB["ip_control_lan"][packet.getlayer(IP).src] = packet.getlayer(Ether).src
+                            if IPAddress(packet.getlayer(IP).dst).is_private() and packet.getlayer(IP).dst not in self.packetDB["ip_control_lan"]:
+                                self.packetDB["ip_control_lan"][packet.getlayer(IP).dst] = packet.getlayer(Ether).dst
+
+                        
 
 
 # Sniff Packets with Filter
@@ -121,9 +143,34 @@ class pcapReader():
             if protocol not in self.packetDB[ip]:
                 self.packetDB[ip][protocol] = {}
             self.packetDB[ip][protocol] = self.packet_filter(ip, port=80)
+    """
+    Ideas of finding the gateway in a network:
+    * For now the below mac, assumes maximum destination macs hit to be default_gateway
+    * -- This might fail if there is only internal communication (high traffic)
+    * The most Mac address desinted in a network 
+    * Any DHCP traces revealing gateway
+    * Destination to be private ip ==> internal LAN communication?
+    * IGMP or ICMP? not reliable
+    * Or Find the
+    """
+    def find_gateway(self):
+        maxi = max(self.highest_ethernet_destination.values())
+        for mac, count in self.highest_ethernet_destination.items():
+            if count == maxi:
+                self.packetDB["gateway_mac"] = mac
+        # Ensure there is not direct ip connects to gatway to confirm results
+        print self.highest_ethernet_destination
+        print self.packetDB["ip_control_lan"]
+        for ip in self.packetDB["ip_control_lan"]:
+            if self.packetDB["ip_control_lan"][ip] == self.packetDB["gateway_mac"]:
+                self.packetDB["gateway_ip"] = ip
+
 
 # Module Driver
 def main():
-    pcapfile = pcapReader('lanExample.pcap')
-    print pcapfile.packetDB
+    pcapfile = pcapReader('examples/maliciousTraffic.pcap')
+    #print pcapfile.packetDB
+    print pcapfile.packetDB["gateway_mac"]
+    print pcapfile.packetDB["gateway_ip"]
+
 #main()
