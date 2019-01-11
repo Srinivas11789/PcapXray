@@ -22,9 +22,9 @@ import deviceDetailsFetch
 # 4 - maliciousTrafficIdentifier module
 import maliciousTrafficIdentifier
 # 5 - plotLanNetwork module
-import plotLanNetwork
+#import plotLanNetwork
 # 7 - userInterface module
-import userInterface
+#import userInterface
 # 8 - torTrafficHandle module
 import torTrafficHandle
 
