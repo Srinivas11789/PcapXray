@@ -82,6 +82,11 @@ class pcapXrayGui:
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
+            if self.pcap_file.get().endswith('.pcap') or self.pcap_file.get().endswith('.pcapng'):
+                continue
+            else:
+                self.pcap_file.set("")
+                tkMessageBox.showerror("Error","File Not Found !")
             self.progressbar.start()
             result = Queue.Queue()
             packet_read = threading.Thread(target=pcapReader.pcapReader,args=(self.pcap_file.get(),result))
