@@ -74,7 +74,8 @@ class pcapXrayGui:
 
     def browse_directory(self):
         # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
-        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"),("all files","*.*"))))
+        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
+        # All option: ,("all files","*.*")
         #self.filename_field.delete(0, END)
         #self.filename_field.insert(0, self.pcap_file)
         print self.pcap_file
@@ -114,8 +115,13 @@ class pcapXrayGui:
             reportThread = threading.Thread(target=reportGen.reportGen().communicationDetailsReport,args=(self.name_servers,))
             reportThread.start()
         
-        if not os.path.exists("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png"):
-            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
+        if "/" in self.pcap_file.get():
+            filename = self.pcap_file.get().split("/")[-1].replace(".pcap","")
+        else:
+            filename = self.pcap_file.get().replace(".pcap","")
+
+        if not os.path.exists("Report/"+filename+self.option.get()+".png"):
+            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, filename,self.name_servers,self.option.get(),))
             t1.start()
             self.progressbar.start()
             while t1.is_alive():
