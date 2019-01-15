@@ -4,10 +4,10 @@ from scapy.all import *
 
 class reportGen:
 
-    def __init__(self):
-        if not os.path.exists("Report"):
-            os.makedirs("Report")
-        self.directory = "Report"
+    def __init__(self, report_dir):
+        if not os.path.exists(report_dir):
+            os.makedirs(report_dir)
+        self.directory = report_dir
 
     def communicationDetailsReport(self, commDB):
         try:

@@ -14,11 +14,12 @@ import os
 
 class plotLan:
 
-    def __init__(self, packetDB, filename, name_servers, option="Tor"):
+    def __init__(self, packetDB, report_dir, filename, name_servers, option="Tor"):
         self.packetDB = packetDB
-        if not os.path.exists("Report"):
-            os.makedirs("Report")
-        self.filename = "Report/"+filename+option
+        if not os.path.exists(report_dir):
+            os.makedirs(report_dir)
+        self.report_dir = report_dir
+        self.filename = self.report_dir+"/"+filename+option
 
         self.styles = {
             'graph': {
@@ -85,7 +86,7 @@ class plotLan:
         if option == "All":
             # add nodes
             for node in self.nodes:
-                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node], self.report_dir).oui_identification()
                 try:
                     curr_node = node+"\n"+detail
                 except:
@@ -127,7 +128,7 @@ class plotLan:
 
         if option == "Tor":
             for node in self.nodes:
-                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node]).oui_identification()
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node], report_dir).oui_identification()
                 try:
                   curr_node = node+"\n"+detail
                 except:

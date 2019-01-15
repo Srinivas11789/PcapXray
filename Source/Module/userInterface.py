@@ -33,6 +33,7 @@ class pcapXrayGui:
         # Pcap File Entry
         self.pcap_file = StringVar()
         self.filename = ""
+        self.report_name = "report_"+str(int(time.time()))
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.filename_field = ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
@@ -82,8 +83,8 @@ class pcapXrayGui:
         #,("all files","*.*")
         #self.filename_field.delete(0, END)
         #self.filename_field.insert(0, self.pcap_file)
-        print self.filename
-        print self.pcap_file
+        self.report_name = self.report_name+"_"+self.filename
+        print self.filename, self.report_name, self.pcap_file
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
@@ -97,7 +98,7 @@ class pcapXrayGui:
             self.progressbar.stop()
             #packet_read.join()
             self.capture_read = result.get()
-            reportThreadpcap = threading.Thread(target=reportGen.reportGen().packetDetails,args=(self.capture_read,))
+            reportThreadpcap = threading.Thread(target=reportGen.reportGen(self.report_name).packetDetails,args=(self.capture_read,))
             reportThreadpcap.start()
             #self.option.set("Tor")
             self.option.trace("w",self.map_select)
@@ -117,11 +118,11 @@ class pcapXrayGui:
             t.join()
             self.progressbar.stop()
             self.name_servers = result.get()
-            reportThread = threading.Thread(target=reportGen.reportGen().communicationDetailsReport,args=(self.name_servers,))
+            reportThread = threading.Thread(target=reportGen.reportGen(self.report_name).communicationDetailsReport,args=(self.name_servers,))
             reportThread.start()
         
-        if not os.path.exists("Report/"+self.filename+self.option.get()+".png"):
-            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.filename, self.name_servers, self.option.get(),))
+        if not os.path.exists(self.report_name+"/"+self.filename+self.option.get()+".png"):
+            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.report_name, self.filename, self.name_servers, self.option.get(),))
             t1.start()
             self.progressbar.start()
             while t1.is_alive():
@@ -138,7 +139,7 @@ class pcapXrayGui:
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open(self.report_name+"/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
         self.canvas.create_image(0,0, image=self.img)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)
@@ -157,7 +158,7 @@ class pcapXrayGui:
 
     def zoom_out(self):
         print "zoomout"
-        if self.zoom[0] > 700 and self.zoom[1] > 600:
+        if self.zoom[0] > 600 and self.zoom[1] > 700:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:
