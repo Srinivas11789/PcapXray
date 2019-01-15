@@ -15,8 +15,6 @@ import os
 class plotLan:
 
     def __init__(self, packetDB, filename, name_servers, option="Tor"):
-        if "/" in filename:
-            filename = filename.split("/")[-1]
         self.packetDB = packetDB
         if not os.path.exists("Report"):
             os.makedirs("Report")
