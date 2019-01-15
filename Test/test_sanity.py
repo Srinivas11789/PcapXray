@@ -44,7 +44,7 @@ def test_communication_details_fetch():
 def test_device_details_fetch():
     pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
     for ip in pcapfile.packetDB:
-        macObj = deviceDetailsFetch.fetchDeviceDetails(pcapfile.packetDB[ip])
+        macObj = deviceDetailsFetch.fetchDeviceDetails(pcapfile.packetDB[ip], "Report")
         if macObj.oui_identification():
             assert True
 
@@ -65,7 +65,7 @@ def test_malicious_traffic_identifier():
 def test_report_gen():
     pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
     if pcapfile.packetDB:
-        reportGen.reportGen().packetDetails(pcapfile.packetDB)
+        reportGen.reportGen("Report").packetDetails(pcapfile.packetDB)
         if os.path.isfile(sys.path[1]+"/../Report/communicationDetailsReport.txt") and os.path.isfile(sys.path[1]+"/../Report/deviceDetailsReport.txt") and os.path.isfile(sys.path[1]+"/../Report/packetDetailsReport.txt"):
             assert True
 

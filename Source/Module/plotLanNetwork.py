@@ -128,7 +128,7 @@ class plotLan:
 
         if option == "Tor":
             for node in self.nodes:
-                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node], report_dir).oui_identification()
+                detail = deviceDetailsFetch.fetchDeviceDetails(self.packetDB[node], self.report_dir).oui_identification()
                 try:
                   curr_node = node+"\n"+detail
                 except:
