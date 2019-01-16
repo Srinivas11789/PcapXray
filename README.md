@@ -24,9 +24,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](/Samples/screen1_2.0.png?raw=true)
+![Alt text](/Samples/screen1_2_1.png?raw=true)
 
-![Alt text](/Samples/screen2_2.0.png?raw=true)
+![Alt text](/Samples/screen2_2_1.png?raw=true)
 
 ### Components:
 *	Network Diagram 
@@ -50,7 +50,7 @@ Tool Highlights:
   *	Matplotlib – plot graph
   
 ### Demo
-![Alt text](/Samples/demo2.0.gif?raw=true)
+![Alt text](/Samples/demo2_1.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
