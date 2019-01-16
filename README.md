@@ -24,9 +24,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](/Samples/screen1.png?raw=true)
+![Alt text](/Samples/screen1_2.0.png?raw=true)
 
-![Alt text](/Samples/screen2.png?raw=true)
+![Alt text](/Samples/screen2_2.0.png?raw=true)
 
 ### Components:
 *	Network Diagram 
@@ -50,7 +50,7 @@ Tool Highlights:
   *	Matplotlib – plot graph
   
 ### Demo
-![Alt text](/Samples/demo.gif?raw=true)
+![Alt text](/Samples/demo2.0.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -82,6 +82,14 @@ Tool Highlights:
   * clumsy and unstructured code flow
 
 *	Current Fix in rare occasions: If any of the above issue occurs the progress bar keeps running and no output is generated, a restart of the app would be required.
+
+### PcapXray 2.0 
+* Includes zoom feature
+* Improves usability with a Browse files feature
+* Includes some bug fixes
+
+# Immediate Future Tasks:
+* Clean up code - beautify code base from being a prototype
 
 ### Future:
 *   Structured and clean code flow
