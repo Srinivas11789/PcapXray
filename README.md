@@ -88,14 +88,15 @@ Tool Highlights:
 * Improves usability with a Browse files feature
 * Includes some bug fixes
 
-# Immediate Future Tasks:
+### Immediate Future Tasks:
 * Clean up code - beautify code base from being a prototype
 
 ### Future:
-*   Structured and clean code flow
+* Structured and clean code flow
 *	Change the database from JSON to sqlite or prominent database, due to memory hogging
 *	Change fronend to web based such as Django
 *	Make the application more stable
-*   More protocol support
+* More protocol support
+* Clean up code
 
 [![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
