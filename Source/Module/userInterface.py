@@ -157,7 +157,7 @@ class pcapXrayGui:
 
     def zoom_out(self):
         print "zoomout"
-        if self.zoom[0] > 700 and self.zoom[1] > 600:
+        if self.zoom[0] > 700 and self.zoom[1] > 700:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:
