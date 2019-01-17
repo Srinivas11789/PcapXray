@@ -1,4 +1,5 @@
 from Tkinter import *
+import Tkinter, Tkconstants, tkFileDialog
 import ttk
 import tkMessageBox
 import pcapReader
@@ -9,7 +10,7 @@ import time
 import threading
 import Queue
 from PIL import Image,ImageTk
-import os
+import os, sys
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -31,22 +32,30 @@ class pcapXrayGui:
 
         # Pcap File Entry
         self.pcap_file = StringVar()
+        self.filename = ""
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
-        ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.filename_field = ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
-        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=2, row=0, padx=10, pady=10,sticky="E")
-        self.progressbar.grid(column=3, row=0, padx=10, pady=10, sticky="E")
+        # Browse button
+        #self.filename = StringVar()
+        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=2, row=0, padx=10, pady=10,sticky="E")
+        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=3, row=0, padx=10, pady=10,sticky="E")
+        self.progressbar.grid(column=4, row=0, padx=10, pady=10, sticky="E")
 
         # Second Frame with Options
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
         SecondFrame.rowconfigure(10, weight=1)
-        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(column=0, row=10, sticky="W")
+        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
         self.options = {'All','HTTP','HTTPS','Tor','Malicious'}
         #self.option.set('Tor')
-        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(column=1, row=10,sticky="W, E")
+        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
+        self.zoom = [900,900]
+        self.img = ""
+        ttk.Button(SecondFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
+        ttk.Button(SecondFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -63,6 +72,18 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
         self.name_servers = ""
+
+    def browse_directory(self):
+        # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
+        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
+        self.filename = self.pcap_file.get().replace(".pcap","")
+        if "/" in self.filename:
+            self.filename = self.filename.split("/")[-1]
+        #,("all files","*.*")
+        #self.filename_field.delete(0, END)
+        #self.filename_field.insert(0, self.pcap_file)
+        print self.filename
+        print self.pcap_file
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
@@ -99,27 +120,51 @@ class pcapXrayGui:
             reportThread = threading.Thread(target=reportGen.reportGen().communicationDetailsReport,args=(self.name_servers,))
             reportThread.start()
         
-        if not os.path.exists("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png"):
-            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.pcap_file.get().replace(".pcap",""),self.name_servers,self.option.get(),))
+        if not os.path.exists("Report/"+self.filename+self.option.get()+".png"):
+            t1 = threading.Thread(target=plotLanNetwork.plotLan, args=(self.capture_read, self.filename, self.name_servers, self.option.get(),))
             t1.start()
             self.progressbar.start()
             while t1.is_alive():
                  self.progressbar.update()
             t1.join()
             self.progressbar.stop()
+            self.label.grid_forget()
+            self.load_image()
+        else:
+            self.label.grid_forget()
+            self.load_image()
 
-        self.label.grid_forget()
-        canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
-        canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.pcap_file.get().replace(".pcap","")+self.option.get()+".png").resize((900,900),Image.ANTIALIAS).convert('RGB'))
-        canvas.create_image(0,0, image=self.img)
-        canvas.config(scrollregion=canvas.bbox(ALL))
-        self.xscrollbar.config(command=canvas.xview)
-        self.yscrollbar.config(command=canvas.yview)
+
+    def load_image(self):
+        self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.img = ImageTk.PhotoImage(Image.open("Report/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
+        self.canvas.create_image(0,0, image=self.img)
+        self.canvas.config(scrollregion=self.canvas.bbox(ALL))
+        self.xscrollbar.config(command=self.canvas.xview)
+        self.yscrollbar.config(command=self.canvas.yview)
 
     def map_select(self, *args):
         print self.option.get()
         self.generate_graph()
+
+    def zoom_in(self):
+        print "zoomin"
+        self.zoom[0] += 100
+        self.zoom[1] += 100
+        if self.img:
+             self.load_image()
+
+    def zoom_out(self):
+        print "zoomout"
+        if self.zoom[0] > 700 and self.zoom[1] > 700:
+            self.zoom[0] -= 100
+            self.zoom[1] -= 100
+        else:
+            print "zoomout --> maximum"
+        if self.img:
+             self.load_image()
+
 
 def main():
     base = Tk()
@@ -127,3 +172,4 @@ def main():
     base.mainloop()
 
 #main()
+

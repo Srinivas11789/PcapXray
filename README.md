@@ -1,4 +1,4 @@
-# PcapXray [![Build Status](https://travis-ci.org/Srinivas11789/PcapXray.svg?branch=master)](https://travis-ci.org/Srinivas11789/PcapXray)
+# PcapXray [![Build Status](https://travis-ci.org/Srinivas11789/PcapXray.svg?branch=master)](https://travis-ci.org/Srinivas11789/PcapXray) [![codecov](https://codecov.io/gh/Srinivas11789/PcapXray/branch/master/graph/badge.svg)](https://codecov.io/gh/Srinivas11789/PcapXray)
     A Network Forensics Tool - To visualize a Packet Capture offline as a Network Diagram including device identification, highlight important communication and file extraction
 ![Alt text](/logo.png?width=20px "PcapXray")
 ## PcapXray Design Specification
@@ -24,9 +24,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](/Samples/screen1.png?raw=true)
+![Alt text](/Samples/screen1_2_1.png?raw=true)
 
-![Alt text](/Samples/screen2.png?raw=true)
+![Alt text](/Samples/screen2_2_1.png?raw=true)
 
 ### Components:
 *	Network Diagram 
@@ -50,7 +50,7 @@ Tool Highlights:
   *	Matplotlib – plot graph
   
 ### Demo
-![Alt text](/Samples/demo.gif?raw=true)
+![Alt text](/Samples/demo2_2.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -83,11 +83,31 @@ Tool Highlights:
 
 *	Current Fix in rare occasions: If any of the above issue occurs the progress bar keeps running and no output is generated, a restart of the app would be required.
 
+### PcapXray 2.0 
+* Includes zoom feature 
+* Improves usability with a Browse files feature
+* Report directory fixes for graph images
+* Includes some bug fixes
+
+### Docker Containers of PcapXray
+* Dockerfile present in the root folder was used to build images
+* Already built docker images are found at dockerhub
+  - srinivas11789/pcapxray-1.0
+  - srinivas11789/pcapxray-2.2
+* Performing the steps in `run.sh` file manually would work to launch the tool via docker (I can help with errors)
+* Running `run.sh` scripts is an attempt to automate (would not work 100 percent)
+  - tested on mac and linux - will be better soon!...
+
+### Immediate Future Tasks:
+* Clean up code - beautify code base from being a prototype
+* Report generation on unique folders for all assets of a packet capture
+
 ### Future:
-*   Structured and clean code flow
+* Structured and clean code flow
 *	Change the database from JSON to sqlite or prominent database, due to memory hogging
 *	Change fronend to web based such as Django
 *	Make the application more stable
-*   More protocol support
+* More protocol support
+* Clean up code
 
 [![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
