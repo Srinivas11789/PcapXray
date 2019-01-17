@@ -29,9 +29,7 @@ CMD python main.py
 ### Develop/Beta branch changes - srinivas11789/pcapxray-beta
 #WORKDIR PcapXray
 #RUN git checkout develop
-
 #RUN pip install -r requirements.txt
-
 #WORKDIR Source
 #CMD python main.py
 
