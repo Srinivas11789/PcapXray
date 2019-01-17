@@ -50,7 +50,7 @@ Tool Highlights:
   *	Matplotlib – plot graph
   
 ### Demo
-![Alt text](/Samples/demo2_1.gif?raw=true)
+![Alt text](/Samples/demo2_2.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -84,9 +84,18 @@ Tool Highlights:
 *	Current Fix in rare occasions: If any of the above issue occurs the progress bar keeps running and no output is generated, a restart of the app would be required.
 
 ### PcapXray 2.0 
-* Includes zoom feature
+* Includes zoom feature 
 * Improves usability with a Browse files feature
 * Includes some bug fixes
+
+### Docker Containers of PcapXray
+* Dockerfile present in the root folder was used to build images
+* Already built docker images are found at dockerhub
+  - srinivas11789/pcapxray-1.0
+  - srinivas11789/pcapxray-2.2
+* Performing the steps in `run.sh` file manually would work to launch the tool via docker (I can help with errors)
+* Running `run.sh` scripts is an attempt to automate (would not work 100 percent)
+  - tested on mac and linux - will be better soon!...
 
 ### Immediate Future Tasks:
 * Clean up code - beautify code base from being a prototype
