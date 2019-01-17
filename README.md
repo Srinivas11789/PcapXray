@@ -86,6 +86,7 @@ Tool Highlights:
 ### PcapXray 2.0 
 * Includes zoom feature 
 * Improves usability with a Browse files feature
+* Report directory fixes for graph images
 * Includes some bug fixes
 
 ### Docker Containers of PcapXray
@@ -99,6 +100,7 @@ Tool Highlights:
 
 ### Immediate Future Tasks:
 * Clean up code - beautify code base from being a prototype
+* Report generation on unique folders for all assets of a packet capture
 
 ### Future:
 * Structured and clean code flow
