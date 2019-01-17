@@ -10,7 +10,7 @@ import time
 import threading
 import Queue
 from PIL import Image,ImageTk
-import os
+import os, sys
 
 class pcapXrayGui:
     def __init__(self, base):
@@ -75,7 +75,7 @@ class pcapXrayGui:
 
     def browse_directory(self):
         # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
-        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = "/",title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
+        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
         self.filename = self.pcap_file.get().replace(".pcap","")
         if "/" in self.filename:
             self.filename = self.filename.split("/")[-1]
