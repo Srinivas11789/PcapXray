@@ -1,4 +1,5 @@
-# Initial Basic Test - Assure proper pcap reading of the example/test.pcap file
+# Separate Module Tests - Assure proper pcap reading of the example/test.pcap file
+# Pending work....
 import sys
 print sys.path[0]
 if sys.path[0]:
