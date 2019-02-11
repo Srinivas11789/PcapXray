@@ -9,6 +9,7 @@ import netaddr
 
 # Class Communication or Traffic Details Fetch
 
+
 class trafficDetailsFetch():
 
     def __init__(self, packetDB, out=None):
@@ -17,20 +18,22 @@ class trafficDetailsFetch():
             if ip not in self.communication_details:
                 self.communication_details[ip] = {}
             ips = []
-            #if "TCP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["TCP"]:
+            # if "TCP" in packetDB[ip] and "PortsConnected" in
+            # packetDB[ip]["TCP"]:
             if "TCP" in packetDB[ip] and "HTTPS" in packetDB[ip]["TCP"]:
                 for entry in packetDB[ip]["TCP"]["HTTPS"]:
-                #for entry in packetDB[ip]["TCP"]["PortsConnected"]:
-                        ips.append(entry)
+                    # for entry in packetDB[ip]["TCP"]["PortsConnected"]:
+                    ips.append(entry)
             if "TCP" in packetDB[ip] and "HTTP" in packetDB[ip]["TCP"]:
                 for entry in packetDB[ip]["TCP"]["HTTP"]["Server"]:
-                        ips.append(entry)
-            #if "UDP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["UDP"]:
+                    ips.append(entry)
+            # if "UDP" in packetDB[ip] and "PortsConnected" in packetDB[ip]["UDP"]:
             #    for entry in packetDB[ip]["UDP"]["PortsConnected"]:
             #            ips.append(entry[0])
             if "ip_details" not in self.communication_details[ip]:
                 self.communication_details[ip]["ip_details"] = {}
-            self.communication_details[ip]["ip_details"] = {key: {} for key in ips}
+            self.communication_details[ip]["ip_details"] = {
+                key: {} for key in ips}
             #print self.communication_details[ip]["ip_details"].keys()
             self.dns(ip, self.communication_details[ip]["ip_details"].keys())
         if out:
@@ -47,14 +50,14 @@ class trafficDetailsFetch():
     #        - Output   : Returns the whois data obtained from whois.com and ipwhois
     #
     def whois_info_fetch(self, ip, ips):
-       for i in ips:
-         if "whois" not in self.communication_details[ip]["ip_details"][i]:
-             self.communication_details[ip]["ip_details"][i]["whois"] = ""
-         try:
-            whois_info = ipwhois.IPWhois(ip).lookup_rdap()
-         except:
-            whois_info = "NoWhoIsInfo"
-         self.communication_details[ip]["ip_details"][i]["whois"] = whois_info
+        for i in ips:
+            if "whois" not in self.communication_details[ip]["ip_details"][i]:
+                self.communication_details[ip]["ip_details"][i]["whois"] = ""
+            try:
+                whois_info = ipwhois.IPWhois(ip).lookup_rdap()
+            except BaseException:
+                whois_info = "NoWhoIsInfo"
+            self.communication_details[ip]["ip_details"][i]["whois"] = whois_info
 
     def dns(self, ip, ips):
         for i in ips:
@@ -63,9 +66,10 @@ class trafficDetailsFetch():
                 self.communication_details[ip]["ip_details"][i]["dns"] = ""
             try:
                 dns_info = socket.gethostbyaddr(i)[0]
-            except:
+            except BaseException:
                 dns_info = "NotResolvable"
             self.communication_details[ip]["ip_details"][i]["dns"] = dns_info
+
 
 def main():
     capture = pcapReader.pcapReader("lanExample.pcap")
@@ -74,4 +78,4 @@ def main():
     print details.communication_details
     print "\n"
 
-#main()
+# main()

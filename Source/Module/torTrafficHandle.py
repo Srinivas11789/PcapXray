@@ -6,6 +6,7 @@ from stem.descriptor import remote
 
 # Tor Traffic Module Class
 
+
 class torTrafficHandle():
 
     def __init__(self, packetDB):
@@ -34,16 +35,11 @@ class torTrafficHandle():
             if connection in self.tor_nodes:
                 self.possible_tor_traffic[ip].append(connection)
 
+
 def main():
-     tor_capture = pcapReader.pcapReader("torexample.pcapng")
-     print tor_capture.packetDB
-     tor_identify = torTrafficHandle(tor_capture.packetDB)
-     print tor_identify.possible_tor_traffic
+    tor_capture = pcapReader.pcapReader("torexample.pcapng")
+    print tor_capture.packetDB
+    tor_identify = torTrafficHandle(tor_capture.packetDB)
+    print tor_identify.possible_tor_traffic
 
-#main()
-
-
-
-
-
-
+# main()
