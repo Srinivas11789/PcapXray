@@ -98,9 +98,11 @@ Tool Highlights:
 * Running `run.sh` scripts is an attempt to automate (would not work 100 percent)
   - tested on mac and linux - will be better soon!...
 
-### Immediate Future Tasks:
+### Immediate Future Tasks: (Target: 3.0)
 * Clean up code - beautify code base from being a prototype
 * Report generation on unique folders for all assets of a packet capture
+* Suspicious activity detection
+* Known file type detection + Extract
 
 ### Future:
 * Structured and clean code flow
