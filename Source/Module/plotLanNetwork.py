@@ -6,7 +6,7 @@ import maliciousTrafficIdentifier
 import deviceDetailsFetch
 
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 from graphviz import Digraph
 import threading

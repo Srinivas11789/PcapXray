@@ -59,53 +59,54 @@ class PcapEngine():
         # - All the protocol parsing should be included here
         """
         for packet in self.packets: # O(N) packet iteration
+            source_private_ip = None
             if "IP" in packet:
                 # Handle IP packets that originated from LAN (Internal Network)
-                source_private_ip = None
                 private_source = IPAddress(packet["IP"].src).is_private()
                 private_destination = IPAddress(packet["IP"].dst).is_private()
-                if "TCP" in packet or "UDP" in packet:
-                     # Sort out indifferences in pcap engine
-                    if self.engine == "pyshark":
-                        eth_layer = "ETH"
-                        tcp_src = str(
-                            packet["TCP"].srcport if "TCP" in packet else packet["UDP"].srcport)
-                        tcp_dst = str(
-                            packet["TCP"].dstport if "TCP" in packet else packet["UDP"].dstport)
+            if "TCP" in packet or "UDP" in packet:
+                    # Sort out indifferences in pcap engine
+                if self.engine == "pyshark":
+                    eth_layer = "ETH"
+                    tcp_src = str(
+                        packet["TCP"].srcport if "TCP" in packet else packet["UDP"].srcport)
+                    tcp_dst = str(
+                        packet["TCP"].dstport if "TCP" in packet else packet["UDP"].dstport)
+                else:
+                    eth_layer = "Ethernet"
+                    tcp_src = str(
+                        packet["TCP"].sport if "TCP" in packet else packet["UDP"].sport)
+                    tcp_dst = str(
+                        packet["TCP"].dport if "TCP" in packet else packet["UDP"].dport)
+
+                if private_source and private_destination: # Communication within LAN
+                    key1 = packet["IP"].src + "/" + packet["IP"].dst + "/" + tcp_dst
+                    key2 = packet["IP"].dst + "/" + packet["IP"].src + "/" + tcp_src
+                    if key2 in memory.packet_db:
+                        source_private_ip = key2
                     else:
-                        eth_layer = "Ethernet"
-                        tcp_src = str(
-                            packet["TCP"].sport if "TCP" in packet else packet["UDP"].sport)
-                        tcp_dst = str(
-                            packet["TCP"].dport if "TCP" in packet else packet["UDP"].dport)
-
-                    if private_source and private_destination: # Communication within LAN
-                        key1 = packet["IP"].src + "/" + packet["IP"].dst + "/" + tcp_dst
-                        key2 = packet["IP"].dst + "/" + packet["IP"].src + "/" + tcp_src
-                        if key2 in memory.packet_db:
-                            source_private_ip = key2
-                        else:
-                            source_private_ip = key1
-                        # IntraNetwork Hosts list
-                        memory.lan_hosts[packet["IP"].src] = {"mac": packet[eth_layer].src}
-                        memory.lan_hosts[packet["IP"].dst] = {"mac": packet[eth_layer].dst}
-                    elif private_source: # Internetwork packet
-                        key = packet["IP"].src + "/" + packet["IP"].dst + "/" + tcp_dst
-                        source_private_ip = key
-                        # IntraNetwork vs InterNetwork Hosts list
-                        memory.lan_hosts[packet["IP"].src] = {"mac": packet[eth_layer].src}
-                        memory.destination_hosts[packet["IP"].dst] = {}
-                    elif private_destination: # Internetwork packet
-                        key = packet["IP"].dst + "/" + packet["IP"].src + "/" + tcp_src
-                        source_private_ip = key
-                        # IntraNetwork vs InterNetwork Hosts list
-                        memory.lan_hosts[packet["IP"].dst] = {"mac": packet[eth_layer].dst}
-                        memory.destination_hosts[packet["IP"].src] = {}
-
-                elif "ICMP" in packet:
-                    key = packet["IP"].src + "/" + packet["IP"].dst + "/" + "ICMP"
+                        source_private_ip = key1
+                    # IntraNetwork Hosts list
+                    memory.lan_hosts[packet["IP"].src] = {"mac": packet[eth_layer].src}
+                    memory.lan_hosts[packet["IP"].dst] = {"mac": packet[eth_layer].dst}
+                elif private_source: # Internetwork packet
+                    key = packet["IP"].src + "/" + packet["IP"].dst + "/" + tcp_dst
                     source_private_ip = key
+                    # IntraNetwork vs InterNetwork Hosts list
+                    memory.lan_hosts[packet["IP"].src] = {"mac": packet[eth_layer].src}
+                    memory.destination_hosts[packet["IP"].dst] = {}
+                elif private_destination: # Internetwork packet
+                    key = packet["IP"].dst + "/" + packet["IP"].src + "/" + tcp_src
+                    source_private_ip = key
+                    # IntraNetwork vs InterNetwork Hosts list
+                    memory.lan_hosts[packet["IP"].dst] = {"mac": packet[eth_layer].dst}
+                    memory.destination_hosts[packet["IP"].src] = {}
+
+            elif "ICMP" in packet:
+                key = packet["IP"].src + "/" + packet["IP"].dst + "/" + "ICMP"
+                source_private_ip = key
             # Fill packetDB with generated key
+            #print(packet.show())
             if source_private_ip:
                 if source_private_ip not in memory.packet_db:
                     memory.packet_db[source_private_ip] = {}
@@ -138,15 +139,23 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine('examples/test.pcap', "scapy")
-    print(memory.packet_db)
+    pcapfile = PcapEngine('examples/large.pcap', "scapy")
+    #print(memory.packet_db)
+    ports = []
+    for key in memory.packet_db.keys():
+    #    if "192.168.11.4" in key:
+            print(key)
+            ip, port = key.split("/")[0], int(key.split("/")[-1])
+            if ip == "10.187.195.95":
+                ports.append(port)
+    print(sorted(list(set(ports))))
     print(memory.lan_hosts)
     print(memory.destination_hosts)
     #print(memory.packet_db["TCP 192.168.0.26:64707 > 172.217.12.174:443"].summary())
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")
 
-#main()
+main()
 
 # Sort payload by time...
 # SSL Packets
