@@ -55,7 +55,7 @@ def main():
     fetchDeviceDetails("api").fetch_info()
     print(memory.lan_hosts)
 
-#main()
+main()
 
 # MAC Oui Identification Module
 # LAN IP and Getway Identification
