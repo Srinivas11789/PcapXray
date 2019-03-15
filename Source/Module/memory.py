@@ -7,3 +7,7 @@ global lan_hosts
 lan_hosts = {}
 global destination_hosts
 destination_hosts = {}
+global tor_nodes
+tor_nodes = []
+global possible_tor_traffic
+possible_tor_traffic = []

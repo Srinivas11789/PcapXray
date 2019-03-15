@@ -2,7 +2,7 @@
 Module device_details
 """
 # Library Import
-import urllib.request
+import urllib#.request
 import json
 import logging
 # Module Import
@@ -52,10 +52,10 @@ class fetchDeviceDetails:
 def main():
     filename = "test.pcap"
     pcap_reader.PcapEngine('examples/test.pcap', "scapy")
-    fetchDeviceDetails("api").fetch_info()
+    fetchDeviceDetails("ieee").fetch_info()
     print(memory.lan_hosts)
 
-main()
+#main()
 
 # MAC Oui Identification Module
 # LAN IP and Getway Identification
