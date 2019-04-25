@@ -21,7 +21,7 @@ class torTrafficHandle():
         except Exception as exc:
             print("Unable to retrieve the consensus: %s" % exc)
 
-    def tor_traffic_detection():
+    def tor_traffic_detection(self):
         for session in memory.packet_db:
             current_session = session.split("/")
             if (current_session[1], int(current_session[2])) in memory.tor_nodes:
@@ -29,10 +29,10 @@ class torTrafficHandle():
 
 def main():
      pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
-     torTrafficHandle()
+     tor = torTrafficHandle()
      #print(memory.packet_db)
      print(memory.tor_nodes)
-     torTrafficHandle.tor_traffic_detection()
+     tor.tor_traffic_detection()
      print(memory.possible_tor_traffic)
 
 #main()
