@@ -63,9 +63,9 @@ class PcapEngine():
             """
             for packet in self.packets: # O(N) packet iteration
                 source_private_ip = None
-
-                if "IP" in packet:
+                if "IP" in packet:# and packet["IP"].version == "4":
                     # Handle IP packets that originated from LAN (Internal Network)
+                    #print(packet["IP"].version == "4")
                     IP = "IP"
                     private_source = IPAddress(packet[IP].src).is_private()
                     private_destination = IPAddress(packet[IP].dst).is_private()
@@ -156,14 +156,15 @@ def main():
     pcapfile = PcapEngine('examples/torExample.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
-    """
+    
     for key in memory.packet_db.keys():
     #    if "192.168.11.4" in key:
             print(key)
+            print(memory.packet_db[key])
             ip, port = key.split("/")[0], int(key.split("/")[-1])
             if ip == "10.187.195.95":
                 ports.append(port)
-    """
+    
 
     print(sorted(list(set(ports))))
     print(memory.lan_hosts)
