@@ -7,11 +7,12 @@ if sys.path[0]:
 else:
     sys.path.insert(0,'/../Source/Module/')
 
-import pcapReader
+import pcap_reader
+import memory
 
 def test_pcapreader():
-    pcapfile = pcapReader.pcapReader(sys.path[0]+'examples/test.pcap')
-    if pcapfile.packetDB:
+    pcapfile = pcap_reader.pcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
+    if memory.packet_db:
         assert True
 
 test_pcapreader()
