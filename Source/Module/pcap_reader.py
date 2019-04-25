@@ -6,6 +6,7 @@ import sys
 import memory
 from netaddr import IPAddress
 import threading
+import base64
 
 class PcapEngine():
     """
@@ -140,7 +141,10 @@ class PcapEngine():
                         memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ethernet"].src
                         memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ethernet"].dst
                         if "Raw" in packet:
-                            memory.packet_db[source_private_ip]["Payload"].append(packet["Raw"].load)
+                            if isinstance(packet["Raw"].load, (bytes, bytearray)):
+                                memory.packet_db[source_private_ip]["Payload"].append(base64.b64encode(packet["Raw"].load))
+                            else:
+                                memory.packet_db[source_private_ip]["Payload"].append(packet["Raw"].load)
 
     # TODO: Add function memory to store all the memory data in files (DB)
     # def memory_handle():

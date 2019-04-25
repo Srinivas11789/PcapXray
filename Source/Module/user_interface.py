@@ -1,7 +1,19 @@
-from Tkinter import *
-import Tkinter, Tkconstants, tkFileDialog
-import ttk
-import tkMessageBox
+import sys
+try:
+    # for Python2
+    from Tkinter import *
+    import ttk
+    import tkFileDialog as fd
+    import Tkconstants
+    import tkMessageBox as mb
+    import Queue as q
+except ImportError:
+    # for Python3
+    from tkinter import *
+    from tkinter import ttk
+    from tkinter import filedialog as fd
+    from tkinter import messagebox as mb
+    import queue as q
 
 import pcap_reader
 import plot_lan_network
@@ -9,7 +21,6 @@ import communication_details_fetch
 import report_generator
 import time
 import threading
-import Queue
 from PIL import Image,ImageTk
 import os, sys
 
@@ -77,20 +88,20 @@ class pcapXrayGui:
 
     def browse_directory(self):
         # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
-        self.pcap_file.set(tkFileDialog.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
+        self.pcap_file.set(fd.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
         self.filename = self.pcap_file.get().replace(".pcap","")
         if "/" in self.filename:
             self.filename = self.filename.split("/")[-1]
         #,("all files","*.*")
         #self.filename_field.delete(0, END)
         #self.filename_field.insert(0, self.pcap_file)
-        print self.filename
-        print self.pcap_file
+        print(self.filename)
+        print(self.pcap_file)
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
             self.progressbar.start()
-            result = Queue.Queue()
+            result = q.Queue()
             packet_read = threading.Thread(target=pcap_reader.PcapEngine,args=(self.pcap_file.get(),"scapy"))
             packet_read.start()
             while packet_read.is_alive():
@@ -106,11 +117,11 @@ class pcapXrayGui:
             #self.option.set("Tor")
             self.name_servers = ""
         else:
-            tkMessageBox.showerror("Error","File Not Found !")
+            mb.showerror("Error","File Not Found !")
 
     def generate_graph(self):
         if self.name_servers == "":
-            result = Queue.Queue()
+            result = q.Queue()
             t = threading.Thread(target=communication_details_fetch.trafficDetailsFetch,args=("sock"))
             t.start()
             self.progressbar.start()
@@ -147,23 +158,23 @@ class pcapXrayGui:
         self.yscrollbar.config(command=self.canvas.yview)
 
     def map_select(self, *args):
-        print self.option.get()
+        print(self.option.get())
         self.generate_graph()
 
     def zoom_in(self):
-        print "zoomin"
+        print("zoomin")
         self.zoom[0] += 100
         self.zoom[1] += 100
         if self.img:
              self.load_image()
 
     def zoom_out(self):
-        print "zoomout"
+        print("zoomout")
         if self.zoom[0] > 700 and self.zoom[1] > 700:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:
-            print "zoomout --> maximum"
+            print("zoomout --> maximum")
         if self.img:
              self.load_image()
 

@@ -1,7 +1,7 @@
 #File Import
 import pcap_reader
 import communication_details_fetch
-import tor_raffic_handle
+import tor_traffic_handle
 import malicious_traffic_identifier
 import device_details_fetch
 import memory
@@ -39,7 +39,7 @@ class plotLan:
             }
         }
 
-        self.sessions = self.packetDB.keys()
+        self.sessions = memory.packet_db.keys()
         device_details_fetch.fetchDeviceDetails("ieee").fetch_info()
         if option == "Malicious" or option == "All":
             self.mal_identify = malicious_traffic_identifier.maliciousTrafficIdentifier()
@@ -79,7 +79,7 @@ class plotLan:
 
         f.attr('node', shape='circle')
 
-        print "Starting Graph Plotting"
+        print("Starting Graph Plotting")
 
         if option == "All":
             # add nodes
@@ -160,9 +160,11 @@ class plotLan:
 
 def main():
     # draw example
-    pcapfile = pcapReader.pcapReader('lanExample.pcap')
-    print "Reading Done...."
-    details = communicationDetailsFetch.trafficDetailsFetch(pcapfile.packetDB)
-    network = plotLan(pcapfile.packetDB, "network12345", details.communication_details,"HTTPS")
+    pcapfile = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
+    print("Reading Done....")
+    details = communication_details_fetch.trafficDetailsFetch("sock")
+    import sys
+    print(sys.path[0])
+    network = plotLan("test", sys.path[0])
 
 #main()

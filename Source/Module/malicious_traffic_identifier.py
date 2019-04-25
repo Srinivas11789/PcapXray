@@ -27,7 +27,7 @@ class maliciousTrafficIdentifier:
 def main():
     cap = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
     maliciousTrafficIdentifier()
-    print memory.possible_mal_traffic
+    print(memory.possible_mal_traffic)
 
 #main()
 

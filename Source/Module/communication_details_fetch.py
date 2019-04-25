@@ -4,7 +4,6 @@ import memory
 import ipwhois
 from dns import reversename, resolver
 import socket
-import Queue
 # Module Import
 import pcap_reader
 import netaddr
@@ -37,7 +36,7 @@ class trafficDetailsFetch():
 def main():
     capture = pcap_reader.PcapEngine('examples/test.pcap', "scapy")
     details = trafficDetailsFetch("sock")
-    print memory.destination_hosts
-    print "\n"
+    print(memory.destination_hosts)
+    print("\n")
 
 #main()
