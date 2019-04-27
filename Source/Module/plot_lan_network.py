@@ -85,74 +85,129 @@ class plotLan:
             # add nodes
             for session in self.sessions:
                 src, dst, port = session.split("/")
+                # TODO: Improvise this logic below
+                # * graphviz graph is not very good with the ":" in strings
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
                 try:
-                    curr_node = src+"\n"+memory.lan_hosts[src]['mac']+"\n"+memory.lan_hosts[src]['device_vendor']
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
                 except:
-                    curr_node = src
+                    curr_node = map_src
                 f.node(curr_node)
 
                 if session in memory.possible_tor_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(dst) ,color="white")
+                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(map_dst) ,color="white")
                 elif session in memory.possible_mal_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(dst) ,color="red")
+                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(map_dst) ,color="red")
                 else:
                     if port == "443":
-                        f.edge(curr_node, 'defaultGateway', label='HTTPS: ' +dst+": "+memory.destination_hosts[dst], color = "blue")
+                        f.edge(curr_node, 'defaultGateway', label='HTTPS: ' + map_dst +": "+memory.destination_hosts[dst], color = "blue")
                     if port == "80":
-                        f.edge(curr_node, 'defaultGateway', label='HTTP: ' + dst+": "+memory.destination_hosts[dst], color = "green")
+                        f.edge(curr_node, 'defaultGateway', label='HTTP: ' + map_dst +": "+memory.destination_hosts[dst], color = "green")
 
         if option == "HTTP":
             for session in self.sessions:
                 src, dst, port = session.split("/")
+                # TODO: Improvise this logic below
+                # * graphviz graph is not very good with the ":" in strings
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
                 try:
-                    curr_node = src+"\n"+memory.lan_hosts[src]['mac']+"\n"+memory.lan_hosts[src]['device_vendor']
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
                 except:
-                    curr_node = src
+                    curr_node = map_src
 
                 f.node(curr_node)
 
                 if port == "80":
-                    f.edge(curr_node, 'defaultGateway', label='HTTP: ' + dst+": "+memory.destination_hosts[dst], color = "green")
+                    f.edge(curr_node, 'defaultGateway', label='HTTP: ' + str(map_dst)+": "+memory.destination_hosts[dst], color = "green")
 
         if option == "HTTPS":
-           for session in self.sessions:
+            for session in self.sessions:
                 src, dst, port = session.split("/")
+                # TODO: Improvise this logic below
+                # * graphviz graph is not very good with the ":" in strings
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
                 try:
-                    curr_node = src+"\n"+memory.lan_hosts[src]['mac']+"\n"+memory.lan_hosts[src]['device_vendor']
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
                 except:
-                    curr_node = src
+                    curr_node = map_src
 
                 f.node(curr_node)
 
                 if port == "443":
-                    f.edge(curr_node, 'defaultGateway', label='HTTPS: ' + dst+": "+memory.destination_hosts[dst], color = "blue")
+                    f.edge(curr_node, 'defaultGateway', label='HTTPS: ' + str(map_dst)+": "+memory.destination_hosts[dst], color = "blue")
 
 
 
         if option == "Tor":
             for session in self.sessions:
                 src, dst, port = session.split("/")
+                # TODO: Improvise this logic below
+                # * graphviz graph is not very good with the ":" in strings
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
                 try:
-                    curr_node = src+"\n"+memory.lan_hosts[src]['mac']+"\n"+memory.lan_hosts[src]['device_vendor']
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
                 except:
-                    curr_node = src
+                    curr_node = map_src
 
                 f.node(curr_node)
 
                 if session in memory.possible_tor_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(dst) ,color="white")
+                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(map_dst) ,color="white")
 
         if option == "Malicious":
             for session in self.sessions:
                 src, dst, port = session.split("/")
+                # TODO: Improvise this logic below
+                # * graphviz graph is not very good with the ":" in strings
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
                 try:
-                    curr_node = src+"\n"+memory.lan_hosts[src]['mac']+"\n"+memory.lan_hosts[src]['device_vendor']
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
                 except:
-                    curr_node = src
+                    curr_node = map_src
                 f.node(curr_node)
 
                 if session in memory.possible_mal_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(dst) ,color="red")
+                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(map_dst) ,color="red")
         
         self.apply_styles(f,self.styles)
         f.render()

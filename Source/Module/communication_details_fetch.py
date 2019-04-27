@@ -14,10 +14,11 @@ class trafficDetailsFetch():
 
     def __init__(self, option):
         for host in memory.destination_hosts:
-            if option == "whois":
-                memory.destination_hosts[host] = self.whois_info_fetch(host)
-            else:
-                memory.destination_hosts[host] = self.dns(host)
+            if not memory.destination_hosts[host]:
+                if option == "whois":
+                    memory.destination_hosts[host] = self.whois_info_fetch(host)
+                else:
+                    memory.destination_hosts[host] = self.dns(host)
 
     def whois_info_fetch(self, ip):
         try:

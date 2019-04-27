@@ -142,9 +142,9 @@ class PcapEngine():
                         memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ethernet"].dst
                         if "Raw" in packet:
                             if isinstance(packet["Raw"].load, (bytes, bytearray)):
-                                memory.packet_db[source_private_ip]["Payload"].append(base64.b64encode(packet["Raw"].load))
+                                memory.packet_db[source_private_ip]["Payload"].append((packet["Raw"].load).strip().decode(errors='replace'))
                             else:
-                                memory.packet_db[source_private_ip]["Payload"].append(packet["Raw"].load)
+                                memory.packet_db[source_private_ip]["Payload"].append((packet["Raw"].load).strip())
 
     # TODO: Add function memory to store all the memory data in files (DB)
     # def memory_handle():
@@ -157,7 +157,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine('examples/torExample.pcap', "scapy")
+    pcapfile = PcapEngine('examples/test.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     
