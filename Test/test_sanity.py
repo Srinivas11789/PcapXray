@@ -32,7 +32,7 @@ import memory
 # End to end Workflow Tests - All tests will be applied to example/test.pcap file
 
 def test_pcapreader():
-    pcapfile = pcap_reader.pcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
+    pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
     if memory.packet_db:
         assert True
 
@@ -50,6 +50,7 @@ def test_device_details_fetch():
 
 def test_malicious_traffic_identifier():
     pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
+    communication_details_fetch.trafficDetailsFetch("sock")
     malicious_traffic_identifier.maliciousTrafficIdentifier()
     if memory.possible_mal_traffic:
         assert True
@@ -64,8 +65,10 @@ def test_malicious_traffic_identifier():
 def test_report_gen():
     pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
     if memory.packet_db:
-        report_generator.reportGen("").packetDetails()
-        if os.path.isfile(sys.path[1]+"/../Report/communicationDetailsReport.txt") and os.path.isfile(sys.path[1]+"/../Report/deviceDetailsReport.txt") and os.path.isfile(sys.path[1]+"/../Report/packetDetailsReport.txt"):
+        report_generator.reportGen(sys.path[0]).packetDetails()
+        report_generator.reportGen(sys.path[0]).communicationDetailsReport()
+        report_generator.reportGen(sys.path[0]).deviceDetailsReport()
+        if os.path.isfile(sys.path[0]+"/Report/communicationDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/deviceDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/packetDetailsReport.txt"):
             assert True
 
 # 7 - userInterface module

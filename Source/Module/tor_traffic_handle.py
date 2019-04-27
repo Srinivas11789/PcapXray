@@ -12,7 +12,8 @@ from stem.descriptor import remote
 class torTrafficHandle():
 
     def __init__(self):
-        self.get_consensus_data()
+        if not memory.tor_nodes:
+            self.get_consensus_data()
 
     def get_consensus_data(self):
         try:
