@@ -28,7 +28,7 @@ class maliciousTrafficIdentifier:
 
 
 def main():
-    malicious_capture = pcap_reader.pcapReader("torexample.pcapng")
+    malicious_capture = pcapReader.pcapReader("torexample.pcapng")
     print malicious_capture.packetDB
     dns_details = {}
     mal_identify = maliciousTrafficIdentifier(malicious_capture.packetDB, dns_details)
