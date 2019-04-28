@@ -85,6 +85,7 @@ class plotLan:
             # add nodes
             for session in self.sessions:
                 src, dst, port = session.split("/")
+
                 # TODO: Improvise this logic below
                 # * graphviz graph is not very good with the ":" in strings
                 if ":" in src:
@@ -95,22 +96,36 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
-                f.node(curr_node)
+                
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
 
                 if session in memory.possible_tor_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(map_dst) ,color="white")
+                    f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
                 elif session in memory.possible_mal_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(map_dst) ,color="red")
+                    f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
                 else:
                     if port == "443":
-                        f.edge(curr_node, 'defaultGateway', label='HTTPS: ' + map_dst +": "+memory.destination_hosts[dst], color = "blue")
+                        f.edge(curr_node, destination, label='HTTPS: ' + map_dst +": "+dlabel, color = "blue")
                     if port == "80":
-                        f.edge(curr_node, 'defaultGateway', label='HTTP: ' + map_dst +": "+memory.destination_hosts[dst], color = "green")
+                        f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
 
         elif option == "HTTP":
             for session in self.sessions:
@@ -125,16 +140,29 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
 
-                f.node(curr_node)
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+                
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
 
                 if port == "80":
-                    f.edge(curr_node, 'defaultGateway', label='HTTP: ' + str(map_dst)+": "+memory.destination_hosts[dst], color = "green")
+                    f.edge(curr_node, destination, label='HTTP: ' + str(map_dst)+": "+dlabel, color = "green")
 
         elif option == "HTTPS":
             for session in self.sessions:
@@ -149,18 +177,29 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
 
-                f.node(curr_node)
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
 
                 if port == "443":
-                    f.edge(curr_node, 'defaultGateway', label='HTTPS: ' + str(map_dst)+": "+memory.destination_hosts[dst], color = "blue")
-
-
+                    f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst)+": "+dlabel, color = "blue")
 
         elif option == "Tor":
             for session in self.sessions:
@@ -175,16 +214,29 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
 
-                f.node(curr_node)
+                # Lan Hosts
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
 
                 if session in memory.possible_tor_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(map_dst) ,color="white")
+                    f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
 
         elif option == "Malicious":
             # TODO: would we need to iterate over and over all the session irrespective of the properties
@@ -200,15 +252,29 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
-                f.node(curr_node)
+
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
 
                 if session in memory.possible_mal_traffic:
-                    f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(map_dst) ,color="red")
+                    f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
             
         elif option == "ICMP":
             for session in self.sessions:
@@ -221,14 +287,29 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
-                f.node(curr_node)
+
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
+
                 if protocol == "ICMP":
-                    f.edge(curr_node, 'defaultGateway', label='ICMP: ' + str(map_dst) ,color="black")
+                    f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
     
         elif option == "DNS":
             for session in self.sessions:
@@ -241,19 +322,33 @@ class plotLan:
                     map_dst = dst.replace(":", ".")
                 else:
                     map_dst = dst
-                try:
-                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                except:
-                    curr_node = map_src
-                f.node(curr_node)
+
+                # Lan Host
+                if "node" not in memory.lan_hosts[src]:
+                    try:
+                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                    except:
+                        curr_node = map_src
+                    memory.lan_hosts[src]["node"] = curr_node
+                    f.node(curr_node)
+                else:
+                    curr_node = memory.lan_hosts[src]["node"]
+
+                # Destination Host
+                if dst in memory.destination_hosts:
+                    destination = 'defaultGateway'
+                    dlabel = memory.destination_hosts[dst]
+                else:
+                    destination = dst
+                    dlabel = ""
+
                 if port == "53":
-                    f.edge(curr_node, 'defaultGateway', label='DNS: ' + str(map_dst) ,color="orange")
+                    f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
 
         
         self.apply_styles(f,self.styles)
         f.render()
-
 
 def main():
     # draw example
