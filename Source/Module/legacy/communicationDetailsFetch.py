@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Library Import
 import ipwhois
 from dns import reversename, resolver
@@ -31,7 +32,6 @@ class trafficDetailsFetch():
             if "ip_details" not in self.communication_details[ip]:
                 self.communication_details[ip]["ip_details"] = {}
             self.communication_details[ip]["ip_details"] = {key: {} for key in ips}
-            #print self.communication_details[ip]["ip_details"].keys()
             self.dns(ip, self.communication_details[ip]["ip_details"].keys())
         if out:
             out.put(self.communication_details)
@@ -58,7 +58,6 @@ class trafficDetailsFetch():
 
     def dns(self, ip, ips):
         for i in ips:
-           # print ip, i
             if "dns" not in self.communication_details[ip]["ip_details"][i]:
                 self.communication_details[ip]["ip_details"][i]["dns"] = ""
             try:
@@ -69,9 +68,9 @@ class trafficDetailsFetch():
 
 def main():
     capture = pcapReader.pcapReader("lanExample.pcap")
-    print "read"
+    print("read")
     details = trafficDetailsFetch(capture.packetDB)
-    print details.communication_details
-    print "\n"
+    print(details.communication_details)
+    print("\n")
 
 #main()

@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Library Import
 import urllib2
 import json
@@ -30,7 +31,7 @@ def main():
     pcapfile = pcapReader.pcapReader('test.pcap')
     for ip in pcapfile.packetDB:
         macObj = fetchDeviceDetails(pcapfile.packetDB[ip])
-        print macObj.oui_identification()
+        print(macObj.oui_identification())
 #main()
 
 # MAC Oui Identification Module

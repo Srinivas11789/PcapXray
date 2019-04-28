@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Custom Module Import
 import pcapReader
 
@@ -20,8 +21,7 @@ class maliciousTrafficIdentifier:
             self.malicious_traffic_detection(ip, sessions, dns_details)
 
     def malicious_traffic_detection(self, ip, sessions, dns):
-        very_well_known_ports = [443]
-        well_known_ports = [20, 21, 22, 23, 25, 53, 69, 80, 161, 179, 389]
+        well_known_ports = [20,21,22,23,25,53,80,443]
         for connection in sessions:
             if (connection[0] in dns and dns[connection[0]] == "NotResolvable") or connection[1] not in well_known_ports:
                 self.possible_malicious_traffic[ip].append(connection)
@@ -29,10 +29,10 @@ class maliciousTrafficIdentifier:
 
 def main():
     malicious_capture = pcapReader.pcapReader("torexample.pcapng")
-    print malicious_capture.packetDB
+    print(malicious_capture.packetDB)
     dns_details = {}
     mal_identify = maliciousTrafficIdentifier(malicious_capture.packetDB, dns_details)
-    print mal_identify.possible_malicious_traffic
+    print(mal_identify.possible_malicious_traffic)
 
 #main()
 

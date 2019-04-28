@@ -1,3 +1,4 @@
+from __future__ import print_function
 #File Import
 import pcapReader
 import communicationDetailsFetch
@@ -80,7 +81,7 @@ class plotLan:
 
         f.attr('node', shape='circle')
 
-        print "Starting Graph Plotting"
+        print("Starting Graph Plotting")
 
         if option == "All":
             # add nodes
@@ -122,7 +123,7 @@ class plotLan:
                             try:
                                f.edge(node, 'defaultGateway', label='HTTPS: ' +dest+": "+self.name_servers[node]["ip_details"][dest]["dns"], color = "blue")
                             except:
-                                print self.name_servers[node]
+                                print(self.name_servers[node])
 
 
         if option == "Tor":
@@ -150,7 +151,7 @@ class plotLan:
 def main():
     # draw example
     pcapfile = pcapReader.pcapReader('lanExample.pcap')
-    print "Reading Done...."
+    print("Reading Done....")
     details = communicationDetailsFetch.trafficDetailsFetch(pcapfile.packetDB)
     network = plotLan(pcapfile.packetDB, "network12345", details.communication_details,"HTTPS")
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from Tkinter import *
 import Tkinter, Tkconstants, tkFileDialog
 import ttk
@@ -82,8 +83,8 @@ class pcapXrayGui:
         #,("all files","*.*")
         #self.filename_field.delete(0, END)
         #self.filename_field.insert(0, self.pcap_file)
-        print self.filename
-        print self.pcap_file
+        print(self.filename)
+        print(self.pcap_file)
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
@@ -145,23 +146,23 @@ class pcapXrayGui:
         self.yscrollbar.config(command=self.canvas.yview)
 
     def map_select(self, *args):
-        print self.option.get()
+        print(self.option.get())
         self.generate_graph()
 
     def zoom_in(self):
-        print "zoomin"
+        print("zoomin")
         self.zoom[0] += 100
         self.zoom[1] += 100
         if self.img:
              self.load_image()
 
     def zoom_out(self):
-        print "zoomout"
+        print("zoomout")
         if self.zoom[0] > 700 and self.zoom[1] > 700:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:
-            print "zoomout --> maximum"
+            print("zoomout --> maximum")
         if self.img:
              self.load_image()
 
