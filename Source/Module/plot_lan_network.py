@@ -27,7 +27,7 @@ class plotLan:
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
                 'rankdir': 'BT',
-                'dpi':'300'
+                'dpi':'600'
             },
             'nodes': {
                 'fontname': 'Helvetica',
