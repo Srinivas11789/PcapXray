@@ -98,24 +98,24 @@ class plotLan:
                     map_dst = dst
                 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
 
                 if session in memory.possible_tor_traffic:
                     f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
@@ -142,24 +142,25 @@ class plotLan:
                     map_dst = dst
 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
                 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
+
 
                 if port == "80":
                     f.edge(curr_node, destination, label='HTTP: ' + str(map_dst)+": "+dlabel, color = "green")
@@ -179,24 +180,25 @@ class plotLan:
                     map_dst = dst
 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
+
 
                 if port == "443":
                     f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst)+": "+dlabel, color = "blue")
@@ -215,25 +217,26 @@ class plotLan:
                 else:
                     map_dst = dst
 
-                # Lan Hosts
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                # Lan Host
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
+
 
                 if session in memory.possible_tor_traffic:
                     f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
@@ -254,24 +257,24 @@ class plotLan:
                     map_dst = dst
 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
 
                 if session in memory.possible_mal_traffic:
                     f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
@@ -289,24 +292,24 @@ class plotLan:
                     map_dst = dst
 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
 
                 if protocol == "ICMP":
                     f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
@@ -324,24 +327,24 @@ class plotLan:
                     map_dst = dst
 
                 # Lan Host
-                if "node" not in memory.lan_hosts[src]:
-                    try:
-                        mac = memory.lan_hosts[src]['mac'].replace(":",".")
-                        curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
-                    except:
-                        curr_node = map_src
-                    memory.lan_hosts[src]["node"] = curr_node
+                if src not in memory.lan_hosts:
+                    curr_node = map_src
                     f.node(curr_node)
                 else:
                     curr_node = memory.lan_hosts[src]["node"]
+                    f.node(curr_node)
 
                 # Destination Host
                 if dst in memory.destination_hosts:
                     destination = 'defaultGateway'
                     dlabel = memory.destination_hosts[dst]
                 else:
-                    destination = dst
-                    dlabel = ""
+                    if dst in memory.lan_hosts:
+                        destination = memory.lan_hosts[dst]["node"]
+                        dlabel = ""
+                    else:
+                        destination = dst
+                        dlabel = ""
 
                 if port == "53":
                     f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")

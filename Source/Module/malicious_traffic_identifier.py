@@ -13,7 +13,7 @@ class maliciousTrafficIdentifier:
     def __init__(self):
         for session in memory.packet_db:
             src, dst, port = session.split("/")
-            if self.malicious_traffic_detection(src, dst, int(port)) == 1:
+            if port.isdigit() and self.malicious_traffic_detection(src, dst, int(port)) == 1:
                 memory.possible_mal_traffic.append(session)
 
     def malicious_traffic_detection(self, src, dst, port):

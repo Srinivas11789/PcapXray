@@ -25,7 +25,7 @@ class torTrafficHandle():
     def tor_traffic_detection(self):
         for session in memory.packet_db:
             current_session = session.split("/")
-            if (current_session[1], int(current_session[2])) in memory.tor_nodes:
+            if current_session[2].isdigit() and (current_session[1], int(current_session[2])) in memory.tor_nodes:
                 memory.possible_tor_traffic.append(session)
 
 def main():
