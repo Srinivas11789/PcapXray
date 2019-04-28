@@ -61,7 +61,7 @@ class pcapXrayGui:
         SecondFrame.rowconfigure(10, weight=1)
         ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
-        self.options = {'All','HTTP','HTTPS','Tor','Malicious'}
+        self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
         self.zoom = [900,900]

@@ -112,7 +112,7 @@ class plotLan:
                     if port == "80":
                         f.edge(curr_node, 'defaultGateway', label='HTTP: ' + map_dst +": "+memory.destination_hosts[dst], color = "green")
 
-        if option == "HTTP":
+        elif option == "HTTP":
             for session in self.sessions:
                 src, dst, port = session.split("/")
                 # TODO: Improvise this logic below
@@ -136,7 +136,7 @@ class plotLan:
                 if port == "80":
                     f.edge(curr_node, 'defaultGateway', label='HTTP: ' + str(map_dst)+": "+memory.destination_hosts[dst], color = "green")
 
-        if option == "HTTPS":
+        elif option == "HTTPS":
             for session in self.sessions:
                 src, dst, port = session.split("/")
                 # TODO: Improvise this logic below
@@ -162,7 +162,7 @@ class plotLan:
 
 
 
-        if option == "Tor":
+        elif option == "Tor":
             for session in self.sessions:
                 src, dst, port = session.split("/")
                 # TODO: Improvise this logic below
@@ -186,7 +186,8 @@ class plotLan:
                 if session in memory.possible_tor_traffic:
                     f.edge(curr_node, 'defaultGateway', label='TOR: ' + str(map_dst) ,color="white")
 
-        if option == "Malicious":
+        elif option == "Malicious":
+            # TODO: would we need to iterate over and over all the session irrespective of the properties
             for session in self.sessions:
                 src, dst, port = session.split("/")
                 # TODO: Improvise this logic below
@@ -208,6 +209,47 @@ class plotLan:
 
                 if session in memory.possible_mal_traffic:
                     f.edge(curr_node, 'defaultGateway', label='Malicious: ' + str(map_dst) ,color="red")
+            
+        elif option == "ICMP":
+            for session in self.sessions:
+                src, dst, protocol = session.split("/")
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
+                try:
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                except:
+                    curr_node = map_src
+                f.node(curr_node)
+                if protocol == "ICMP":
+                    f.edge(curr_node, 'defaultGateway', label='ICMP: ' + str(map_dst) ,color="black")
+    
+        elif option == "DNS":
+            for session in self.sessions:
+                src, dst, port = session.split("/")
+                if ":" in src:
+                    map_src = src.replace(":",".")
+                else:
+                    map_src = src
+                if ":" in dst:
+                    map_dst = dst.replace(":", ".")
+                else:
+                    map_dst = dst
+                try:
+                    mac = memory.lan_hosts[src]['mac'].replace(":",".")
+                    curr_node = map_src+"\n"+mac+"\n"+memory.lan_hosts[src]['device_vendor']
+                except:
+                    curr_node = map_src
+                f.node(curr_node)
+                if port == "53":
+                    f.edge(curr_node, 'defaultGateway', label='DNS: ' + str(map_dst) ,color="orange")
+
         
         self.apply_styles(f,self.styles)
         f.render()
