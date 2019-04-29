@@ -33,6 +33,12 @@ class reportGen:
     def packetDetails(self):
         try:
             text_handle = open(self.directory + "/packetDetailsReport.txt", "w")
+            for session in memory.packet_db:
+                text_handle.write("%s\n" % session)
+                text_handle.write("%s\n" % memory.packet_db[session]["Ethernet"])
+                text_handle.write("\nPayload:\n")
+                payloads = "\n".join(memory.packet_db[session]["Payload"])
+                if payloads:
+                    text_handle.write("%s\n" % payloads)
         except Exception as e:
             print("Could not create the report text file !!!!! Please debug error %s" % (str(e.message)))
-        text_handle.write("%s\n" % json.dumps(memory.packet_db, indent=2,sort_keys=True))

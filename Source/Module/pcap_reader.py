@@ -129,7 +129,7 @@ class PcapEngine():
                         if "Ethernet" not in memory.packet_db[source_private_ip]:
                             memory.packet_db[source_private_ip]["Ethernet"] = {}
                         # HTTP Packets
-                        if "Payloads" not in memory.packet_db:
+                        if "Payload" not in memory.packet_db:
                             # Payload recording
                             memory.packet_db[source_private_ip]["Payload"] = []
                     if self.engine == "pyshark":
@@ -140,11 +140,13 @@ class PcapEngine():
                     else:
                         memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ethernet"].src
                         memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ethernet"].dst
-                        if "Raw" in packet:
-                            if isinstance(packet["Raw"].load, (bytes, bytearray)):
-                                memory.packet_db[source_private_ip]["Payload"].append((packet["Raw"].load).strip().decode(errors='replace'))
-                            else:
-                                memory.packet_db[source_private_ip]["Payload"].append((packet["Raw"].load).strip())
+                        
+                        if "TCP" in packet:
+                            memory.packet_db[source_private_ip]["Payload"].append(str(packet["TCP"].payload))
+                        elif "UDP" in packet:
+                            memory.packet_db[source_private_ip]["Payload"].append(str(packet["UDP"].payload))
+                        elif "ICMP" in packet:
+                            memory.packet_db[source_private_ip]["Payload"].append(str(packet["ICMP"].payload))
 
     # TODO: Add function memory to store all the memory data in files (DB)
     # def memory_handle():
