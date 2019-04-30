@@ -63,12 +63,14 @@ def test_malicious_traffic_identifier():
 #        assert True
 
 def test_report_gen():
-    pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
+    directory = sys.path[0] 
+    filename = "test"
+    pcap_reader.PcapEngine(directory + 'examples/' + filename + ".pcap", "scapy")
     if memory.packet_db:
-        report_generator.reportGen(sys.path[0]).packetDetails()
-        report_generator.reportGen(sys.path[0]).communicationDetailsReport()
-        report_generator.reportGen(sys.path[0]).deviceDetailsReport()
-        if os.path.isfile(sys.path[0]+"/Report/communicationDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/deviceDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/packetDetailsReport.txt"):
+        report_generator.reportGen(sys.path[0], filename).packetDetails()
+        report_generator.reportGen(sys.path[0], filename).communicationDetailsReport()
+        report_generator.reportGen(sys.path[0], filename).deviceDetailsReport()
+        if os.path.isfile(sys.path[0]+"/Report/testcommunicationDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/testdeviceDetailsReport.txt") and os.path.isfile(sys.path[0]+"/Report/testpacketDetailsReport.txt"):
             assert True
 
 # 7 - userInterface module
