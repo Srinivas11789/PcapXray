@@ -125,7 +125,7 @@ class pcapXrayGui:
             self.progressbar.stop()
             #packet_read.join()
             #self.capture_read = result.get()
-            reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get()).packetDetails,args=())
+            reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).packetDetails,args=())
             reportThreadpcap.start()
             #self.option.set("Tor")
             self.option.trace("w",self.map_select)
@@ -145,7 +145,7 @@ class pcapXrayGui:
             t.join()
             self.progressbar.stop()
             #self.name_servers = result.get()
-            reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get()).communicationDetailsReport,args=())
+            reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
             reportThread.start()
         
         if not os.path.exists(self.destination_report.get()+"/Report/"+self.filename+self.option.get()+".png"):
