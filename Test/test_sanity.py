@@ -35,6 +35,10 @@ def test_pcapreader():
     pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
     if memory.packet_db:
         assert True
+    pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/torExample.pcap', "pyshark")
+    if memory.packet_db:
+        assert True
+
 
 def test_communication_details_fetch():
     pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")

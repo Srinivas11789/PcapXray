@@ -66,17 +66,26 @@ class PcapEngine():
             """
             for packet in self.packets: # O(N) packet iteration
                 source_private_ip = None
-                if "IP" in packet:# and packet["IP"].version == "4":
-                    # Handle IP packets that originated from LAN (Internal Network)
-                    #print(packet["IP"].version == "4")
-                    IP = "IP"
-                    private_source = IPAddress(packet[IP].src).is_private()
-                    private_destination = IPAddress(packet[IP].dst).is_private()
-                elif "IPv6" in packet or "IPV6" in packet:
+                if "IPv6" in packet or "IPV6" in packet:
                     if self.engine == "scapy":
                         IP = "IPv6"
                     else:
                         IP = "IPV6"
+
+                    # TODO: Fix weird ipv6 errors in pyshark engine
+                    # * ExHandler as temperory fix
+                    try:
+                        private_source = IPAddress(packet[IP].src).is_private()
+                    except:
+                        private_source = None
+                    try:
+                        private_destination = IPAddress(packet[IP].dst).is_private()
+                    except:
+                        private_destination = None
+                elif "IP" in packet:# and packet["IP"].version == "4":
+                    # Handle IP packets that originated from LAN (Internal Network)
+                    #print(packet["IP"].version == "4")
+                    IP = "IP"
                     private_source = IPAddress(packet[IP].src).is_private()
                     private_destination = IPAddress(packet[IP].dst).is_private()
 
@@ -161,7 +170,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine('examples/test.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     
