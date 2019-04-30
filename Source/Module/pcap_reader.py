@@ -30,9 +30,11 @@ class PcapEngine():
           - tor identification
           - malicious identification
         """
-        #memory.packet_db = {}
-        #memory.lan_hosts = {}
-        #memory.destination_hosts = {}
+        memory.packet_db = {}
+        memory.lan_hosts = {}
+        memory.destination_hosts = {}
+        memory.possible_mal_traffic = []
+        memory.possible_tor_traffic = []
         self.engine = pcap_parser_engine
         if pcap_parser_engine == "scapy":
             try:

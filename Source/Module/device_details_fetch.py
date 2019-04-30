@@ -26,7 +26,11 @@ class fetchDeviceDetails:
             else:
                 memory.lan_hosts[ip]["device_vendor"], memory.lan_hosts[ip]["vendor_address"] = self.oui_identification_via_ieee(memory.lan_hosts[ip]["mac"])
             mac = memory.lan_hosts[ip]["mac"].replace(":",".")
-            memory.lan_hosts[ip]["node"] = ip+"\n"+mac+"\n"+memory.lan_hosts[ip]['device_vendor']
+            if ":" in ip:
+                ip_san = ip.replace(":",".")
+            else:
+                ip_san = ip
+            memory.lan_hosts[ip]["node"] = ip_san+"\n"+mac+"\n"+memory.lan_hosts[ip]['device_vendor']
 
     def oui_identification_via_api(self, mac):
         url = "http://macvendors.co/api/" + mac
