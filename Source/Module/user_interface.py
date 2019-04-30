@@ -46,17 +46,29 @@ class pcapXrayGui:
         self.pcap_file = StringVar()
         self.filename = ""
         ttk.Label(InitFrame, text="Enter pcap file path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
-        self.filename_field = ttk.Entry(InitFrame, width=30, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        self.filename_field = ttk.Entry(InitFrame, width=32, textvariable=self.pcap_file, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
         self.progressbar = ttk.Progressbar(InitFrame, orient="horizontal", length=200,value=0, maximum=200,  mode="indeterminate")
         # Browse button
         #self.filename = StringVar()
-        ttk.Button(InitFrame, text="Browse", command=self.browse_directory).grid(column=2, row=0, padx=10, pady=10,sticky="E")
+        ttk.Button(InitFrame, text="Browse", command=lambda: self.browse_directory("pcap")).grid(column=2, row=0, padx=10, pady=10,sticky="E")
         ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=3, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=4, row=0, padx=10, pady=10, sticky="E")
 
+        # First Frame with Report Directory
+        # Output and Results Frame
+        FirstFrame = ttk.Frame(base,  width=50, padding="10 0 0 0", relief= GROOVE)
+        FirstFrame.grid(column=10, row=20, sticky=(N, W, E, S))
+        FirstFrame.columnconfigure(10, weight=1)
+        FirstFrame.rowconfigure(10, weight=1)
+        self.destination_report = StringVar(value=sys.path[0])
+        ttk.Label(FirstFrame, text="Output directory path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
+        self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        # Browse button
+        ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10,sticky="E")        
+
         # Second Frame with Options
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
-        SecondFrame.grid(column=10, row=20, sticky=(N, W, E, S))
+        SecondFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
         SecondFrame.rowconfigure(10, weight=1)
         ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
@@ -72,7 +84,7 @@ class pcapXrayGui:
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
         description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
-                        \n 1. Web Traffic\n 2. Tor Traffic \n 3. Malicious Traffic \n 4. Device/Traffic Details\n\nPlease contact me @ spg349@nyu.edu for any bugs or problems !
+                        \n 1. Web Traffic\n 2. Tor Traffic \n 3. Malicious Traffic \n 4. Device/Traffic Details \n 5. Covert Communication \n \nPlease contact me @ spg349@nyu.edu for any bugs or problems !
                       """
         self.label = ttk.Label(self.ThirdFrame, text="Description: \nPcapXray tools is an aid for Network Forensics or Any Network Analysis!\n"+description, style="BW.TLabel")
         self.label.grid(column=10, row=10,sticky="W")
@@ -80,23 +92,26 @@ class pcapXrayGui:
         self.xscrollbar.grid(row=100, column=0, sticky=E + W)
         self.yscrollbar = Scrollbar(self.ThirdFrame, orient=VERTICAL)
         self.yscrollbar.grid(row=0, column=100, sticky=N + S)
-        self.ThirdFrame.grid(column=10, row=30, sticky=(N, W, E, S))
+        self.ThirdFrame.grid(column=10, row=40, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
         self.name_servers = ""
-        self.destination_report = ""
+        #self.destination_report = ""
 
-    def browse_directory(self):
-        # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
-        self.pcap_file.set(fd.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
-        self.filename = self.pcap_file.get().replace(".pcap","")
-        if "/" in self.filename:
-            self.filename = self.filename.split("/")[-1]
-        #,("all files","*.*")
-        #self.filename_field.delete(0, END)
-        #self.filename_field.insert(0, self.pcap_file)
-        print(self.filename)
-        print(self.pcap_file)
+    def browse_directory(self, option):
+        if option == "pcap":
+            # Reference: http://effbot.org/tkinterbook/tkinter-dialog-windows.htm
+            self.pcap_file.set(fd.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
+            self.filename = self.pcap_file.get().replace(".pcap","")
+            if "/" in self.filename:
+                self.filename = self.filename.split("/")[-1]
+            #,("all files","*.*")
+            #self.filename_field.delete(0, END)
+            #self.filename_field.insert(0, self.pcap_file)
+            print(self.filename)
+            print(self.pcap_file)
+        else:
+            self.destination_report.set(fd.askdirectory())
 
     def pcap_analyse(self):
         if os.path.exists(self.pcap_file.get()):
@@ -110,7 +125,7 @@ class pcapXrayGui:
             self.progressbar.stop()
             #packet_read.join()
             #self.capture_read = result.get()
-            reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report).packetDetails,args=())
+            reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get()).packetDetails,args=())
             reportThreadpcap.start()
             #self.option.set("Tor")
             self.option.trace("w",self.map_select)
@@ -130,11 +145,11 @@ class pcapXrayGui:
             t.join()
             self.progressbar.stop()
             #self.name_servers = result.get()
-            reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report).communicationDetailsReport,args=())
+            reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get()).communicationDetailsReport,args=())
             reportThread.start()
         
-        if not os.path.exists(self.destination_report+"/Report/"+self.filename+self.option.get()+".png"):
-            t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report, self.option.get(),))
+        if not os.path.exists(self.destination_report.get()+"/Report/"+self.filename+self.option.get()+".png"):
+            t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(),))
             t1.start()
             self.progressbar.start()
             while t1.is_alive():
@@ -151,7 +166,7 @@ class pcapXrayGui:
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open(self.destination_report+"/Report/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open(self.destination_report.get()+"/Report/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
         self.canvas.create_image(0,0, image=self.img)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)

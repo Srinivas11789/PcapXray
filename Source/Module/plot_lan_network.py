@@ -126,6 +126,10 @@ class plotLan:
                         f.edge(curr_node, destination, label='HTTPS: ' + map_dst +": "+dlabel, color = "blue")
                     if port == "80":
                         f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
+                    if port == "ICMP":
+                        f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
+                    if port == "53":
+                        f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
 
         elif option == "HTTP":
             for session in self.sessions:
