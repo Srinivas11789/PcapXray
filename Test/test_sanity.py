@@ -3,6 +3,7 @@
 # Test System Setup
 import sys
 import os
+import pytest
 
 if sys.path[0]:
     sys.path.insert(0, sys.path[0]+'/../Source/Module/')
@@ -32,13 +33,20 @@ import memory
 # End to end Workflow Tests - All tests will be applied to example/test.pcap file
 
 def test_pcapreader():
-    pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
+    pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
     if memory.packet_db:
         assert True
-    pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/torExample.pcap', "pyshark")
-    if memory.packet_db:
-        assert True
-
+    # Testing pyshark engine for >= python3.0
+    from sys import version_info
+    if version_info[0] >= 3:
+        pcapfile = pcap_reader.PcapEngine(sys.path[0]+'examples/torExample.pcap', "pyshark")
+        if memory.packet_db:
+                assert True
+    else:
+        # Python2.7 tests
+        # Ref: https://medium.com/python-pandemonium/testing-sys-exit-with-pytest-10c6e5f7726f
+        with pytest.raises(SystemExit):
+             pcap_reader.PcapEngine(sys.path[0]+'examples/torExample.pcap', "pyshark")
 
 def test_communication_details_fetch():
     pcap_reader.PcapEngine(sys.path[0]+'examples/test.pcap', "scapy")
