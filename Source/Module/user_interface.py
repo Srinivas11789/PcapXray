@@ -112,8 +112,17 @@ class pcapXrayGui:
             print(self.pcap_file)
         else:
             self.destination_report.set(fd.askdirectory())
+            if self.destination_report.get():
+                if not os.access(self.destination_report.get(), os.W_OK):
+                    mb.showerror("Error","Permission denied to create report! Run with higher privilege.")
+            else:
+                mb.showerror("Error", "Enter a output directory!")
 
     def pcap_analyse(self):
+        if not os.access(self.destination_report.get(), os.W_OK):
+            mb.showerror("Error","Permission denied to create report! Run with higher privilege.")
+            return
+
         if os.path.exists(self.pcap_file.get()):
             self.progressbar.start()
             result = q.Queue()
@@ -148,7 +157,8 @@ class pcapXrayGui:
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
             reportThread.start()
         
-        if not os.path.exists(self.destination_report.get()+"/Report/"+self.filename+self.option.get()+".png"):
+        self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+self.option.get()+".png")
+        if not os.path.exists(self.image_file):
             t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(),))
             t1.start()
             self.progressbar.start()
@@ -161,12 +171,13 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
-
+        reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
+        reportThread.start()
 
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
-        self.img = ImageTk.PhotoImage(Image.open(self.destination_report.get()+"/Report/"+self.filename+self.option.get()+".png").resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
+        self.img = ImageTk.PhotoImage(Image.open(self.image_file).resize(tuple(self.zoom),Image.ANTIALIAS).convert('RGB'))
         self.canvas.create_image(0,0, image=self.img)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)

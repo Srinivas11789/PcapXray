@@ -16,9 +16,10 @@ import os
 class plotLan:
 
     def __init__(self, filename, path, option="Tor"):
-        if not os.path.exists(path+"/Report"):
-            os.makedirs(path+"/Report")
-        self.filename = path+"/Report/"+filename+option
+        self.directory = os.path.join(path, "Report")
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+        self.filename = os.path.join(self.directory, filename+"_"+option)
 
         self.styles = {
             'graph': {
