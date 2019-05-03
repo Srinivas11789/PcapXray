@@ -98,7 +98,7 @@ class PcapEngine():
                         tcp_dst = str(
                             packet["TCP"].dstport if "TCP" in packet else packet["UDP"].dstport)
                     else:
-                        eth_layer = "Ethernet"
+                        eth_layer = "Ether"
                         tcp_src = str(
                             packet["TCP"].sport if "TCP" in packet else packet["UDP"].sport)
                         tcp_dst = str(
@@ -149,8 +149,8 @@ class PcapEngine():
                         # Refer https://github.com/KimiNewt/pyshark/issues/264
                         #memory.packet_db[source_private_ip]["Payload"].append(packet.get_raw_packet())
                     else:
-                        memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ethernet"].src
-                        memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ethernet"].dst
+                        memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].src
+                        memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].dst
                         
                         if "TCP" in packet:
                             memory.packet_db[source_private_ip]["Payload"].append(str(packet["TCP"].payload))
