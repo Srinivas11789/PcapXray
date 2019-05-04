@@ -2,6 +2,7 @@
 
 # Pcap Reader and Packet Handler
 scapy
+pyshark
 
 # Not Needed for Linux, Needed only for MAC when Scapy is not properly downloaded
 #pcapy
