@@ -24,9 +24,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](/Samples/screen1_2_1.png?raw=true)
+![Alt text](/Samples/screen2_2_4.png?raw=true)
 
-![Alt text](/Samples/screen2_2_1.png?raw=true)
+![Alt text](/Samples/screen1_2_4.png?raw=true)
 
 ### Components:
 *	Network Diagram 
@@ -39,6 +39,8 @@ Tool Highlights:
 * Tkinter and TTK – Install from pip or apt-get – Ensure Tkinter and graphviz is installed (Most Linux contain by default) 
   * apt install python-tk
   * apt install graphviz
+  * apt install python3-tk (for python3 support)
+  * Sometimes ImageTk errors are thrown in python3 env --> use apt install python3-pil python3-pil.imagetk
 * All these are included in the requirements.txt file
   * Scapy – rdpcap to read the packets from the pcap file 
   *	Ipwhois – to obtain whois information from ip
@@ -47,10 +49,10 @@ Tool Highlights:
   *	Stem – tor consensus data fetch library
   *	pyGraphviz – plot graph
   *	Networkx – plot graph
-  *	Matplotlib – plot graph
+  *	Matplotlib – plot graph (not used as of now)
   
 ### Demo
-![Alt text](/Samples/demo2_2.gif?raw=true)
+![Alt text](/Samples/demo2_4.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -59,7 +61,7 @@ Tool Highlights:
 
 ### Additional Information:
 * Tested on Linux
-* Options for Traffic include - Web (HTTP and HTTPS), Tor, Malicious
+* Options for Traffic include - Web (HTTP and HTTPS), Tor, Malicious, ICMP, DNS
  
 ### Challenges:
   * Unstability of the TK GUI:
@@ -83,12 +85,6 @@ Tool Highlights:
 
 *	Current Fix in rare occasions: If any of the above issue occurs the progress bar keeps running and no output is generated, a restart of the app would be required.
 
-### PcapXray 2.0 
-* Includes zoom feature 
-* Improves usability with a Browse files feature
-* Report directory fixes for graph images
-* Includes some bug fixes
-
 ### Docker Containers of PcapXray
 * Dockerfile present in the root folder was used to build images
 * Already built docker images are found at dockerhub
@@ -97,12 +93,22 @@ Tool Highlights:
 * Performing the steps in `run.sh` file manually would work to launch the tool via docker (I can help with errors)
 * Running `run.sh` scripts is an attempt to automate (would not work 100 percent)
   - tested on mac and linux - will be better soon!...
+ 
+### PcapXray 2.0 
+* Includes zoom feature 
+* Improves usability with a Browse files feature
+* Report directory fixes for graph images
+* Includes some bug fixes
 
 ### Immediate Future Tasks: (Target: 3.0)
-* Clean up code - beautify code base from being a prototype
-* Report generation on unique folders for all assets of a packet capture
-* Suspicious activity detection
-* Known file type detection + Extract
+
+- Clean up code (beautify code base from being a prototype)
+- Report generation on unique folders for all assets of a packet capture
+- Suspicious activity detection
+- Support more pcap reader engine
+- Traffic support: ICMP, DNS
+- Known file type detection and Extract
+- Python2 and Python3
 
 ### Future:
 * Structured and clean code flow
@@ -113,3 +119,5 @@ Tool Highlights:
 * Clean up code
 
 [![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
+
+Just for Security Fun!
