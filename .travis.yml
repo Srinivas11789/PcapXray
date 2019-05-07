@@ -1,6 +1,7 @@
 language: python
 
-os: linux
+os: 
+  - linux
 
 addons:
   apt:
@@ -14,7 +15,7 @@ python:
   - "3.6"
 
 before_install:
-  - pip install codecov flake8 pytest pytest-cov
+  - pip install -U codecov flake8 pytest pytest-cov
 
 install:
   - pip install -r requirements.txt
