@@ -1,7 +1,6 @@
 language: python
 
-os:
-  - linux
+os: linux
 
 addons:
   apt:
@@ -13,10 +12,6 @@ addons:
 python:
   - "2.7"
   - "3.6"
-
-matrix:
-  allow_failures:
-    - python: "2.7"
 
 before_install:
   - pip install -U pytest pytest-cov
@@ -31,6 +26,7 @@ before_script:
   - flake8 . --count --select=E9,F63,F72,F82 --show-source --statistics
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
 script:
   - pytest --cov=./
 
