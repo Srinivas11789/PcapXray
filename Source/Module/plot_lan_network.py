@@ -120,7 +120,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if  curr_node != destination:
@@ -174,7 +175,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if port == "80" and curr_node != destination:
@@ -216,7 +218,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if port == "443" and curr_node != destination:
@@ -258,7 +261,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
 
@@ -302,7 +306,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if session in memory.possible_mal_traffic and curr_node != destination:
@@ -342,7 +347,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if protocol == "ICMP" and curr_node != destination:
@@ -382,7 +388,8 @@ class plotLan:
                         destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
                         dlabel = ""
                     else:
-                        destination = map_dst+"\n"+memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        destination += "\n"+"PossibleGateway"
                         dlabel = ""
 
                 if port == "53" and curr_node != destination:

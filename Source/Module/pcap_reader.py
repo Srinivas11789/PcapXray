@@ -148,8 +148,12 @@ class PcapEngine():
                         # Refer https://github.com/KimiNewt/pyshark/issues/264
                         #memory.packet_db[source_private_ip]["Payload"].append(packet.get_raw_packet())
                     else:
-                        memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].src
-                        memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].dst
+                        if private_source:
+                            memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].src
+                            memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].dst
+                        else:
+                            memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].dst
+                            memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].src
                         
                         if "TCP" in packet:
                             memory.packet_db[source_private_ip]["Payload"].append(str(packet["TCP"].payload))
