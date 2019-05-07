@@ -106,11 +106,11 @@ class pcapReader():
 
 # Sniff Packets with Filter
     def packet_filter(self, ipaddress="", protocol="", port=""):
-        if ipaddress is not "":
+        if ipaddress != "":
             filter = "host "+ipaddress
-        if protocol is not "":
+        if protocol != "":
             filter = filter+" and "+protocol
-        if port is not "":
+        if port != "":
             filter = filter+" and "+"port "+port
         return sniff(offline=self.file, filter=filter)
 
