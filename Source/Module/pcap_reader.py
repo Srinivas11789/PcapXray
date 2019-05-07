@@ -112,22 +112,21 @@ class PcapEngine():
                         else:
                             source_private_ip = key1
                         # IntraNetwork Hosts list
-                        memory.lan_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
-                        memory.lan_hosts[packet[IP].dst] = {"mac": packet[eth_layer].dst}
+                        memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
+                        memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
                     elif private_source: # Internetwork packet
                         key = packet[IP].src + "/" + packet[IP].dst + "/" + tcp_dst
                         source_private_ip = key
                         # IntraNetwork vs InterNetwork Hosts list
-                        memory.lan_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
-                        memory.destination_hosts[packet[IP].dst] = {}
+                        memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
+                        memory.destination_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
                     elif private_destination: # Internetwork packet
                         #print(packet.show())
                         key = packet[IP].dst + "/" + packet[IP].src + "/" + tcp_src
                         source_private_ip = key
                         # IntraNetwork vs InterNetwork Hosts list
-                        memory.lan_hosts[packet[IP].dst] = {"mac": packet[eth_layer].dst}
-                        memory.destination_hosts[packet[IP].src] = {}
-
+                        memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
+                        memory.destination_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
                 elif "ICMP" in packet:
                     key = packet[IP].src + "/" + packet[IP].dst + "/" + "ICMP"
                     source_private_ip = key
