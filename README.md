@@ -1,6 +1,6 @@
 # PcapXray [![Build Status](https://travis-ci.org/Srinivas11789/PcapXray.svg?branch=master)](https://travis-ci.org/Srinivas11789/PcapXray) [![codecov](https://codecov.io/gh/Srinivas11789/PcapXray/branch/master/graph/badge.svg)](https://codecov.io/gh/Srinivas11789/PcapXray)
     A Network Forensics Tool - To visualize a Packet Capture offline as a Network Diagram including device identification, highlight important communication and file extraction
-![Alt text](/logo.png?width=20px "PcapXray")
+![Alt text](https://srinivas11789.github.io/PcapXray/logo.png?width=20px "PcapXray")
 ## PcapXray Design Specification
 
 ### Goal:
@@ -24,12 +24,12 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](/Samples/screen2_2_4.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_2_4.png?raw=true)
 
-![Alt text](/Samples/screen1_2_4.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen1_2_4.png?raw=true)
 
 ### Components:
-*	Network Diagram 
+* Network Diagram 
 * Device/Traffic Details and Analysis
 * Malicious Traffic Identification
 * Tor Traffic
@@ -52,7 +52,7 @@ Tool Highlights:
   *	Matplotlib – plot graph (not used as of now)
   
 ### Demo
-![Alt text](/Samples/demo2_4.gif?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/demo2_4.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
