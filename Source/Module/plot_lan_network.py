@@ -28,7 +28,7 @@ class plotLan:
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
                 'rankdir': 'LR', # BT
-                'dpi':'1000',
+                'dpi':'600',
                 'size': '10, 10',
                 'overlap': 'scale'
             },
