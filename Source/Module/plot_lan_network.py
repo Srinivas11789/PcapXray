@@ -27,8 +27,10 @@ class plotLan:
                 'fontsize': '16',
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
-                'rankdir': 'BT',
-                'dpi':'1000'
+                'rankdir': 'LR', # BT
+                'dpi':'1000',
+                'size': '10, 10',
+                'overlap': 'scale'
             },
             'nodes': {
                 'fontname': 'Helvetica',
@@ -72,8 +74,12 @@ class plotLan:
         return graph
 
     def draw_graph(self,option="All"):
-        f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
-        f.attr(rankdir='LR', size='8,5')
+        #f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
+        #f.attr(rankdir='LR', size='8,5')
+        if len(memory.lan_hosts) > 20:
+            f = Digraph('network_diagram - '+option, filename=self.filename, engine="circo", format="png")
+        else:
+            f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
 
         f.attr('node', shape='doublecircle')
         #f.node('defaultGateway')
