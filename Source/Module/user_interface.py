@@ -146,7 +146,7 @@ class pcapXrayGui:
 
     def generate_graph(self):
         if self.details_fetch == 0:
-            result = q.Queue()
+            #result = q.Queue()
             t = threading.Thread(target=communication_details_fetch.trafficDetailsFetch,args=("sock",))
             t1 = threading.Thread(target=device_details_fetch.fetchDeviceDetails("ieee").fetch_info, args=())
             t.start()
