@@ -22,6 +22,7 @@ import device_details_fetch
 import report_generator
 import time
 import threading
+import memory
 from PIL import Image,ImageTk
 import os, sys
 
@@ -70,8 +71,8 @@ class pcapXrayGui:
 
         # Zoom 
         self.zoom = [900,900]
-        ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
-        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")   
+        ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0,column=10, padx=5, sticky="E")
+        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0,column=19,padx=10, sticky="E")   
 
         # Second Frame with Options
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
@@ -82,18 +83,21 @@ class pcapXrayGui:
         self.option = StringVar()
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
-        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
+        ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1, padx=10, sticky="W")
         ttk.Button(SecondFrame, text="Visualize!", command=self.map_select).grid(row=10,column=11,sticky="E")   
 
         self.img = ""
         
         ## Filters
         self.from_ip = StringVar()
-        self.from_hosts = ["All"]
-        ttk.OptionMenu(SecondFrame, self.from_ip, "From", *self.from_hosts).grid(row=10, column=10, padx=5, sticky="E")
+        self.from_hosts = {"All"}
+        ttk.Label(SecondFrame, text="From: ", style="BW.TLabel").grid(row=10, column=2, sticky="W")
+        self.from_menu = ttk.OptionMenu(SecondFrame, self.from_ip, "All", *self.from_hosts).grid(row=10, column=3, padx=10, sticky="E")
         self.to_ip = StringVar()
-        self.to_hosts = ["All"]
-        ttk.OptionMenu(SecondFrame, self.to_ip, "To", *self.to_hosts).grid(row=10, column=11, sticky="E")
+        self.to_hosts = {"All"}
+        ttk.Label(SecondFrame, text="To: ", style="BW.TLabel").grid(row=10, column=4, sticky="W")
+        self.to_menu = ttk.OptionMenu(SecondFrame, self.to_ip, "All", *self.to_hosts)
+        self.to_menu.grid(row=10, column=5, padx=10, sticky="E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -170,15 +174,17 @@ class pcapXrayGui:
             t.join()
             t1.join()
             self.progressbar.stop()
-            self.communication_details_fetched = 1
+            self.details_fetch = 1
+            self.to_menu.set_menu(default=None, list(memory.lan_hosts.keys()))
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
         
-        self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+self.option.get()+".png")
+        options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
+        self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+options+".png")
         if not os.path.exists(self.image_file):
-            t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(),))
+            t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(), self.to_ip.get(), self.from_ip.get()))
             t1.start()
             self.progressbar.start()
             while t1.is_alive():
