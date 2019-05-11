@@ -64,8 +64,14 @@ class pcapXrayGui:
         self.destination_report = StringVar(value=sys.path[0])
         ttk.Label(FirstFrame, text="Output directory path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
+        
         # Browse button
-        ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10,sticky="E")        
+        ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10,sticky="E")     
+
+        # Zoom 
+        self.zoom = [900,900]
+        ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
+        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")   
 
         # Second Frame with Options
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
@@ -77,21 +83,17 @@ class pcapXrayGui:
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
-        
+        ttk.Button(SecondFrame, text="Visualize!", command=self.map_select).grid(row=10,column=11,sticky="E")   
+
         self.img = ""
         
         ## Filters
-        #self.from_ip = StringVar()
-        #self.from_hosts = ["All"]
-        #ttk.OptionMenu(SecondFrame,self.from_ip,"From",*self.from_hosts).grid(row=10,column=10,padx=5,sticky="E")
-        #self.to_ip = StringVar()
-        #self.to_hosts = ["All"]
-        #ttk.OptionMenu(SecondFrame,self.to_ip,"To",*self.to_hosts).grid(row=10,column=11,sticky="E")
-
-        # Zoom 
-        self.zoom = [900,900]
-        ttk.Button(SecondFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
-        ttk.Button(SecondFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")
+        self.from_ip = StringVar()
+        self.from_hosts = ["All"]
+        ttk.OptionMenu(SecondFrame, self.from_ip, "From", *self.from_hosts).grid(row=10, column=10, padx=5, sticky="E")
+        self.to_ip = StringVar()
+        self.to_hosts = ["All"]
+        ttk.OptionMenu(SecondFrame, self.to_ip, "To", *self.to_hosts).grid(row=10, column=11, sticky="E")
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -149,7 +151,7 @@ class pcapXrayGui:
             reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).packetDetails,args=())
             reportThreadpcap.start()
             #self.option.set("Tor")
-            self.option.trace("w",self.map_select)
+            #self.option.trace("w",self.map_select)
             #self.option.set("Tor")
             self.details_fetch = 0
         else:
