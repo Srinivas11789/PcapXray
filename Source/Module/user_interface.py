@@ -77,8 +77,19 @@ class pcapXrayGui:
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1,sticky="W")
-        self.zoom = [900,900]
+        
         self.img = ""
+        
+        ## Filters
+        #self.from_ip = StringVar()
+        #self.from_hosts = ["All"]
+        #ttk.OptionMenu(SecondFrame,self.from_ip,"From",*self.from_hosts).grid(row=10,column=10,padx=5,sticky="E")
+        #self.to_ip = StringVar()
+        #self.to_hosts = ["All"]
+        #ttk.OptionMenu(SecondFrame,self.to_ip,"To",*self.to_hosts).grid(row=10,column=11,sticky="E")
+
+        # Zoom 
+        self.zoom = [900,900]
         ttk.Button(SecondFrame, text="zoomIn", command=self.zoom_in).grid(row=10,column=10,padx=5,sticky="E")
         ttk.Button(SecondFrame, text="zoomOut", command=self.zoom_out).grid(row=10,column=11,sticky="E")
 
@@ -157,7 +168,7 @@ class pcapXrayGui:
             t.join()
             t1.join()
             self.progressbar.stop()
-            #self.name_servers = result.get()
+            self.communication_details_fetched = 1
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
@@ -189,6 +200,7 @@ class pcapXrayGui:
 
     def map_select(self, *args):
         print(self.option.get())
+        print(self.to_ip.get(), self.from_ip.get())
         self.generate_graph()
 
     def zoom_in(self):
