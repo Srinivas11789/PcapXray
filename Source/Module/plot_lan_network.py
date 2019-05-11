@@ -3,7 +3,7 @@ import pcap_reader
 import communication_details_fetch
 import tor_traffic_handle
 import malicious_traffic_identifier
-import device_details_fetch
+#import device_details_fetch
 import memory
 
 import networkx as nx
@@ -43,7 +43,7 @@ class plotLan:
         }
 
         self.sessions = memory.packet_db.keys()
-        device_details_fetch.fetchDeviceDetails("ieee").fetch_info()
+        #device_details_fetch.fetchDeviceDetails("ieee").fetch_info()
         if option == "Malicious" or option == "All":
             self.mal_identify = malicious_traffic_identifier.maliciousTrafficIdentifier()
         if option == "Tor" or option == "All":

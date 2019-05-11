@@ -18,6 +18,7 @@ except ImportError:
 import pcap_reader
 import plot_lan_network
 import communication_details_fetch
+import device_details_fetch
 import report_generator
 import time
 import threading
@@ -95,7 +96,7 @@ class pcapXrayGui:
         self.ThirdFrame.grid(column=10, row=40, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
-        self.name_servers = ""
+        #self.details_fetch = 0
         #self.destination_report = ""
 
     def browse_directory(self, option):
@@ -125,7 +126,7 @@ class pcapXrayGui:
 
         if os.path.exists(self.pcap_file.get()):
             self.progressbar.start()
-            result = q.Queue()
+            #result = q.Queue()
             packet_read = threading.Thread(target=pcap_reader.PcapEngine,args=(self.pcap_file.get(),"scapy"))
             packet_read.start()
             while packet_read.is_alive():
@@ -139,22 +140,27 @@ class pcapXrayGui:
             #self.option.set("Tor")
             self.option.trace("w",self.map_select)
             #self.option.set("Tor")
-            self.name_servers = ""
+            self.details_fetch = 0
         else:
             mb.showerror("Error","File Not Found !")
 
     def generate_graph(self):
-        if self.name_servers == "":
+        if self.details_fetch == 0:
             result = q.Queue()
             t = threading.Thread(target=communication_details_fetch.trafficDetailsFetch,args=("sock",))
+            t1 = threading.Thread(target=device_details_fetch.fetchDeviceDetails("ieee").fetch_info, args=())
             t.start()
+            t1.start()
             self.progressbar.start()
             while t.is_alive():
                   self.progressbar.update()
             t.join()
+            t1.join()
             self.progressbar.stop()
             #self.name_servers = result.get()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
+            reportThread.start()
+            reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
         
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+self.option.get()+".png")
@@ -171,8 +177,6 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
-        reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
-        reportThread.start()
 
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
