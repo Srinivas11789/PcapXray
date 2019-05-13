@@ -88,13 +88,18 @@ class plotLan:
         f.attr('node', shape='circle')
 
         print("Starting Graph Plotting")
+        edge_present = False
 
         if option == "All":
             # add nodes
             for session in self.sessions:
                 src, dst, port = session.split("/")
 
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                #print(from_ip, to_ip, src, dst)
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     # TODO: Improvise this logic below
                     # * graphviz graph is not very good with the ":" in strings
                     if ":" in src:
@@ -135,23 +140,38 @@ class plotLan:
                     if curr_node != destination:
                         if session in memory.possible_tor_traffic:
                             f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
+                            if edge_present == False:
+                                edge_present = True
                         elif session in memory.possible_mal_traffic:
                             f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
+                            if edge_present == False:
+                                edge_present = True
                         else:
                             if port == "443":
                                 f.edge(curr_node, destination, label='HTTPS: ' + map_dst +": "+dlabel, color = "blue")
+                                if edge_present == False:
+                                    edge_present = True
                             if port == "80":
                                 f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
+                                if edge_present == False:
+                                    edge_present = True
                             if port == "ICMP":
                                 f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
+                                if edge_present == False:
+                                    edge_present = True
                             if port == "53":
                                 f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
+                                if edge_present == False:
+                                    edge_present = True
 
         elif option == "HTTP":
             for session in self.sessions:
                 src, dst, port = session.split("/")
 
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     # TODO: Improvise this logic below
                     # * graphviz graph is not very good with the ":" in strings
                     if ":" in src:
@@ -191,11 +211,16 @@ class plotLan:
 
                     if port == "80" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTP: ' + str(map_dst)+": "+dlabel, color = "green")
+                        if edge_present == False:
+                            edge_present = True
 
         elif option == "HTTPS":
             for session in self.sessions:
                 src, dst, port = session.split("/")
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     # TODO: Improvise this logic below
                     # * graphviz graph is not very good with the ":" in strings
                     if ":" in src:
@@ -235,11 +260,16 @@ class plotLan:
 
                     if port == "443" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst)+": "+dlabel, color = "blue")
+                        if edge_present == False:
+                            edge_present = True
 
         elif option == "Tor":
             for session in self.sessions:
                 src, dst, port = session.split("/")
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     # TODO: Improvise this logic below
                     # * graphviz graph is not very good with the ":" in strings
                     if ":" in src:
@@ -277,16 +307,20 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-
                     if session in memory.possible_tor_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
+                        if edge_present == False:
+                            edge_present = True
 
         elif option == "Malicious":
             # TODO: would we need to iterate over and over all the session irrespective of the properties
             for session in self.sessions:
                 src, dst, port = session.split("/")
 
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     # TODO: Improvise this logic below
                     # * graphviz graph is not very good with the ":" in strings
                     if ":" in src:
@@ -326,12 +360,17 @@ class plotLan:
 
                     if session in memory.possible_mal_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
+                        if edge_present == False:
+                            edge_present = True
             
         elif option == "ICMP":
             for session in self.sessions:
                 src, dst, protocol = session.split("/")
 
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     if ":" in src:
                         map_src = src.replace(":",".")
                     else:
@@ -369,11 +408,16 @@ class plotLan:
 
                     if protocol == "ICMP" and curr_node != destination:
                         f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
+                        if edge_present == False:
+                            edge_present = True
     
         elif option == "DNS":
             for session in self.sessions:
                 src, dst, port = session.split("/")
-                if (src == from_ip and dst == to_ip) or ( from_ip == "All" and to_ip == "All"):
+                if (src == from_ip and dst == to_ip) or \
+                    (from_ip == "All" and to_ip == "All") or \
+                        (to_ip == "All" and from_ip == src) or \
+                            (to_ip == dst and from_ip == "All"):
                     if ":" in src:
                         map_src = src.replace(":",".")
                     else:
@@ -411,9 +455,14 @@ class plotLan:
 
                     if port == "53" and curr_node != destination:
                         f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
+                        if edge_present == False:
+                            edge_present = True
 
-        
+        if edge_present == False:
+            f.attr(label="No "+option+" Traffic between nodes!",engine='circo', size="5, 5", dpi="300")
+
         self.apply_styles(f,self.styles)
+            
         f.render()
                 
 def main():

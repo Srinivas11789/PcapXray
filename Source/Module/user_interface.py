@@ -90,13 +90,14 @@ class pcapXrayGui:
         
         ## Filters
         self.from_ip = StringVar()
-        self.from_hosts = {"All"}
+        #self.from_hosts = {"All"}
         ttk.Label(SecondFrame, text="From: ", style="BW.TLabel").grid(row=10, column=2, sticky="W")
-        self.from_menu = ttk.OptionMenu(SecondFrame, self.from_ip, "All", *self.from_hosts).grid(row=10, column=3, padx=10, sticky="E")
+        self.from_menu = ttk.OptionMenu(SecondFrame, self.from_ip, "All")
+        self.from_menu.grid(row=10, column=3, padx=10, sticky="E")
         self.to_ip = StringVar()
-        self.to_hosts = {"All"}
+        #self.to_hosts = {"All"}
         ttk.Label(SecondFrame, text="To: ", style="BW.TLabel").grid(row=10, column=4, sticky="W")
-        self.to_menu = ttk.OptionMenu(SecondFrame, self.to_ip, "All", *self.to_hosts)
+        self.to_menu = ttk.OptionMenu(SecondFrame, self.to_ip, "All")
         self.to_menu.grid(row=10, column=5, padx=10, sticky="E")
 
         # Third Frame with Results and Descriptioms
@@ -163,6 +164,8 @@ class pcapXrayGui:
 
     def generate_graph(self):
         if self.details_fetch == 0:
+
+            # Threads to fetch communication and device details
             #result = q.Queue()
             t = threading.Thread(target=communication_details_fetch.trafficDetailsFetch,args=("sock",))
             t1 = threading.Thread(target=device_details_fetch.fetchDeviceDetails("ieee").fetch_info, args=())
@@ -173,13 +176,28 @@ class pcapXrayGui:
                   self.progressbar.update()
             t.join()
             t1.join()
-            self.progressbar.stop()
+            
             self.details_fetch = 1
-            self.to_menu.set_menu(default=None, list(memory.lan_hosts.keys()))
+
+            # Reset Option Menu with the values fetched from the pcap
+            menu = self.from_menu["menu"]
+            menu.delete(0, "end")
+            for mac in memory.lan_hosts:
+                menu.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.from_ip.set(value))
+            menu.add_command(label="All", command=lambda value="All": self.from_ip.set(value))
+            menu1 = self.to_menu["menu"]
+            menu1.delete(0, "end")
+            for ip in memory.destination_hosts:
+                menu1.add_command(label=ip, command=lambda value=ip: self.to_ip.set(value))
+            menu1.add_command(label="All", command=lambda value="All": self.to_ip.set(value))
+            
+            # Report Creation Threads
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
+
+            self.progressbar.stop()
         
         options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+options+".png")
