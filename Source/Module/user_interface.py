@@ -144,6 +144,8 @@ class pcapXrayGui:
 
         if os.path.exists(self.pcap_file.get()):
             self.progressbar.start()
+
+            # PcapRead - First of All!
             #result = q.Queue()
             packet_read = threading.Thread(target=pcap_reader.PcapEngine,args=(self.pcap_file.get(),"scapy"))
             packet_read.start()
@@ -151,6 +153,9 @@ class pcapXrayGui:
                 self.progressbar.update()
             packet_read.join()
             self.progressbar.stop()
+
+            # Report Generation of the PcapData
+            
             #packet_read.join()
             #self.capture_read = result.get()
             reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).packetDetails,args=())
@@ -159,6 +164,19 @@ class pcapXrayGui:
             #self.option.trace("w",self.map_select)
             #self.option.set("Tor")
             self.details_fetch = 0
+            
+            # Filters update 
+            # Reset Option Menu with the values fetched from the pcap
+            menu = self.from_menu["menu"]
+            menu.delete(0, "end")
+            for mac in memory.lan_hosts:
+                menu.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.from_ip.set(value))
+            menu.add_command(label="All", command=lambda value="All": self.from_ip.set(value))
+            menu1 = self.to_menu["menu"]
+            menu1.delete(0, "end")
+            for ip in memory.destination_hosts:
+                menu1.add_command(label=ip, command=lambda value=ip: self.to_ip.set(value))
+            menu1.add_command(label="All", command=lambda value="All": self.to_ip.set(value))
         else:
             mb.showerror("Error","File Not Found !")
 
@@ -177,19 +195,8 @@ class pcapXrayGui:
             t.join()
             t1.join()
             
+            # Report Generation Control and Filters update (Here?)
             self.details_fetch = 1
-
-            # Reset Option Menu with the values fetched from the pcap
-            menu = self.from_menu["menu"]
-            menu.delete(0, "end")
-            for mac in memory.lan_hosts:
-                menu.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.from_ip.set(value))
-            menu.add_command(label="All", command=lambda value="All": self.from_ip.set(value))
-            menu1 = self.to_menu["menu"]
-            menu1.delete(0, "end")
-            for ip in memory.destination_hosts:
-                menu1.add_command(label=ip, command=lambda value=ip: self.to_ip.set(value))
-            menu1.add_command(label="All", command=lambda value="All": self.to_ip.set(value))
             
             # Report Creation Threads
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).communicationDetailsReport,args=())
@@ -199,6 +206,7 @@ class pcapXrayGui:
 
             self.progressbar.stop()
         
+        # Loding the generated map
         options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+options+".png")
         if not os.path.exists(self.image_file):
