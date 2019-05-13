@@ -79,26 +79,33 @@ class pcapXrayGui:
         SecondFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
         SecondFrame.rowconfigure(10, weight=1)
-        ttk.Label(SecondFrame, text="Options: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
+        ttk.Label(SecondFrame, text="Traffic: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1, padx=10, sticky="W")
-        ttk.Button(SecondFrame, text="Visualize!", command=self.map_select).grid(row=10,column=11,sticky="E")   
+        self.trigger = ttk.Button(SecondFrame, text="Visualize!", command=self.map_select)
+        self.trigger.grid(row=10,column=11,sticky="E")   
 
         self.img = ""
         
         ## Filters
         self.from_ip = StringVar()
-        #self.from_hosts = {"All"}
-        ttk.Label(SecondFrame, text="From: ", style="BW.TLabel").grid(row=10, column=2, sticky="W")
-        self.from_menu = ttk.OptionMenu(SecondFrame, self.from_ip, "All")
-        self.from_menu.grid(row=10, column=3, padx=10, sticky="E")
+        self.from_hosts = ["All"]
         self.to_ip = StringVar()
-        #self.to_hosts = {"All"}
+        self.to_hosts = ["All"]
+        ttk.Label(SecondFrame, text="From: ", style="BW.TLabel").grid(row=10, column=2, sticky="W")
+        self.from_menu = ttk.Combobox(SecondFrame, width=10, textvariable=self.from_ip, values=self.from_hosts)
+        self.from_menu.grid(row=10, column=3, padx=10, sticky="E")
         ttk.Label(SecondFrame, text="To: ", style="BW.TLabel").grid(row=10, column=4, sticky="W")
-        self.to_menu = ttk.OptionMenu(SecondFrame, self.to_ip, "All")
+        self.to_menu = ttk.Combobox(SecondFrame, width=10, textvariable=self.to_ip, values=self.to_hosts)
         self.to_menu.grid(row=10, column=5, padx=10, sticky="E")
+
+        # Default filter values
+        self.from_menu.set("All")
+        self.to_menu.set("All")
+        self.option.set("All")
+
 
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
@@ -136,6 +143,18 @@ class pcapXrayGui:
                     mb.showerror("Error","Permission denied to create report! Run with higher privilege.")
             else:
                 mb.showerror("Error", "Enter a output directory!")
+    
+    """
+    def update_ips(self, direction):
+        if direction == "to":
+            self.to_hosts += list(memory.destination_hosts.keys())
+            self.to_menu['values'] = self.to_hosts
+        else:
+            for mac in memory.lan_hosts:
+                self.to_hosts += memory.lan_hosts[mac]["ip"]
+                self.from_hosts += memory.lan_hosts[mac]["ip"]
+            self.from_menu['values'] = self.from_hosts
+    """
 
     def pcap_analyse(self):
         if not os.access(self.destination_report.get(), os.W_OK):
@@ -143,6 +162,7 @@ class pcapXrayGui:
             return
 
         if os.path.exists(self.pcap_file.get()):
+            self.trigger['state'] = 'disabled'
             self.progressbar.start()
 
             # PcapRead - First of All!
@@ -156,6 +176,7 @@ class pcapXrayGui:
 
             # Report Generation of the PcapData
             
+            
             #packet_read.join()
             #self.capture_read = result.get()
             reportThreadpcap = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).packetDetails,args=())
@@ -165,18 +186,31 @@ class pcapXrayGui:
             #self.option.set("Tor")
             self.details_fetch = 0
             
+            """
             # Filters update 
             # Reset Option Menu with the values fetched from the pcap
-            menu = self.from_menu["menu"]
-            menu.delete(0, "end")
-            for mac in memory.lan_hosts:
-                menu.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.from_ip.set(value))
-            menu.add_command(label="All", command=lambda value="All": self.from_ip.set(value))
             menu1 = self.to_menu["menu"]
             menu1.delete(0, "end")
             for ip in memory.destination_hosts:
                 menu1.add_command(label=ip, command=lambda value=ip: self.to_ip.set(value))
             menu1.add_command(label="All", command=lambda value="All": self.to_ip.set(value))
+            menu = self.from_menu["menu"]
+            menu.delete(0, "end")
+            for mac in memory.lan_hosts:
+                menu.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.from_ip.set(value))
+                menu1.add_command(label=memory.lan_hosts[mac]["ip"], command=lambda value=memory.lan_hosts[mac]["ip"]: self.to_ip.set(value))
+            menu.add_command(label="All", command=lambda value="All": self.from_ip.set(value))
+            """
+            self.progressbar.start()
+            self.to_hosts += list(memory.destination_hosts.keys())
+            for mac in list(memory.lan_hosts.keys()):
+                self.progressbar.update()
+                self.to_hosts.append(memory.lan_hosts[mac]["ip"])
+                self.from_hosts.append(memory.lan_hosts[mac]["ip"])
+            self.to_menu['values'] = self.to_hosts
+            self.from_menu['values'] = self.from_hosts
+            self.progressbar.stop()
+            self.trigger['state'] = 'normal'
         else:
             mb.showerror("Error","File Not Found !")
 
