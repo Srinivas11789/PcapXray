@@ -95,10 +95,10 @@ class pcapXrayGui:
         self.to_ip = StringVar()
         self.to_hosts = ["All"]
         ttk.Label(SecondFrame, text="From: ", style="BW.TLabel").grid(row=10, column=2, sticky="W")
-        self.from_menu = ttk.Combobox(SecondFrame, width=10, textvariable=self.from_ip, values=self.from_hosts)
+        self.from_menu = ttk.Combobox(SecondFrame, width=15, textvariable=self.from_ip, values=self.from_hosts)
         self.from_menu.grid(row=10, column=3, padx=10, sticky="E")
         ttk.Label(SecondFrame, text="To: ", style="BW.TLabel").grid(row=10, column=4, sticky="W")
-        self.to_menu = ttk.Combobox(SecondFrame, width=10, textvariable=self.to_ip, values=self.to_hosts)
+        self.to_menu = ttk.Combobox(SecondFrame, width=15, textvariable=self.to_ip, values=self.to_hosts)
         self.to_menu.grid(row=10, column=5, padx=10, sticky="E")
 
         # Default filter values
@@ -184,7 +184,19 @@ class pcapXrayGui:
             #self.option.set("Tor")
             #self.option.trace("w",self.map_select)
             #self.option.set("Tor")
+            
+            # Reset
             self.details_fetch = 0
+            self.to_hosts = ["All"]
+            self.from_hosts = ["All"]
+
+
+            # Default filter values
+            self.to_menu['values'] = self.to_hosts
+            self.from_menu['values'] = self.from_hosts
+            self.from_menu.set("All")
+            self.to_menu.set("All")
+            self.option.set("All")
             
             """
             # Filters update 
@@ -205,8 +217,8 @@ class pcapXrayGui:
             self.to_hosts += list(memory.destination_hosts.keys())
             for mac in list(memory.lan_hosts.keys()):
                 self.progressbar.update()
-                self.to_hosts.append(memory.lan_hosts[mac]["ip"])
                 self.from_hosts.append(memory.lan_hosts[mac]["ip"])
+            self.to_hosts = list(set(self.to_hosts + self.from_hosts))
             self.to_menu['values'] = self.to_hosts
             self.from_menu['values'] = self.from_hosts
             self.progressbar.stop()
