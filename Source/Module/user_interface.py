@@ -162,7 +162,12 @@ class pcapXrayGui:
             return
 
         if os.path.exists(self.pcap_file.get()):
+            
+            # Disable controls when performing analysis
             self.trigger['state'] = 'disabled'
+            self.to_menu['state'] = 'disabled'
+            self.from_menu['state'] = 'disabled'
+
             self.progressbar.start()
 
             # PcapRead - First of All!
@@ -222,7 +227,11 @@ class pcapXrayGui:
             self.to_menu['values'] = self.to_hosts
             self.from_menu['values'] = self.from_hosts
             self.progressbar.stop()
+
+            # Enable controls
             self.trigger['state'] = 'normal'
+            self.to_menu['state'] = 'normal'
+            self.from_menu['state'] = 'normal'
         else:
             mb.showerror("Error","File Not Found !")
 

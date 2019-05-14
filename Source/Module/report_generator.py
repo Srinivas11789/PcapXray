@@ -53,9 +53,14 @@ class reportGen:
                 text_handle.write("\nSession: %s\n" % session)
                 text_handle.write("\nEthernet: %s\n" % memory.packet_db[session]["Ethernet"])
                 text_handle.write("\nPayload:\n")
-                payloads = "\n".join(memory.packet_db[session]["Payload"])
-                if payloads:
-                    text_handle.write("%s\n" % payloads)
+                fpayloads = "\n".join(memory.packet_db[session]["Payload"]["forward"])
+                text_handle.write("\nForward:\n")
+                if fpayloads:
+                    text_handle.write("%s\n" % fpayloads)
+                rpayloads = "\n".join(memory.packet_db[session]["Payload"]["reverse"])
+                text_handle.write("\nReverse:\n")
+                if rpayloads:
+                    text_handle.write("%s\n" % rpayloads)                
                 text_handle.write("="*80+"\n")
             text_handle.close()
         except Exception as e:
