@@ -2,6 +2,7 @@
     A Network Forensics Tool - To visualize a Packet Capture offline as a Network Diagram including device identification, highlight important communication and file extraction
 ![Alt text](https://srinivas11789.github.io/PcapXray/logo.png?width=20px "PcapXray")
 ## PcapXray Design Specification
+Wiki has more help too.
 
 ### Goal:
   Given a Pcap File, plot a network diagram displaying hosts in the network, network traffic, highlight important traffic and Tor traffic as well as potential malicious traffic including data involved in the communication.
@@ -24,9 +25,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_2_4.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_5_1.png?raw=true)
 
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen1_2_4.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_5_2.png?raw=true)
 
 ### Components:
 * Network Diagram 
@@ -34,6 +35,30 @@ Tool Highlights:
 * Malicious Traffic Identification
 * Tor Traffic
 * GUI – a gui with options to upload pcap file and display the network diagram
+
+### Setup 
+
+* Python 3
+
+```bash
+apt install python3-pip
+apt install python3-tk
+apt install graphviz
+apt install python3-pil python3-pil.imagetk
+pip3 install -r requirements.txt
+python3 Source/main.py
+```
+( Make sure to escalate privilege to allow file creations - Run with `sudo` )
+
+* Python 2
+
+```bash
+apt install python-tk
+apt install graphviz
+pip install -r requirements.txt
+python Source/main.py
+```
+( Make sure to escalate privilege to allow file creations - Run with `sudo` )
 
 ### Python Libraries Used:  - All these libraries are required for functionality
 * Tkinter and TTK – Install from pip or apt-get – Ensure Tkinter and graphviz is installed (Most Linux contain by default) 
@@ -52,7 +77,7 @@ Tool Highlights:
   *	Matplotlib – plot graph (not used as of now)
   
 ### Demo
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/demo2_4.gif?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/demo2_5.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -120,4 +145,4 @@ Tool Highlights:
 
 [![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
 
-Just for Security Fun!
+## ***Just for Security Fun!***
