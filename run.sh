@@ -24,10 +24,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # Add ENV to XQuartz
     /usr/X11/bin/xhost +
 
+    # Create directory to share pcap and get report
+    mkdir ~/shared_volume
+
     # Run Docker Image - Production (Master)
     #docker run --rm -d --name pcapxray -e DISPLAY=$IP:0 -v /tmp/.X11-unix:/tmp/.X11-unix srinivas11789/pcapxray
     # Run Docker Image - Staging (Develop)
-    docker run --rm -d --name pcapxray -e DISPLAY=$IP:0 -v /tmp/.X11-unix:/tmp/.X11-unix srinivas11789/pcapxray-beta
+    docker run --rm -d --name pcapxray -v ${PWD}/artifacts:/tmp/artifacts -e DISPLAY=$IP:0 -v /tmp/.X11-unix:/tmp/.X11-unix srinivas11789/pcapxray-2.5
 
 
 elif [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -40,7 +43,7 @@ elif [[ "$OSTYPE" == "linux-gnu" ]]; then
     # Run docker - Production (Master)
     #docker run --rm --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" srinivas11789/pcapxray
     # Run docker - Staging (Develop)
-    docker run --rm --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" srinivas11789/pcapxray-beta
+    docker run --rm -d --name pcapxray -v ${PWD}/artifacts:/tmp/artifacts --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" srinivas11789/pcapxray-2.5
 
 else
     # Windows OS -- xming method
