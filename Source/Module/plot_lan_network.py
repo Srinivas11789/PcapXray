@@ -7,6 +7,7 @@ import malicious_traffic_identifier
 import memory
 
 import networkx as nx
+import json
 #import matplotlib.pyplot as plt
 
 from graphviz import Digraph
@@ -82,6 +83,8 @@ class plotLan:
         else:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
 
+        n = nx.Graph()
+
         f.attr('node', shape='doublecircle')
         #f.node('defaultGateway')
 
@@ -115,9 +118,11 @@ class plotLan:
                     if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
                         curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
+                        n.add_node(curr_node)
                     else:
                         curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
+                        n.add_node(curr_node)
 
                     # Destination
                     if dst in memory.destination_hosts:
@@ -138,6 +143,7 @@ class plotLan:
                             dlabel = ""
 
                     if curr_node != destination:
+                        n.add_edge(curr_node, destination)
                         if session in memory.possible_tor_traffic:
                             f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
                             if edge_present == False:
@@ -462,6 +468,12 @@ class plotLan:
             f.attr(label="No "+option+" Traffic between nodes!",engine='circo', size="5, 5", dpi="300")
 
         self.apply_styles(f,self.styles)
+
+        #netx_graph = nx.nx_agraph.from_agraph(f)
+
+        interactive = nx.readwrite.json_graph.node_link_data(n)
+        int_file = self.filename+"_"+"interactive.json"
+        json.dump(interactive, open(int_file, 'w'))
             
         f.render()
                 

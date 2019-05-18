@@ -84,8 +84,10 @@ class pcapXrayGui:
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1, padx=10, sticky="W")
+        self.ibutton = ttk.Button(SecondFrame, text="InteractiveMagic!", command=self.openFrame)
+        self.ibutton.grid(row=10, column=10, padx=10, sticky="E")
         self.trigger = ttk.Button(SecondFrame, text="Visualize!", command=self.map_select)
-        self.trigger.grid(row=10,column=11,sticky="E")   
+        self.trigger.grid(row=10,column=11, sticky="E")   
 
         self.img = ""
         
@@ -123,6 +125,9 @@ class pcapXrayGui:
         self.ThirdFrame.rowconfigure(0, weight=1)
         #self.details_fetch = 0
         #self.destination_report = ""
+
+        #self.FourthFrame = ttk.Frame(base,  width=50, height=50, padding="10 10 10 10")
+        self.FourthFrame = None
 
     def browse_directory(self, option):
         if option == "pcap":
@@ -278,6 +283,51 @@ class pcapXrayGui:
             self.label.grid_forget()
             self.load_image()
 
+    def gimmick(self):
+        
+        # Tkinter changes
+        if not self.FourthFrame.winfo_ismapped():
+            self.FourthFrame.grid(column=50, row=20, padx=100, pady=100)
+            self.ThirdFrame.columnconfigure(10, weight=1)
+            self.ThirdFrame.rowconfigure(10, weight=1)
+        else:
+            self.FourthFrame.grid_forget()
+
+    def hide(self):
+        self.base.withdraw()
+
+    def openFrame(self):
+
+        #self.hide()
+        
+        x = self.base.winfo_x()
+        y = self.base.winfo_y()
+        if not self.FourthFrame:
+            #self.FourthFrame = OtherFrame(x, y)
+            #self.FourthFrame = Toplevel()
+            import interactive_gui
+            self.FourthFrame = interactive_gui.gimmick_initialize("file://"+self.image_file+"_"+"interactive.json")
+            #webroot = Tk()
+            #app = interactive_gui.MainFrame(webroot)
+            # Tk must be initialized before CEF otherwise fatal error (Issue #306)
+            #cef.Initialize()
+            #app.mainloop()
+            #cef.Shutdown()
+            #interactive_gui.MainFrame(Tk())
+        else:
+            self.FourthFrame.destroy()
+        #handler = lambda: self.onCloseOtherFrame(subFrame)
+        #btn = ttk.Button(subFrame, text="Close", command=handler)
+        #btn.pack()
+ 
+    def onCloseOtherFrame(self, otherFrame):
+        otherFrame.destroy()
+        #self.show()
+
+    def show(self):
+        self.base.update()
+        self.base.deiconify()
+
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
@@ -309,6 +359,13 @@ class pcapXrayGui:
         if self.img:
              self.load_image()
 
+class OtherFrame(Toplevel):
+
+    def __init__(self, x, y):
+        """Constructor"""
+        Toplevel.__init__(self)
+        self.geometry("+%d+%d" % (x + 100, y + 200))
+        self.title("otherFrame")
 
 def main():
     base = Tk()
