@@ -245,10 +245,11 @@ class pcapXrayGui:
             t.start()
             t1.start()
             self.progressbar.start()
-            while t.is_alive():
+            while t.is_alive() or t1.is_alive():
                   self.progressbar.update()
             t.join()
             t1.join()
+            self.progressbar.stop()
             
             # Report Generation Control and Filters update (Here?)
             self.details_fetch = 1
@@ -258,8 +259,6 @@ class pcapXrayGui:
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
-
-            self.progressbar.stop()
         
         # Loding the generated map
         options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
