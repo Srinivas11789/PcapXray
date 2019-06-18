@@ -7,9 +7,9 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from functools import partial
 
-
-class Ui_MainWindow():
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(731, 536)
@@ -23,13 +23,12 @@ class Ui_MainWindow():
         self.label = QtWidgets.QLabel(self.frame)
         self.label.setGeometry(QtCore.QRect(10, 20, 131, 16))
         self.label.setObjectName("label")
-        self.textEdit = QtWidgets.QTextEdit(self.frame)
+        self.textEdit = QtWidgets.QLineEdit(self.frame)
         self.textEdit.setGeometry(QtCore.QRect(140, 20, 221, 21))
         self.textEdit.setObjectName("textEdit")
         self.pushButton = QtWidgets.QPushButton(self.frame)
         self.pushButton.setGeometry(QtCore.QRect(360, 10, 111, 41))
         self.pushButton.setObjectName("pushButton")
-        self.pushButton.clicked.connect(self.browse_dir)
         self.pushButton_2 = QtWidgets.QPushButton(self.frame)
         self.pushButton_2.setGeometry(QtCore.QRect(470, 10, 101, 41))
         self.pushButton_2.setObjectName("pushButton_2")
@@ -45,7 +44,7 @@ class Ui_MainWindow():
         self.label_2 = QtWidgets.QLabel(self.frame_2)
         self.label_2.setGeometry(QtCore.QRect(10, 20, 141, 16))
         self.label_2.setObjectName("label_2")
-        self.textEdit_2 = QtWidgets.QTextEdit(self.frame_2)
+        self.textEdit_2 = QtWidgets.QLineEdit(self.frame_2)
         self.textEdit_2.setGeometry(QtCore.QRect(150, 20, 211, 21))
         self.textEdit_2.setObjectName("textEdit_2")
         self.pushButton_4 = QtWidgets.QPushButton(self.frame_2)
@@ -109,12 +108,6 @@ class Ui_MainWindow():
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-    
-    def browse_dir(self):
-        self.pcap_filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File', QtCore.QDir.rootPath() , '*.pcap*')
-        self.textEdit.setText(self.pcap_filename)
-        #if _ is not None:
-        #    print("Select a file!")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -147,15 +140,14 @@ class Ui_MainWindow():
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\">  5. Covert Communication</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\">Please contact me @ spg349@nyu.edu for any bugs or problems !</span></p></body></html>"))
+        self.pushButton.clicked.connect(partial(self.browse_dir,""))
+        self.pushButton_3.clicked.connect(partial(self.browse_dir,"output"))
 
-
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+#if __name__ == "__main__":
+#    import sys
+#    app = QtWidgets.QApplication(sys.argv)
+#    MainWindow = QtWidgets.QMainWindow()
+#    ui = Ui_MainWindow()
+#    ui.setupUi(MainWindow)
+#    MainWindow.show()
+#    sys.exit(app.exec_())
