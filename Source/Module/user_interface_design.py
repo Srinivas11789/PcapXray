@@ -7,7 +7,6 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from functools import partial
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -67,12 +66,15 @@ class Ui_MainWindow(object):
         self.comboBox = QtWidgets.QComboBox(self.frame_3)
         self.comboBox.setGeometry(QtCore.QRect(60, 10, 121, 41))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItems(["All", "HTTP", "HTTPS", "ICMP", "DNS", "Tor", "Malicious"])
         self.comboBox_2 = QtWidgets.QComboBox(self.frame_3)
         self.comboBox_2.setGeometry(QtCore.QRect(380, 10, 121, 41))
         self.comboBox_2.setObjectName("comboBox_2")
+        self.comboBox_2.addItem("All")
         self.comboBox_3 = QtWidgets.QComboBox(self.frame_3)
         self.comboBox_3.setGeometry(QtCore.QRect(240, 10, 111, 41))
         self.comboBox_3.setObjectName("comboBox_3")
+        self.comboBox_3.addItem("All")
         self.label_4 = QtWidgets.QLabel(self.frame_3)
         self.label_4.setGeometry(QtCore.QRect(360, 20, 31, 16))
         self.label_4.setObjectName("label_4")
@@ -87,6 +89,8 @@ class Ui_MainWindow(object):
         self.frame_4.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_4.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_4.setObjectName("frame_4")
+
+        """
         self.horizontalScrollBar = QtWidgets.QScrollBar(self.frame_4)
         self.horizontalScrollBar.setGeometry(QtCore.QRect(10, 260, 691, 16))
         self.horizontalScrollBar.setOrientation(QtCore.Qt.Horizontal)
@@ -95,18 +99,27 @@ class Ui_MainWindow(object):
         self.verticalScrollBar.setGeometry(QtCore.QRect(690, 10, 16, 241))
         self.verticalScrollBar.setOrientation(QtCore.Qt.Vertical)
         self.verticalScrollBar.setObjectName("verticalScrollBar")
-        self.textEdit_3 = QtWidgets.QTextEdit(self.frame_4)
-        self.textEdit_3.setGeometry(QtCore.QRect(10, 10, 671, 241))
-        self.textEdit_3.setObjectName("textEdit_3")
+        """
+
+        #self.textEdit_3 = QtWidgets.QTextEdit(self.frame_4)
+        #self.textEdit_3.setGeometry(QtCore.QRect(10, 10, 671, 241))
+        #self.textEdit_3.setObjectName("textEdit_3")
+
+        self.pic_holder = QtWidgets.QLabel()
+        self.pic_holder.adjustSize()
+        #self.pic_holder.setGeometry(QtCore.QRect(10, 220, 711, 281))
+
+        self.scrollArea = QtWidgets.QScrollArea(self.frame_4)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setGeometry(QtCore.QRect(10, 10, 690, 261))
+        self.scrollArea.setWidget(self.pic_holder)
+        
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
-        # Params
-        self.pcap_filename = ""
-        self.zoom = [900,900]
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -124,7 +137,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "To: "))
         self.label_5.setText(_translate("MainWindow", "From: "))
         self.pushButton_6.setText(_translate("MainWindow", "Visualize!"))
-        self.textEdit_3.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.pic_holder.setText(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'.SF NS Text\'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
@@ -141,8 +154,6 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\">  5. Covert Communication</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Menlo,Monaco,Courier New,monospace\'; font-size:12px; color:#000000;\">Please contact me @ spg349@nyu.edu for any bugs or problems !</span></p></body></html>"))
-        self.pushButton.clicked.connect(partial(self.browse_dir,""))
-        self.pushButton_3.clicked.connect(partial(self.browse_dir,"output"))
 
 #if __name__ == "__main__":
 #    import sys
