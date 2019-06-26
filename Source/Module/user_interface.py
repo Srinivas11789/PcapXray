@@ -1,4 +1,9 @@
 import sys
+
+if sys.platform == 'darwin':
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 try:
     # for Python2
     from Tkinter import *
@@ -84,8 +89,10 @@ class pcapXrayGui:
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1, padx=10, sticky="W")
+        self.ibutton = ttk.Button(SecondFrame, text="InteractiveMagic!", command=self.gimmick)
+        self.ibutton.grid(row=10, column=10, padx=10, sticky="E")
         self.trigger = ttk.Button(SecondFrame, text="Visualize!", command=self.map_select)
-        self.trigger.grid(row=10,column=11,sticky="E")   
+        self.trigger.grid(row=10,column=11, sticky="E")   
 
         self.img = ""
         
@@ -123,6 +130,12 @@ class pcapXrayGui:
         self.ThirdFrame.rowconfigure(0, weight=1)
         #self.details_fetch = 0
         #self.destination_report = ""
+
+        #self.FourthFrame = ttk.Frame(base,  width=50, height=50, padding="10 10 10 10")
+        #self.FourthFrame = ttk.Frame(base,  width=600, height=400, padding="10 10 10 10",relief= GROOVE)
+        #self.FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S))
+        #self.FourthFrame.columnconfigure(0, weight=1)
+        #self.FourthFrame.rowconfigure(0, weight=1)
 
     def browse_directory(self, option):
         if option == "pcap":
@@ -245,11 +258,10 @@ class pcapXrayGui:
             t.start()
             t1.start()
             self.progressbar.start()
-            while t.is_alive() or t1.is_alive():
+            while t.is_alive():
                   self.progressbar.update()
             t.join()
             t1.join()
-            self.progressbar.stop()
             
             # Report Generation Control and Filters update (Here?)
             self.details_fetch = 1
@@ -259,6 +271,8 @@ class pcapXrayGui:
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
+
+            self.progressbar.stop()
         
         # Loding the generated map
         options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
@@ -276,6 +290,61 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
+
+    def gimmick(self):
+        import interactive_gui
+        interactive_gui.gimmick_initialize(self.base, "file:///Users/sri/Desktop/dev/personalGit/py3_migrate/dev_pcap/n/interactive/PcapXray/Source/gameofthrones.html") #"file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
+        
+        """
+        # Tkinter changes
+        if not self.FourthFrame.winfo_ismapped():
+            #self.FourthFrame.grid(column=50, row=10, padx=100, pady=100)
+            #self.FourthFrame.columnconfigure(10, weight=1)
+            #self.FourthFrame.rowconfigure(10, weight=1)
+            self.FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=100, rowspan=100, padx=5, pady=5)
+            self.FourthFrame.columnconfigure(0, weight=1)
+            self.FourthFrame.rowconfigure(100, weight=1)
+            import interactive_gui
+            interactive_gui.gimmick_initialize("file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html", self.FourthFrame)
+        else:
+            self.FourthFrame.grid_forget()
+        """
+
+    def hide(self):
+        self.base.withdraw()
+
+    def openFrame(self):
+
+        #self.hide()
+        
+        x = self.base.winfo_x()
+        y = self.base.winfo_y()
+        if not self.FourthFrame:
+            #self.FourthFrame = OtherFrame(x, y)
+            #self.FourthFrame = Toplevel()
+            import interactive_gui
+            self.FourthFrame = interactive_gui.gimmick_initialize("file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
+            #("file:///"+self.image_file+"_"+"interactive.json")
+            #webroot = Tk()
+            #app = interactive_gui.MainFrame(webroot)
+            # Tk must be initialized before CEF otherwise fatal error (Issue #306)
+            #cef.Initialize()
+            #app.mainloop()
+            #cef.Shutdown()
+            #interactive_gui.MainFrame(Tk())
+        else:
+            self.FourthFrame.destroy()
+        #handler = lambda: self.onCloseOtherFrame(subFrame)
+        #btn = ttk.Button(subFrame, text="Close", command=handler)
+        #btn.pack()
+ 
+    def onCloseOtherFrame(self, otherFrame):
+        otherFrame.destroy()
+        #self.show()
+
+    def show(self):
+        self.base.update()
+        self.base.deiconify()
 
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
@@ -308,6 +377,13 @@ class pcapXrayGui:
         if self.img:
              self.load_image()
 
+class OtherFrame(Toplevel):
+
+    def __init__(self, x, y):
+        """Constructor"""
+        Toplevel.__init__(self)
+        self.geometry("+%d+%d" % (x + 100, y + 200))
+        self.title("otherFrame")
 
 def main():
     base = Tk()

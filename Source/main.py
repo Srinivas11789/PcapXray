@@ -5,6 +5,10 @@ import os   #-- default lib - packed with python
 import sys  #-- default lib
 import datetime  #-- default lib
 
+if sys.platform == 'darwin':
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 try:
     # for Python2
     from Tkinter import *
