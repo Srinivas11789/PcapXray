@@ -4,12 +4,13 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('TkAgg')
 
+"""
 from cefpython3 import cefpython as cef
 import ctypes
 import os
 import platform
 import logging as _logging
-
+"""
 import memory
 
 #import vispy

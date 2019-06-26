@@ -13,6 +13,8 @@ from graphviz import Digraph
 import threading
 import os
 
+from pyvis.network import Network
+
 class plotLan:
 
     def __init__(self, filename, path, option="Tor", to_ip="All", from_ip="All"):
@@ -81,6 +83,9 @@ class plotLan:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="circo", format="png")
         else:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
+        
+        interactive_graph = Network(height="750px", width="100%", bgcolor="#222222", font_color="white")
+        interactive_graph.barnes_hut()
 
         f.attr('node', shape='doublecircle')
         #f.node('defaultGateway')
@@ -136,33 +141,43 @@ class plotLan:
                             destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
+                    
+                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
+                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
 
                     if curr_node != destination:
                         if session in memory.possible_tor_traffic:
                             f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
+                            interactive_graph.add_edge(curr_node, destination, color="white")
                             if edge_present == False:
                                 edge_present = True
                         elif session in memory.possible_mal_traffic:
                             f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
+                            interactive_graph.add_edge(curr_node, destination, color="red")
                             if edge_present == False:
                                 edge_present = True
                         else:
                             if port == "443":
                                 f.edge(curr_node, destination, label='HTTPS: ' + map_dst +": "+dlabel, color = "blue")
+                                interactive_graph.add_edge(curr_node, destination, color="blue")
                                 if edge_present == False:
                                     edge_present = True
                             if port == "80":
                                 f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
+                                interactive_graph.add_edge(curr_node, destination, color="green")
                                 if edge_present == False:
                                     edge_present = True
                             if port == "ICMP":
                                 f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
+                                interactive_graph.add_edge(curr_node, destination, color="purple")
                                 if edge_present == False:
                                     edge_present = True
                             if port == "53":
                                 f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
+                                interactive_graph.add_edge(curr_node, destination, color="pink")
                                 if edge_present == False:
                                     edge_present = True
+                            interactive_graph.save_graph(self.filename+".html")
 
         elif option == "HTTP":
             for session in self.sessions:
