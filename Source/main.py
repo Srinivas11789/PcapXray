@@ -9,6 +9,8 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('TkAgg')
 
+from cefpython3 import cefpython as cef
+
 try:
     # for Python2
     from Tkinter import *
@@ -35,7 +37,9 @@ def main():
     icon = PhotoImage(file=logo_file)
     base.tk.call('wm','iconphoto',base._w,icon)
     user_interface.pcapXrayGui(base)
+    cef.Initialize()
     base.mainloop()
+    cef.Shutdown()
 
 main()
 

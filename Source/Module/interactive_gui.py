@@ -93,7 +93,7 @@ import platform
 import logging as _logging
 
 # Fix for PyCharm hints warnings
-WindowUtils = cef.WindowUtils()
+#WindowUtils = cef.WindowUtils()
 
 # Platforms
 WINDOWS = (platform.system() == "Windows")
@@ -127,29 +127,32 @@ def gimmick_initialize(window, map):
             assert cef.__version__ >= "55.3", "CEF Python v55.3+ required to run this"
             sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
 
-            cef.Initialize()
+            #cef.Initialize()
             #FourthFrame = ttk.Frame(window,  width=700, height=600, padding="10 10 10 10",relief= GROOVE)
             FourthFrame = ttk.Frame(window,  width=500, height=500, padding="10 10 10 10",relief= GROOVE)
             #tk.Grid.rowconfigure(1, weight=1)
             #tk.Grid.columnconfigure(0, weight=1)
             FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=200, rowspan=200, padx=5, pady=5)
-            FourthFrame.columnconfigure(0, weight=1)
-            FourthFrame.rowconfigure(0, weight=1)
 
             # Pack MainFrame
             #FourthFrame.pack(fill=tk.BOTH, expand=tk.YES)
             #browser_frame.mainloop()
             browser_frame = BrowserFrame(FourthFrame)
             #browser_frame.pack(fill=tk.BOTH, expand=tk.YES)
-            browser_frame.grid(row=0, column=1,sticky=(N, W, E, S),columnspan=100, rowspan=100, padx=5, pady=5)
+            browser_frame.grid(row=0, column=0,sticky=(N, W, E, S),columnspan=100, rowspan=100, padx=5, pady=5)
+
+            FourthFrame.columnconfigure(50, weight=1)
+            FourthFrame.rowconfigure(10, weight=1)
             browser_frame.columnconfigure(0, weight=1)
             browser_frame.rowconfigure(0, weight=1)
+
+            window.update()
         else:
             #(tk.N + tk.S + tk.E + tk.W)
-            cef.Shutdown()
+            #cef.Shutdown()
             #browser_frame.grid_forget()
             FourthFrame.grid_forget()
-            FourthFrame = browser_frame = ""
+            FourthFrame, browser_frame = "", ""
             window.update()
 
 def show_frame(self, cont):
@@ -162,7 +165,7 @@ class BrowserFrame(tk.Frame):
         self.closing = False
         self.browser = None
         #tk.Frame.__init__(self, master, width=600, height=400)
-        tk.Frame.__init__(self, master, width=400, height=400)
+        ttk.Frame.__init__(self, master, width=500, height=400, padding="10 10 10 10", relief=GROOVE)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)

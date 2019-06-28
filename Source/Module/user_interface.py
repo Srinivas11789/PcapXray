@@ -38,13 +38,27 @@ class pcapXrayGui:
         base.title("PcapXray")
         Label(base, text="PcapXray Tool - A LAN Network Analyzer")
 
+        #base.resizable(True, True)
+        #base.rowconfigure(0, weight=1)
+        #base.columnconfigure(0, weight=1)
+
+        #self.container = ttk.Frame(base, padding="1 1 1 1")
+        #self.container.grid(column=10, row=0, sticky=(N, W, E, S))
+        #self.container.rowconfigure(0, weight=1)
+        #self.container.columnconfigure(10, weight=1)
+        #base.resizable(True, True)
+        #base.rowconfigure(0, weight=1)
+        #base.columnconfigure(0, weight=1)
+
+        #base = self.base = self.container
+
         # Style Configuration
         style = ttk.Style()
         style.configure("BW.TLabel", foreground="black")
         style.configure("BW.TEntry", foreground="black")
 
         # 1st Frame - Initial Frame
-        InitFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
+        InitFrame = ttk.Frame(base,  width=50, padding="10 0 0 0",relief= GROOVE)
         InitFrame.grid(column=10, row=10, sticky=(N, W, E, S))
         InitFrame.columnconfigure(10, weight=1)
         InitFrame.rowconfigure(10, weight=1)
@@ -66,7 +80,7 @@ class pcapXrayGui:
         FirstFrame = ttk.Frame(base,  width=50, padding="10 0 0 0", relief= GROOVE)
         FirstFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         FirstFrame.columnconfigure(10, weight=1)
-        FirstFrame.rowconfigure(10, weight=1)
+        FirstFrame.rowconfigure(20, weight=1)
         self.destination_report = StringVar(value=sys.path[0])
         ttk.Label(FirstFrame, text="Output directory path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
@@ -83,7 +97,7 @@ class pcapXrayGui:
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         SecondFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
-        SecondFrame.rowconfigure(10, weight=1)
+        SecondFrame.rowconfigure(30, weight=1)
         ttk.Label(SecondFrame, text="Traffic: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
@@ -126,8 +140,8 @@ class pcapXrayGui:
         self.yscrollbar = Scrollbar(self.ThirdFrame, orient=VERTICAL)
         self.yscrollbar.grid(row=0, column=100, sticky=N + S)
         self.ThirdFrame.grid(column=10, row=40, sticky=(N, W, E, S))
-        self.ThirdFrame.columnconfigure(0, weight=1)
-        self.ThirdFrame.rowconfigure(0, weight=1)
+        self.ThirdFrame.columnconfigure(10, weight=1)
+        self.ThirdFrame.rowconfigure(40, weight=1)
         #self.details_fetch = 0
         #self.destination_report = ""
 
@@ -136,6 +150,10 @@ class pcapXrayGui:
         #self.FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S))
         #self.FourthFrame.columnconfigure(0, weight=1)
         #self.FourthFrame.rowconfigure(0, weight=1)
+
+        base.resizable(False, False) 
+        base.rowconfigure(0, weight=1)
+        base.columnconfigure(0, weight=1)
 
     def browse_directory(self, option):
         if option == "pcap":
@@ -293,7 +311,9 @@ class pcapXrayGui:
 
     def gimmick(self):
         import interactive_gui
-        interactive_gui.gimmick_initialize(self.base, "file:///Users/sri/Desktop/dev/personalGit/py3_migrate/dev_pcap/n/interactive/PcapXray/Source/gameofthrones.html") #"file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
+        interactive_gui.gimmick_initialize(self.base, "file://"+self.image_file.replace(".png",".html"))
+        #interactive_gui.gimmick_initialize(self.base, "file:///root/Desktop/dev_pcap/kali/PcapXray/Source/Module/Report/test_All_All_All.html")
+        #interactive_gui.gimmick_initialize(self.base, "file:///Users/sri/Desktop/dev/personalGit/py3_migrate/dev_pcap/n/interactive/PcapXray/Source/gameofthrones.html") #"file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
         
         """
         # Tkinter changes
@@ -347,13 +367,19 @@ class pcapXrayGui:
         self.base.deiconify()
 
     def load_image(self):
-        self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
-        self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.canvas = Canvas(self.ThirdFrame, width=800,height=500, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        #self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
+        #self.canvas.pack(side = RIGHT, fill = BOTH, expand = True)
         self.img = ImageTk.PhotoImage(Image.open(self.image_file).resize(tuple(self.zoom),Image.ANTIALIAS))#.convert('RGB'))
         self.canvas.create_image(0,0, image=self.img)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
+        self.canvas.rowconfigure(0, weight=1)
+        self.canvas.columnconfigure(0, weight=1)
+        #self.ThirdFrame.columnconfigure(10, weight=1)
+        #self.ThirdFrame.rowconfigure(40, weight=1)
 
     def map_select(self, *args):
         print(self.option.get())
