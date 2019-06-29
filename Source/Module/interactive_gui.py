@@ -165,7 +165,9 @@ class BrowserFrame(tk.Frame):
         self.closing = False
         self.browser = None
         #tk.Frame.__init__(self, master, width=600, height=400)
-        ttk.Frame.__init__(self, master, width=500, height=400, padding="10 10 10 10", relief=GROOVE)
+        #ttk.Frame.__init__(self, master, width=500, height=400, padding="10 10 10 10", relief=GROOVE)
+        # Python2 has a ttk frame error of using self as argument
+        tk.Frame.__init__(self, master, width=500, height=400)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)
@@ -182,8 +184,14 @@ class BrowserFrame(tk.Frame):
         self.message_loop_work()
 
     def get_window_handle(self):
-        if self.winfo_id() > 0:
+        if self.winfo_id() > 0 and not MAC:
             return self.winfo_id()
+        else:
+            raise Exception("Couldn't obtain window handle")
+        """
+        # CEF crashes in mac so temp disable
+        # * CreateBrowserSync calling window handle crashes with segmentation fault 11
+        # * https://github.com/cztomczak/cefpython/issues/309
         elif MAC:
             # On Mac window id is an invalid negative value (Issue #308).
             # This is kind of a dirty hack to get window handle using
@@ -198,8 +206,7 @@ class BrowserFrame(tk.Frame):
             # window asking whether to Reopen that window.
             # noinspection PyUnresolvedReferences
             return objc.pyobjc_id(NSApp.windows()[-1].contentView())
-        else:
-            raise Exception("Couldn't obtain window handle")
+        """
 
     def message_loop_work(self):
         cef.MessageLoopWork()
