@@ -146,8 +146,13 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
                     
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
+
                     #if (curr_node, curr_node, title=curr_node, color="yellow") not in vis_nodes:
                     #    vis_nodes.append((curr_node, curr_node, title=curr_node, color="yellow"))
                     #if (destination, destination, title=destination, color="yellow") not in vis_nodes:
@@ -251,8 +256,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
                     
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if port == "80" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTP: ' + str(map_dst)+": "+dlabel, color = "green")
@@ -305,8 +314,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
                     
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if port == "443" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst)+": "+dlabel, color = "blue")
@@ -359,8 +372,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if session in memory.possible_tor_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
@@ -415,8 +432,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if session in memory.possible_mal_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
@@ -468,8 +489,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if protocol == "ICMP" and curr_node != destination:
                         f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
@@ -520,8 +545,12 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    interactive_graph.add_node(curr_node, curr_node, title=curr_node, color="yellow")
-                    interactive_graph.add_node(destination, destination, title=destination, color="yellow")
+                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+                    try:
+                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+                    except Exception as e:
+                        print("Interactive graph error occurred: "+str(e))
 
                     if port == "53" and curr_node != destination:
                         f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
