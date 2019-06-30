@@ -566,11 +566,6 @@ class plotLan:
             
         f.render()
 
-        # Interactive Graph
-        #if vis_nodes:
-        #    interactive_graph.add_nodes(vis_nodes)
-        #if vis_edges:
-        #    interactive_graph.add_edges(vis_edges)
         interactive_graph.save_graph(self.filename+".html")
                 
 def main():

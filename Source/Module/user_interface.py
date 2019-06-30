@@ -33,24 +33,11 @@ import os, sys
 
 class pcapXrayGui:
     def __init__(self, base):
+
         # Base Frame Configuration
         self.base = base
         base.title("PcapXray")
         Label(base, text="PcapXray Tool - A LAN Network Analyzer")
-
-        #base.resizable(True, True)
-        #base.rowconfigure(0, weight=1)
-        #base.columnconfigure(0, weight=1)
-
-        #self.container = ttk.Frame(base, padding="1 1 1 1")
-        #self.container.grid(column=10, row=0, sticky=(N, W, E, S))
-        #self.container.rowconfigure(0, weight=1)
-        #self.container.columnconfigure(10, weight=1)
-        #base.resizable(True, True)
-        #base.rowconfigure(0, weight=1)
-        #base.columnconfigure(0, weight=1)
-
-        #base = self.base = self.container
 
         # Style Configuration
         style = ttk.Style()
@@ -127,7 +114,6 @@ class pcapXrayGui:
         self.to_menu.set("All")
         self.option.set("All")
 
-
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
         description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
@@ -142,14 +128,6 @@ class pcapXrayGui:
         self.ThirdFrame.grid(column=10, row=40, sticky=(N, W, E, S))
         self.ThirdFrame.columnconfigure(10, weight=1)
         self.ThirdFrame.rowconfigure(40, weight=1)
-        #self.details_fetch = 0
-        #self.destination_report = ""
-
-        #self.FourthFrame = ttk.Frame(base,  width=50, height=50, padding="10 10 10 10")
-        #self.FourthFrame = ttk.Frame(base,  width=600, height=400, padding="10 10 10 10",relief= GROOVE)
-        #self.FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S))
-        #self.FourthFrame.columnconfigure(0, weight=1)
-        #self.FourthFrame.rowconfigure(0, weight=1)
 
         base.resizable(False, False) 
         base.rowconfigure(0, weight=1)
@@ -312,59 +290,6 @@ class pcapXrayGui:
     def gimmick(self):
         import interactive_gui
         interactive_gui.gimmick_initialize(self.base, "file://"+self.image_file.replace(".png",".html"))
-        #interactive_gui.gimmick_initialize(self.base, "file:///root/Desktop/dev_pcap/kali/PcapXray/Source/Module/Report/test_All_All_All.html")
-        #interactive_gui.gimmick_initialize(self.base, "file:///Users/sri/Desktop/dev/personalGit/py3_migrate/dev_pcap/n/interactive/PcapXray/Source/gameofthrones.html") #"file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
-        
-        """
-        # Tkinter changes
-        if not self.FourthFrame.winfo_ismapped():
-            #self.FourthFrame.grid(column=50, row=10, padx=100, pady=100)
-            #self.FourthFrame.columnconfigure(10, weight=1)
-            #self.FourthFrame.rowconfigure(10, weight=1)
-            self.FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=100, rowspan=100, padx=5, pady=5)
-            self.FourthFrame.columnconfigure(0, weight=1)
-            self.FourthFrame.rowconfigure(100, weight=1)
-            import interactive_gui
-            interactive_gui.gimmick_initialize("file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html", self.FourthFrame)
-        else:
-            self.FourthFrame.grid_forget()
-        """
-
-    def hide(self):
-        self.base.withdraw()
-
-    def openFrame(self):
-
-        #self.hide()
-        
-        x = self.base.winfo_x()
-        y = self.base.winfo_y()
-        if not self.FourthFrame:
-            #self.FourthFrame = OtherFrame(x, y)
-            #self.FourthFrame = Toplevel()
-            import interactive_gui
-            self.FourthFrame = interactive_gui.gimmick_initialize("file:///root/Desktop/dev_pcap/cef/PcapXray/gameofthrones.html")
-            #("file:///"+self.image_file+"_"+"interactive.json")
-            #webroot = Tk()
-            #app = interactive_gui.MainFrame(webroot)
-            # Tk must be initialized before CEF otherwise fatal error (Issue #306)
-            #cef.Initialize()
-            #app.mainloop()
-            #cef.Shutdown()
-            #interactive_gui.MainFrame(Tk())
-        else:
-            self.FourthFrame.destroy()
-        #handler = lambda: self.onCloseOtherFrame(subFrame)
-        #btn = ttk.Button(subFrame, text="Close", command=handler)
-        #btn.pack()
- 
-    def onCloseOtherFrame(self, otherFrame):
-        otherFrame.destroy()
-        #self.show()
-
-    def show(self):
-        self.base.update()
-        self.base.deiconify()
 
     def load_image(self):
         self.canvas = Canvas(self.ThirdFrame, width=800,height=500, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
@@ -378,8 +303,6 @@ class pcapXrayGui:
         self.yscrollbar.config(command=self.canvas.yview)
         self.canvas.rowconfigure(0, weight=1)
         self.canvas.columnconfigure(0, weight=1)
-        #self.ThirdFrame.columnconfigure(10, weight=1)
-        #self.ThirdFrame.rowconfigure(40, weight=1)
 
     def map_select(self, *args):
         print(self.option.get())

@@ -1,68 +1,15 @@
-# Reference https://github.com/cztomczak/cefpython/blob/master/examples/tkinter_.py
 import sys
+
+# Tkinter Mac Setting
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('TkAgg')
 
-"""
-from cefpython3 import cefpython as cef
-import ctypes
-import os
-import platform
-import logging as _logging
-"""
 import memory
 
-#import vispy
-
-"""
-class InteractiveMap:
-
-    def __init__(self):
-        # Platforms
-        # Fix for PyCharm hints warnings
-        WindowUtils = cef.WindowUtils()
-
-        # Platforms
-        WINDOWS = (platform.system() == "Windows")
-        LINUX = (platform.system() == "Linux")
-        MAC = (platform.system() == "Darwin")
-
-        # Globals
-        logger = _logging.getLogger("tkinter_.py")
-
-        # Constants
-        # Tk 8.5 doesn't support png images
-        IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
-        logger.setLevel(_logging.INFO)
-        stream_handler = _logging.StreamHandler()
-        formatter = _logging.Formatter("[%(filename)s] %(message)s")
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-        logger.info("CEF Python {ver}".format(ver=cef.__version__))
-        logger.info("Python {ver} {arch}".format(
-        ver=platform.python_version(), arch=platform.architecture()[0]))
-        logger.info("Tk {ver}".format(ver=tk.Tcl().eval('info patchlevel')))
-        assert cef.__version__ >= "55.3", "CEF Python v55.3+ required to run this"
-        sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
-
-        cef.Initialize()
-
-    def create_map(self, network_x_map):
-
-    def convert_map(self):
-        # Loops again with strems in memory.packet_db
-        return ""
-    
-    def teardown(self):
-        cef.Shutdown()
-
-
-def main():
-"""
-
-# Example of embedding CEF Python browser using Tkinter toolkit.
-# This example has two widgets: a navigation bar and a browser.
+# This implementation is a modified version of the example of 
+# embedding CEF Python browser using Tkinter toolkit.
+# Reference https://github.com/cztomczak/cefpython/blob/master/examples/tkinter_.py
 #
 # NOTE: This example often crashes on Mac (Python 2.7, Tk 8.5/8.6)
 #       during initial app loading with such message:
@@ -80,20 +27,21 @@ def main():
 from cefpython3 import cefpython as cef
 import ctypes
 try:
-    import tkinter as tk
-    from tkinter import *
-    from tkinter import ttk
-except ImportError:
-    import Tkinter as tk
+    # for Python2
     from Tkinter import *
-    from Tkinter import ttk
+    from Tkinter import Tkversion
+    import Tkinter as tk
+    import ttk
+    import Tkconstants
+except ImportError:
+    # for Python3
+    from tkinter import *
+    import tkinter as tk
+    from tkinter import ttk, TkVersion
 import sys
 import os
 import platform
 import logging as _logging
-
-# Fix for PyCharm hints warnings
-#WindowUtils = cef.WindowUtils()
 
 # Platforms
 WINDOWS = (platform.system() == "Windows")
@@ -105,7 +53,7 @@ logger = _logging.getLogger("tkinter_.py")
 
 # Constants
 # Tk 8.5 doesn't support png images
-IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
+#IMAGE_EXT = ".png" if TkVersion > 8.5 else ".gif"
 
 interactive_map = ""
 browser_frame = ""
@@ -127,18 +75,10 @@ def gimmick_initialize(window, map):
             assert cef.__version__ >= "55.3", "CEF Python v55.3+ required to run this"
             sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
 
-            #cef.Initialize()
-            #FourthFrame = ttk.Frame(window,  width=700, height=600, padding="10 10 10 10",relief= GROOVE)
             FourthFrame = ttk.Frame(window,  width=500, height=500, padding="10 10 10 10",relief= GROOVE)
-            #tk.Grid.rowconfigure(1, weight=1)
-            #tk.Grid.columnconfigure(0, weight=1)
             FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=200, rowspan=200, padx=5, pady=5)
 
-            # Pack MainFrame
-            #FourthFrame.pack(fill=tk.BOTH, expand=tk.YES)
-            #browser_frame.mainloop()
             browser_frame = BrowserFrame(FourthFrame)
-            #browser_frame.pack(fill=tk.BOTH, expand=tk.YES)
             browser_frame.grid(row=0, column=0,sticky=(N, W, E, S),columnspan=100, rowspan=100, padx=5, pady=5)
 
             FourthFrame.columnconfigure(50, weight=1)
@@ -148,10 +88,8 @@ def gimmick_initialize(window, map):
 
             window.update()
         else:
-            #(tk.N + tk.S + tk.E + tk.W)
-            #cef.Shutdown()
-            #browser_frame.grid_forget()
-            FourthFrame.grid_forget()
+            if FourthFrame:
+                FourthFrame.grid_forget()
             FourthFrame, browser_frame = "", ""
             window.update()
 
@@ -164,9 +102,8 @@ class BrowserFrame(tk.Frame):
     def __init__(self, master):
         self.closing = False
         self.browser = None
-        #tk.Frame.__init__(self, master, width=600, height=400)
+        # Python2 has a ttk frame error of using self as argument so use tk 
         #ttk.Frame.__init__(self, master, width=500, height=400, padding="10 10 10 10", relief=GROOVE)
-        # Python2 has a ttk frame error of using self as argument
         tk.Frame.__init__(self, master, width=500, height=400)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
@@ -186,27 +123,31 @@ class BrowserFrame(tk.Frame):
     def get_window_handle(self):
         if self.winfo_id() > 0 and not MAC:
             return self.winfo_id()
-        else:
-            raise Exception("Couldn't obtain window handle")
-        """
-        # CEF crashes in mac so temp disable
-        # * CreateBrowserSync calling window handle crashes with segmentation fault 11
-        # * https://github.com/cztomczak/cefpython/issues/309
         elif MAC:
+            raise Exception("Couldn't obtain window handle")
+            # CEF crashes in mac so temp disable
+            # * CreateBrowserSync calling window handle crashes with segmentation fault 11
+            # * https://github.com/cztomczak/cefpython/issues/309
             # On Mac window id is an invalid negative value (Issue #308).
             # This is kind of a dirty hack to get window handle using
             # PyObjC package. If you change structure of windows then you
             # need to do modifications here as well.
             # noinspection PyUnresolvedReferences
-            from AppKit import NSApp
-            # noinspection PyUnresolvedReferences
-            import objc
-            # Sometimes there is more than one window, when application
-            # didn't close cleanly last time Python displays an NSAlert
-            # window asking whether to Reopen that window.
-            # noinspection PyUnresolvedReferences
-            return objc.pyobjc_id(NSApp.windows()[-1].contentView())
-        """
+            """
+            try:
+                from AppKit import NSApp
+                # noinspection PyUnresolvedReferences
+                import objc
+                # Sometimes there is more than one window, when application
+                # didn't close cleanly last time Python displays an NSAlert
+                # window asking whether to Reopen that window.
+                # noinspection PyUnresolvedReferences
+                return objc.pyobjc_id(NSApp.windows()[-1].contentView())
+            except:
+                raise Exception("Couldn't obtain window handle")
+            """
+        else:
+            raise Exception("Couldn't obtain window handle")
 
     def message_loop_work(self):
         cef.MessageLoopWork()
