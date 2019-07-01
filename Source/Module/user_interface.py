@@ -292,7 +292,7 @@ class pcapXrayGui:
         interactive_gui.gimmick_initialize(self.base, "file://"+self.image_file.replace(".png",".html"))
 
     def load_image(self):
-        self.canvas = Canvas(self.ThirdFrame, width=800,height=500, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        self.canvas = Canvas(self.ThirdFrame, width=900,height=500, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         #self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
         self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
         #self.canvas.pack(side = RIGHT, fill = BOTH, expand = True)
@@ -301,8 +301,8 @@ class pcapXrayGui:
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
-        self.canvas.rowconfigure(0, weight=1)
-        self.canvas.columnconfigure(0, weight=1)
+        #self.canvas.rowconfigure(0, weight=1)
+        #self.canvas.columnconfigure(0, weight=1)
 
     def map_select(self, *args):
         print(self.option.get())
