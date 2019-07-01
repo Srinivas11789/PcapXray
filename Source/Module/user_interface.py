@@ -93,7 +93,9 @@ class pcapXrayGui:
         self.ibutton = ttk.Button(SecondFrame, text="InteractiveMagic!", command=self.gimmick)
         self.ibutton.grid(row=10, column=10, padx=10, sticky="E")
         self.trigger = ttk.Button(SecondFrame, text="Visualize!", command=self.map_select)
-        self.trigger.grid(row=10,column=11, sticky="E")   
+        self.trigger.grid(row=10,column=11, sticky="E")
+        self.trigger['state'] = 'disabled'
+        self.ibutton['state'] = 'disabled'
 
         self.img = ""
         
@@ -174,6 +176,7 @@ class pcapXrayGui:
             
             # Disable controls when performing analysis
             self.trigger['state'] = 'disabled'
+            self.ibutton['state'] = 'disabled'
             self.to_menu['state'] = 'disabled'
             self.from_menu['state'] = 'disabled'
 
@@ -286,6 +289,7 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
+        self.ibutton['state'] = 'normal'
 
     def gimmick(self):
         import interactive_gui
