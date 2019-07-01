@@ -21,7 +21,7 @@ class plotLan:
         self.directory = os.path.join(path, "Report")
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
-        options = option + "_" + to_ip + "_" + from_ip
+        options = option + "_" + to_ip.replace(".", "-") + "_" + from_ip.replace(".", "-")
         self.filename = os.path.join(self.directory, filename+"_"+options)
 
         self.styles = {
