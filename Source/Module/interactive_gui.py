@@ -29,7 +29,7 @@ import ctypes
 try:
     # for Python2
     from Tkinter import *
-    from Tkinter import Tkversion
+    #from Tkinter import Tkversion
     import Tkinter as tk
     import ttk
     import Tkconstants
@@ -37,7 +37,7 @@ except ImportError:
     # for Python3
     from tkinter import *
     import tkinter as tk
-    from tkinter import ttk, TkVersion
+    from tkinter import ttk
 import sys
 import os
 import platform
