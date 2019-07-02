@@ -274,7 +274,7 @@ class pcapXrayGui:
             self.progressbar.stop()
         
         # Loding the generated map
-        options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
+        options = self.option.get()+"_"+self.to_ip.get().replace(".","-")+"_"+self.from_ip.get().replace(".", "-")
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+options+".png")
         if not os.path.exists(self.image_file):
             t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(), self.to_ip.get(), self.from_ip.get()))
