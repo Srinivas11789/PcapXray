@@ -25,3 +25,7 @@ networkx
 graphviz
 matplotlib
 
+# Interactive Maps
+cefpython3
+pyvis
+

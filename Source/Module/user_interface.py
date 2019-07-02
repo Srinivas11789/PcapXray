@@ -1,4 +1,9 @@
 import sys
+
+if sys.platform == 'darwin':
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 try:
     # for Python2
     from Tkinter import *
@@ -28,6 +33,7 @@ import os, sys
 
 class pcapXrayGui:
     def __init__(self, base):
+
         # Base Frame Configuration
         self.base = base
         base.title("PcapXray")
@@ -39,7 +45,7 @@ class pcapXrayGui:
         style.configure("BW.TEntry", foreground="black")
 
         # 1st Frame - Initial Frame
-        InitFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
+        InitFrame = ttk.Frame(base,  width=50, padding="10 0 0 0",relief= GROOVE)
         InitFrame.grid(column=10, row=10, sticky=(N, W, E, S))
         InitFrame.columnconfigure(10, weight=1)
         InitFrame.rowconfigure(10, weight=1)
@@ -61,7 +67,7 @@ class pcapXrayGui:
         FirstFrame = ttk.Frame(base,  width=50, padding="10 0 0 0", relief= GROOVE)
         FirstFrame.grid(column=10, row=20, sticky=(N, W, E, S))
         FirstFrame.columnconfigure(10, weight=1)
-        FirstFrame.rowconfigure(10, weight=1)
+        FirstFrame.rowconfigure(20, weight=1)
         self.destination_report = StringVar(value=sys.path[0])
         ttk.Label(FirstFrame, text="Output directory path: ",style="BW.TLabel").grid(column=0, row=0, sticky="W")
         self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="W, E")
@@ -78,14 +84,18 @@ class pcapXrayGui:
         SecondFrame = ttk.Frame(base,  width=50, padding="10 10 10 10",relief= GROOVE)
         SecondFrame.grid(column=10, row=30, sticky=(N, W, E, S))
         SecondFrame.columnconfigure(10, weight=1)
-        SecondFrame.rowconfigure(10, weight=1)
+        SecondFrame.rowconfigure(30, weight=1)
         ttk.Label(SecondFrame, text="Traffic: ", style="BW.TLabel").grid(row=10,column=0,sticky="W")
         self.option = StringVar()
         self.options = {'All', 'HTTP', 'HTTPS', 'Tor', 'Malicious', 'ICMP', 'DNS'}
         #self.option.set('Tor')
         ttk.OptionMenu(SecondFrame,self.option,"Select",*self.options).grid(row=10,column=1, padx=10, sticky="W")
+        self.ibutton = ttk.Button(SecondFrame, text="InteractiveMagic!", command=self.gimmick)
+        self.ibutton.grid(row=10, column=10, padx=10, sticky="E")
         self.trigger = ttk.Button(SecondFrame, text="Visualize!", command=self.map_select)
-        self.trigger.grid(row=10,column=11,sticky="E")   
+        self.trigger.grid(row=10,column=11, sticky="E")
+        self.trigger['state'] = 'disabled'
+        self.ibutton['state'] = 'disabled'
 
         self.img = ""
         
@@ -106,7 +116,6 @@ class pcapXrayGui:
         self.to_menu.set("All")
         self.option.set("All")
 
-
         # Third Frame with Results and Descriptioms
         self.ThirdFrame = ttk.Frame(base,  width=100, height=100, padding="10 10 10 10",relief= GROOVE)
         description = """It is a tool aimed to simplyfy the network analysis and speed the process of analysing the network traffic.\nThis prototype aims to accomplish 4 important modules,
@@ -119,10 +128,12 @@ class pcapXrayGui:
         self.yscrollbar = Scrollbar(self.ThirdFrame, orient=VERTICAL)
         self.yscrollbar.grid(row=0, column=100, sticky=N + S)
         self.ThirdFrame.grid(column=10, row=40, sticky=(N, W, E, S))
-        self.ThirdFrame.columnconfigure(0, weight=1)
-        self.ThirdFrame.rowconfigure(0, weight=1)
-        #self.details_fetch = 0
-        #self.destination_report = ""
+        self.ThirdFrame.columnconfigure(10, weight=1)
+        self.ThirdFrame.rowconfigure(40, weight=1)
+
+        base.resizable(False, False) 
+        base.rowconfigure(0, weight=1)
+        base.columnconfigure(0, weight=1)
 
     def browse_directory(self, option):
         if option == "pcap":
@@ -165,6 +176,7 @@ class pcapXrayGui:
             
             # Disable controls when performing analysis
             self.trigger['state'] = 'disabled'
+            self.ibutton['state'] = 'disabled'
             self.to_menu['state'] = 'disabled'
             self.from_menu['state'] = 'disabled'
 
@@ -245,11 +257,10 @@ class pcapXrayGui:
             t.start()
             t1.start()
             self.progressbar.start()
-            while t.is_alive() or t1.is_alive():
+            while t.is_alive():
                   self.progressbar.update()
             t.join()
             t1.join()
-            self.progressbar.stop()
             
             # Report Generation Control and Filters update (Here?)
             self.details_fetch = 1
@@ -259,9 +270,11 @@ class pcapXrayGui:
             reportThread.start()
             reportThread = threading.Thread(target=report_generator.reportGen(self.destination_report.get(), self.filename).deviceDetailsReport,args=())
             reportThread.start()
+
+            self.progressbar.stop()
         
         # Loding the generated map
-        options = self.option.get()+"_"+self.to_ip.get()+"_"+self.from_ip.get()
+        options = self.option.get()+"_"+self.to_ip.get().replace(".","-")+"_"+self.from_ip.get().replace(".", "-")
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename+"_"+options+".png")
         if not os.path.exists(self.image_file):
             t1 = threading.Thread(target=plot_lan_network.plotLan, args=(self.filename, self.destination_report.get(), self.option.get(), self.to_ip.get(), self.from_ip.get()))
@@ -276,15 +289,24 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
+        self.ibutton['state'] = 'normal'
+
+    def gimmick(self):
+        import interactive_gui
+        interactive_gui.gimmick_initialize(self.base, "file://"+self.image_file.replace(".png",".html"))
 
     def load_image(self):
-        self.canvas = Canvas(self.ThirdFrame, width=700,height=600, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
-        self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.canvas = Canvas(self.ThirdFrame, width=900,height=500, bd=0, bg="navy", xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
+        #self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
+        self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
+        #self.canvas.pack(side = RIGHT, fill = BOTH, expand = True)
         self.img = ImageTk.PhotoImage(Image.open(self.image_file).resize(tuple(self.zoom),Image.ANTIALIAS))#.convert('RGB'))
         self.canvas.create_image(0,0, image=self.img)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
+        #self.canvas.rowconfigure(0, weight=1)
+        #self.canvas.columnconfigure(0, weight=1)
 
     def map_select(self, *args):
         print(self.option.get())
@@ -308,6 +330,13 @@ class pcapXrayGui:
         if self.img:
              self.load_image()
 
+class OtherFrame(Toplevel):
+
+    def __init__(self, x, y):
+        """Constructor"""
+        Toplevel.__init__(self)
+        self.geometry("+%d+%d" % (x + 100, y + 200))
+        self.title("otherFrame")
 
 def main():
     base = Tk()
