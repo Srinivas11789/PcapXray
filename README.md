@@ -25,9 +25,9 @@ Tool Highlights:
   * Device Details
   
 ### Tool Image:
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_5_1.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_6_1.png?raw=true)
 
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_5_2.png?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/screen2_6_2.png?raw=true)
 
 ### Components:
 * Network Diagram 
@@ -77,7 +77,7 @@ python Source/main.py
   *	Matplotlib – plot graph (not used as of now)
   
 ### Demo
-![Alt text](https://srinivas11789.github.io/PcapXray/Samples/demo2_5.gif?raw=true)
+![Alt text](https://srinivas11789.github.io/PcapXray/Samples/demo2_6.gif?raw=true)
 
 ### Getting started:
 * Clone the repository
@@ -118,12 +118,6 @@ python Source/main.py
 * Performing the steps in `run.sh` file manually would work to launch the tool via docker (I can help with errors)
 * Running `run.sh` scripts is an attempt to automate (would not work 100 percent)
   - tested on mac and linux - will be better soon!...
- 
-### PcapXray 2.0 
-* Includes zoom feature 
-* Improves usability with a Browse files feature
-* Report directory fixes for graph images
-* Includes some bug fixes
 
 ### Immediate Future Tasks: (Target: 3.0)
 
@@ -134,6 +128,7 @@ python Source/main.py
 - Traffic support: ICMP, DNS
 - Known file type detection and Extract
 - Python2 and Python3
+- Interactive map
 
 ### Future:
 * Structured and clean code flow
@@ -142,6 +137,13 @@ python Source/main.py
 *	Make the application more stable
 * More protocol support
 * Clean up code
+
+### Credits:
+* Thanks for making it better,
+  - Professor Marc Budofsky
+  - Kevin Gallagher
+* Thanks for all the dependent libraries used
+* Logo created with logomakr.com and www.inkscape.org
 
 [![Analytics](https://ga-beacon.appspot.com/UA-114681129-1/PcapXray/readme)](https://github.com/igrigorik/ga-beacon)
 
