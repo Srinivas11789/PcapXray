@@ -60,7 +60,15 @@ class PcapEngine():
                 logging.error("Cannot import selected pcap engine: PyShark!")
                 sys.exit()
             self.packets = pyshark.FileCapture(pcap_file_name, include_raw=True, use_json=True)
-
+        
+        elif pcap_parser_engine == "dpkt":
+            try:
+                import dpkt
+            except:
+                logging.error("Cannot import selected pcap engine: Dpkt!")
+                sys.exit()
+            self.packets = dpkt.pcap.Reader(open(pcap_file_name, 'rb'))
+            
         # Analyse capture to populate data
         self.analyse_packet_data()
 
@@ -76,6 +84,8 @@ class PcapEngine():
             """
 
             for packet in self.packets: # O(N) packet iteration
+                #packet = packet[1]
+                print(packet[1])
 
                 # Construct a unique key for each flow 
                 source_private_ip = None
@@ -273,10 +283,10 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/test.pcap', "dpkt")
     print(memory.packet_db.keys())
     ports = []
-    
+    """
     for key in memory.packet_db.keys():
     #    if "192.168.11.4" in key:
             print(key)
@@ -289,11 +299,12 @@ def main():
     print(sorted(list(set(ports))))
     print(memory.lan_hosts)
     print(memory.destination_hosts)
+    """
     #print(memory.packet_db["TCP 192.168.0.26:64707 > 172.217.12.174:443"].summary())
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")
 
-#main()
+main()
 
 # Sort payload by time...
 # SSL Packets
