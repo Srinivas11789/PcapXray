@@ -44,13 +44,27 @@ class PcapEngine():
         # Import library for pcap parser engine selected
         if pcap_parser_engine == "scapy":
             try:
-                from scapy.all import rdpcap
+                from scapy.all import rdpcap, RawPcapReader #PcapReader
             except:
                 logging.error("Cannot import selected pcap engine: Scapy!")
                 sys.exit()
 
             # Scapy sessions and other types use more O(N) iterations so just
             # - use rdpcap + our own iteration (create full duplex streams)
+            #self.packets = rdpcap(pcap_file_name)
+            def read_all(self, count=-1):
+                """return an iterable of all packets in the pcap file
+                """
+                while count != 0:
+                    count -= 1
+                    p = self.read_packet()
+                    if p is None:
+                        break
+                    yield p
+                return
+            #rdpcap.read_all = read_all
+            RawPcapReader.read_all = read_all
+            #self.packets = RawPcapReader.read_all(pcap_file_name)
             self.packets = rdpcap(pcap_file_name)
         
         elif pcap_parser_engine == "pyshark":
@@ -273,7 +287,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/nitroba.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     
@@ -293,7 +307,7 @@ def main():
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")
 
-#main()
+main()
 
 # Sort payload by time...
 # SSL Packets
