@@ -75,17 +75,27 @@ def gimmick_initialize(window, map):
             assert cef.__version__ >= "55.3", "CEF Python v55.3+ required to run this"
             sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
 
-            FourthFrame = ttk.Frame(window,  width=500, height=500, padding="10 10 10 10",relief= GROOVE)
-            FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=200, rowspan=200, padx=5, pady=5)
+            if not MAC:
+                FourthFrame = ttk.Frame(window,  width=500, height=500, padding="10 10 10 10",relief= GROOVE)
+                FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=200, rowspan=200, padx=5, pady=5)
 
-            browser_frame = BrowserFrame(FourthFrame)
-            browser_frame.grid(row=0, column=0,sticky=(N, W, E, S),columnspan=100, rowspan=100, padx=5, pady=5)
+                browser_frame = BrowserFrame(FourthFrame)
+                browser_frame.grid(row=0, column=0,sticky=(N, W, E, S),columnspan=100, rowspan=100, padx=5, pady=5)
 
-            FourthFrame.columnconfigure(50, weight=1)
-            FourthFrame.rowconfigure(10, weight=1)
-            browser_frame.columnconfigure(0, weight=1)
-            browser_frame.rowconfigure(0, weight=1)
-
+                FourthFrame.columnconfigure(50, weight=1)
+                FourthFrame.rowconfigure(10, weight=1)
+                browser_frame.columnconfigure(0, weight=1)
+                browser_frame.rowconfigure(0, weight=1)
+            else:
+                print("Interative graph with CEF and Tkinter is not supported on MAC. Launching Browser for InteractiveMagic!")
+                FourthFrame = ttk.Frame(window,  width=500, height=500, padding="10 10 10 10",relief= GROOVE)
+                FourthFrame.grid(column=50, row=10, sticky=(N, W, E, S), columnspan=200, rowspan=200, padx=5, pady=5)
+                mac_bug_label = ttk.Label(FourthFrame, text="Interactive Graph will launch on your browser", style="BW.TLabel")
+                mac_bug_label.grid(column=10, row=10,sticky="W")
+                FourthFrame.columnconfigure(50, weight=1)
+                FourthFrame.rowconfigure(10, weight=1)
+                import webbrowser
+                webbrowser.open(interactive_map)
             window.update()
         else:
             if FourthFrame:
@@ -124,7 +134,8 @@ class BrowserFrame(tk.Frame):
         if self.winfo_id() > 0 and not MAC:
             return self.winfo_id()
         elif MAC:
-            raise Exception("Couldn't obtain window handle")
+            # TODO: Handle MAC case properly the solution below from upstream crashes MAC env
+            """
             # CEF crashes in mac so temp disable
             # * CreateBrowserSync calling window handle crashes with segmentation fault 11
             # * https://github.com/cztomczak/cefpython/issues/309
@@ -133,7 +144,7 @@ class BrowserFrame(tk.Frame):
             # PyObjC package. If you change structure of windows then you
             # need to do modifications here as well.
             # noinspection PyUnresolvedReferences
-            """
+            
             try:
                 from AppKit import NSApp
                 # noinspection PyUnresolvedReferences
@@ -146,6 +157,10 @@ class BrowserFrame(tk.Frame):
             except:
                 raise Exception("Couldn't obtain window handle")
             """
+            print("Mac environment: Couldn't obtain window handle")
+            # TODO: remove this once the mac issue for CEF is resolved
+            import webbrowser
+            webbrowser.open(interactive_map)
         else:
             raise Exception("Couldn't obtain window handle")
 
