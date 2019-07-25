@@ -7,6 +7,9 @@ import memory
 from netaddr import IPAddress
 import threading
 import base64
+import os
+import types
+import datetime
 
 class PcapEngine():
     """
@@ -30,7 +33,8 @@ class PcapEngine():
           - tor identification
           - malicious identification
         """
-
+        self.start_time = datetime.datetime.now()
+        print("PcapReader module started at "+ str(self.start_time))
         # Initialize Data Structures
         memory.packet_db = {}
         memory.lan_hosts = {}
@@ -44,7 +48,7 @@ class PcapEngine():
         # Import library for pcap parser engine selected
         if pcap_parser_engine == "scapy":
             try:
-                from scapy.all import rdpcap, RawPcapReader #PcapReader
+                from scapy.all import rdpcap, RawPcapReader, PcapReader, plist
             except:
                 logging.error("Cannot import selected pcap engine: Scapy!")
                 sys.exit()
@@ -55,18 +59,44 @@ class PcapEngine():
             def read_all(self, count=-1):
                 """return an iterable of all packets in the pcap file
                 """
+                #print("I am called!")
+                # TODO: Threads?
+                #import threading
                 while count != 0:
                     count -= 1
                     p = self.read_packet()
+                    #print(type(p))
+                    #break
                     if p is None:
                         break
-                    yield p
+                    self.build_packet_data(p[0])
+                    #threading.Thread(target=self.build_packet_data, args=(p[0])).start()
                 return
+            
+            def read_all2(self, count=-1):
+                #print("I am called here at read_all2")
+                res = RawPcapReader.read_all(self, count)
+                #print(res)
+                #from scapy.all import plist
+                #return plist.PacketList(res, name=os.path.basename(self.filename))
+                #return plist.PacketList(res)
+            
             #rdpcap.read_all = read_all
-            RawPcapReader.read_all = read_all
-            #self.packets = RawPcapReader.read_all(pcap_file_name)
+            #
+            
+            ##RawPcapReader.read_all = read_all
+            ##PcapReader.read_all = read_all2
+            ##RawPcapReader.build_packet_data = self.build_packet_data
+            
+            #self.packets = RawPcapReader.read_all(pcap_file_name, -1)
+            #elf.packets = RawPcapReader(pcap_file_name)
+            ##with PcapReader(pcap_file_name) as handle:
+            ##    handle.read_all(count=-1)
+            #self.packets = handle.read_all(count=-1)
+            #yield
             self.packets = rdpcap(pcap_file_name)
-        
+            #print(self.packets)
+
         elif pcap_parser_engine == "pyshark":
             try:
                 import pyshark
@@ -77,9 +107,180 @@ class PcapEngine():
 
         # Analyse capture to populate data
         self.analyse_packet_data()
+        self.end_time = datetime.datetime.now() - self.start_time
+        print("PcapReader module ended at " + str(self.end_time.seconds))
 
         # <TODO>: Add other pcap engine modules to generate packetDB
 
+
+    def build_packet_data(self, packet):
+            #with memory.get_lock():
+            """
+            PcapXray runs only one O(N) packets once to memoize
+            # - Parse the packets to create a usable DB
+            # - All the protocol parsing should be included here
+            """
+            
+            #for packet in self.packets: # O(N) packet iteration
+
+            # Construct a unique key for each flow 
+            source_private_ip = None
+            ## First, Separate private vs public IPs (L3)
+            # IPV6 Condition
+            if "IPv6" in packet or "IPV6" in packet:
+                # Set Engine respective properties
+                if self.engine == "scapy":
+                    IP = "IPv6"
+                else:
+                    IP = "IPV6"
+                # TODO: Fix weird ipv6 errors in pyshark engine
+                # * ExHandler as temperory fix
+                try:
+                    private_source = IPAddress(packet[IP].src).is_private()
+                except:
+                    private_source = None
+                try:
+                    private_destination = IPAddress(packet[IP].dst).is_private()
+                except:
+                    private_destination = None
+        
+            elif "IP" in packet: # IPV4 Condition
+                # and packet["IP"].version == "4":
+                # Handle IP packets that originated from LAN (Internal Network)
+                #print(packet["IP"].version == "4")
+                IP = "IP"
+                private_source = IPAddress(packet[IP].src).is_private()
+                private_destination = IPAddress(packet[IP].dst).is_private()
+            ## Second, Operate based on payloads above IP (L3) to create the key for session
+            # <TODO> add more support as we improvise
+            # Currently:
+            # * TCP/UDP
+            # * ICMP
+            # TCP and UDP payloads
+            if "TCP" in packet or "UDP" in packet:
+                
+                # Set Engine respective properties
+                if self.engine == "pyshark":
+                    eth_layer = "ETH"
+                    tcp_src = str(
+                        packet["TCP"].srcport if "TCP" in packet else packet["UDP"].srcport)
+                    tcp_dst = str(
+                        packet["TCP"].dstport if "TCP" in packet else packet["UDP"].dstport)
+                else:
+                    eth_layer = "Ether"
+                    tcp_src = str(
+                        packet["TCP"].sport if "TCP" in packet else packet["UDP"].sport)
+                    tcp_dst = str(
+                        packet["TCP"].dport if "TCP" in packet else packet["UDP"].dport)
+                # Session Key Creation
+                # Communication within LAN
+                if private_source and private_destination:
+                    # <TODO>: Find a better way
+                    # This can go either way, so first come first serve
+                    key1 = packet[IP].src + "/" + packet[IP].dst + "/" + tcp_dst
+                    key2 = packet[IP].dst + "/" + packet[IP].src + "/" + tcp_src
+                    # First come first serve
+                    if key2 in memory.packet_db:
+                        source_private_ip = key2
+                    else:
+                        source_private_ip = key1
+                    # IntraNetwork Hosts list 
+                    # * When both are private they are LAN hosts
+                    if packet[eth_layer].src not in memory.lan_hosts:
+                        memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
+                    if packet[eth_layer].dst not in memory.lan_hosts:
+                        memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
+                elif private_source: # Internetwork packet
+                    # Key := Always lan hosts as source in session
+                    key = packet[IP].src + "/" + packet[IP].dst + "/" + tcp_dst
+                    source_private_ip = key
+                    # IntraNetwork vs InterNetwork Hosts list
+                    if packet[eth_layer].src not in memory.lan_hosts:
+                        memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
+                    if packet[IP].dst not in memory.destination_hosts:
+                        memory.destination_hosts[packet[IP].dst] = {"mac": packet[eth_layer].dst}
+                elif private_destination: # Internetwork packet
+                    # Key := Always lan hosts as source in session
+                    key = packet[IP].dst + "/" + packet[IP].src + "/" + tcp_src
+                    source_private_ip = key
+                    # IntraNetwork vs InterNetwork Hosts list
+                    if packet[eth_layer].dst not in memory.lan_hosts:
+                        memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
+                    if packet[IP].src not in memory.destination_hosts:
+                        memory.destination_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
+                
+                else: # public ip communication if no match
+                    # <TODO>: Find a better way
+                    # This can go either way, so first come first serve
+                    key1 = packet[IP].src + "/" + packet[IP].dst + "/" + tcp_dst
+                    key2 = packet[IP].dst + "/" + packet[IP].src + "/" + tcp_src
+                    # First come first serve
+                    if key2 in memory.packet_db:
+                        source_private_ip = key2
+                    else:
+                        source_private_ip = key1
+                    # IntraNetwork Hosts list 
+                    # * When both are private they are LAN hosts
+                    if packet[IP].src not in memory.destination_hosts:
+                        memory.destination_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
+                    if packet[IP].dst not in memory.destination_hosts:
+                        memory.destination_hosts[packet[IP].dst] = {"mac": packet[eth_layer].dst}
+
+            elif "ICMP" in packet:
+                # Key creation similar to both private interface condition
+                key1 = packet[IP].src + "/" + packet[IP].dst + "/" + "ICMP"
+                key2 = packet[IP].dst + "/" + packet[IP].src + "/" + "ICMP"
+                # First come first serve
+                if key2 in memory.packet_db:
+                    source_private_ip = key2
+                else:
+                    source_private_ip = key1
+                #source_private_ip = key
+            # Fill packetDB with generated key
+            if source_private_ip:
+                # Unique session activity
+                if source_private_ip not in memory.packet_db:
+                    memory.packet_db[source_private_ip] = {}
+                    # Ethernet Layer ( Mac address )
+                    if "Ethernet" not in memory.packet_db[source_private_ip]:
+                        memory.packet_db[source_private_ip]["Ethernet"] = {}
+                    # Record Payloads 
+                    if "Payload" not in memory.packet_db:
+                        # Record unidirectional + bidirectional separate
+                        memory.packet_db[source_private_ip]["Payload"] = {"forward":[],"reverse":[]}
+                if self.engine == "pyshark":
+                    
+                    # Ethernet Layer
+                    memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["ETH"].src
+                    memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["ETH"].dst
+                    # <TODO>: Payload recording for pyshark
+                    # Refer https://github.com/KimiNewt/pyshark/issues/264
+                    #memory.packet_db[source_private_ip]["Payload"].append(packet.get_raw_packet())
+                elif self.engine == "scapy":
+                    
+                    # Ethernet layer: store respect mac for the IP
+                    if private_source:
+                        memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].src
+                        memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].dst
+                        payload = "forward"
+                    else:
+                        memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].dst
+                        memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].src
+                        payload = "reverse"
+                    
+                    # Payload 
+                    if "TCP" in packet:
+                        memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload))
+                    elif "UDP" in packet:
+                        memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["UDP"].payload))
+                    elif "ICMP" in packet:
+                        memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["ICMP"].payload))
+    # TODO: Add function memory to store all the memory data in files (DB)
+    # def memory_handle():
+    """
+    - Store the db as json on a file in cache folder (to not repeat read)
+    """
+    
     #@retry(tries=5, errors=memory.CouldNotLock)
     def analyse_packet_data(self):
             #with memory.get_lock():
@@ -93,7 +294,7 @@ class PcapEngine():
 
                 # Construct a unique key for each flow 
                 source_private_ip = None
-                
+                #print("hhhh")
                 ## First, Separate private vs public IPs (L3)
 
                 # IPV6 Condition
@@ -287,8 +488,9 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/nitroba.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/large.pcap', "scapy")
     print(memory.packet_db.keys())
+    """
     ports = []
     
     for key in memory.packet_db.keys():
@@ -306,8 +508,8 @@ def main():
     #print(memory.packet_db["TCP 192.168.0.26:64707 > 172.217.12.174:443"].summary())
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")
-
-main()
+    """
+#main()
 
 # Sort payload by time...
 # SSL Packets
