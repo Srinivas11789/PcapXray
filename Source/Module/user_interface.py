@@ -25,6 +25,7 @@ import plot_lan_network
 import communication_details_fetch
 import device_details_fetch
 import report_generator
+import tor_traffic_handle
 import time
 import threading
 import memory
@@ -33,6 +34,9 @@ import os, sys
 
 class pcapXrayGui:
     def __init__(self, base):
+
+        # Start getting tor consensus in the background
+        threading.Thread(target=tor_traffic_handle.torTrafficHandle().get_consensus_data(), args=()).start()
 
         # Base Frame Configuration
         self.base = base

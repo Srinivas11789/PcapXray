@@ -79,7 +79,9 @@ class plotLan:
     def draw_graph(self, option="All", to_ip="All", from_ip="All"):
         #f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
         #f.attr(rankdir='LR', size='8,5')
-        if len(memory.lan_hosts) > 20:
+        if len(memory.lan_hosts) > 40:
+            f = Digraph('network_diagram - '+option, filename=self.filename, engine="sfdp", format="png")
+        elif len(memory.lan_hosts) > 20:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="circo", format="png")
         else:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
@@ -165,15 +167,6 @@ class plotLan:
                             #interactive_graph.add_edge(curr_node, destination, color="white", value=tor/100, smooth={type: "curvedCCW", roundness: 0.4})
                             interactive_graph.add_edge(curr_node, destination, color="white", smooth={"type": "curvedCW", "roundness": tor/10})
                             #if edge not in vis_edges:toor
-                            #    vis_edges.append(edge)
-                            if edge_present == False:
-                                edge_present = True
-                        elif session in memory.possible_mal_traffic:
-                            f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
-                            mal += 1
-                            #interactive_graph.add_edge(curr_node, destination, color="red", value=mal/100, smooth={"type": "curvedCW", "roundness": 0.4})
-                            interactive_graph.add_edge(curr_node, destination, color="red", smooth={"type": "curvedCW", "roundness": mal/10})
-                            #if edge not in vis_edges:
                             #    vis_edges.append(edge)
                             if edge_present == False:
                                 edge_present = True
