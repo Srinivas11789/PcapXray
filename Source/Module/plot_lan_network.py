@@ -41,7 +41,7 @@ class plotLan:
                 'fontcolor': 'black',
                 'color': ' black',
                 'style': 'filled',
-                'fillcolor': 'yellow',
+                'fillcolor': 'yellow'
             }
         }
 
@@ -165,24 +165,24 @@ class plotLan:
                             f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
                             tor += 1
                             #interactive_graph.add_edge(curr_node, destination, color="white", value=tor/100, smooth={type: "curvedCCW", roundness: 0.4})
-                            interactive_graph.add_edge(curr_node, destination, color="white", smooth={"type": "curvedCW", "roundness": tor/10})
+                            interactive_graph.add_edge(curr_node, destination, color="white", title='TOR: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": tor/9})
                             #if edge not in vis_edges:toor
                             #    vis_edges.append(edge)
                             if edge_present == False:
                                 edge_present = True
                         else:
                             if port == "443":
-                                f.edge(curr_node, destination, label='HTTPS: ' + map_dst +": "+dlabel, color = "blue")
+                                f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst) +": "+str(dlabel), color = "blue")
                                 https += 1
-                                interactive_graph.add_edge(curr_node, destination, color="blue", smooth={"type": "curvedCCW", "roundness": https/10})
+                                interactive_graph.add_edge(curr_node, destination, color="blue", title='HTTPS: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCCW", "roundness": https/10})
                                 #if edge not in vis_edges:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
                                     edge_present = True
                             elif port == "80":
-                                f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
+                                f.edge(curr_node, destination, label='HTTP: ' + str(map_dst) +": "+str(dlabel), color = "green")
                                 http += 1
-                                interactive_graph.add_edge(curr_node, destination, color="green", smooth={"type": "curvedCW", "roundness": http/10})
+                                interactive_graph.add_edge(curr_node, destination, color="green", title='HTTP: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCW", "roundness": http/12})
                                 #if edge not in vis_edges:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
@@ -190,7 +190,7 @@ class plotLan:
                             elif port == "ICMP":
                                 f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
                                 icmp += 1
-                                interactive_graph.add_edge(curr_node, destination, color="purple", smooth={"type": "curvedCCW", "roundness": icmp/10})
+                                interactive_graph.add_edge(curr_node, destination, color="purple", title='ICMP: ' + str(map_dst), smooth={"type": "curvedCCW", "roundness": icmp/6})
                                 #if edge not in vis_edges:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
@@ -198,21 +198,21 @@ class plotLan:
                             elif port == "53":
                                 f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
                                 dns += 1
-                                interactive_graph.add_edge(curr_node, destination, color="pink", smooth={"type": "curvedCW", "roundness": dns/10})
+                                interactive_graph.add_edge(curr_node, destination, color="pink", title='DNS: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": dns/5})
                                 #if edge not in vis_edges:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
                                     edge_present = True
                             elif int(port) in [20, 21, 23, 25, 110, 143, 139, 69, 161, 162, 1521]:
-                                f.edge(curr_node, destination, label='ClearTextProtocol: ' + str(map_dst) ,color="purple")
+                                f.edge(curr_node, destination, label='ClearTextProtocol: ' + str(map_dst) ,color="violet")
                                 clear_text += 1
-                                interactive_graph.add_edge(curr_node, destination, color="purple", smooth={"type": "curvedCW", "roundness": clear_text/10})
+                                interactive_graph.add_edge(curr_node, destination, color="#9A2EFE", title='ClearTextProtocol: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": clear_text/4})
                                 if edge_present == False:
                                     edge_present = True
                             else:
                                 f.edge(curr_node, destination, label='UnknownProtocol: ' + str(map_dst) ,color="brown")
                                 unknown += 1
-                                interactive_graph.add_edge(curr_node, destination, color="brown", smooth={"type": "curvedCW", "roundness": unknown/10})
+                                interactive_graph.add_edge(curr_node, destination, color="brown", title='UnknownProtocol: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": unknown/3})
                                 if edge_present == False:
                                     edge_present = True
 
@@ -571,6 +571,7 @@ class plotLan:
             
         f.render()
 
+        interactive_graph.show_buttons(filter_=['physics'])
         interactive_graph.save_graph(self.filename+".html")
                 
 def main():

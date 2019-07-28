@@ -35,8 +35,8 @@ import os, sys
 class pcapXrayGui:
     def __init__(self, base):
 
-        # Start getting tor consensus in the background
-        threading.Thread(target=tor_traffic_handle.torTrafficHandle().get_consensus_data(), args=()).start()
+        # TODO: is this req? Start getting tor consensus in the background
+        #threading.Thread(target=tor_traffic_handle.torTrafficHandle().get_consensus_data(), args=()).start()
 
         # Base Frame Configuration
         self.base = base
