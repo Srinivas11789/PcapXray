@@ -99,7 +99,7 @@ class plotLan:
         print("Starting Graph Plotting")
         edge_present = False
 
-        mal, tor, http, https, icmp, dns = 0, 0, 0, 0, 0, 0
+        mal, tor, http, https, icmp, dns, clear_text, unknown = 0, 0, 0, 0, 0, 0, 0, 0
 
         if option == "All":
             # add nodes
@@ -179,7 +179,7 @@ class plotLan:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
                                     edge_present = True
-                            if port == "80":
+                            elif port == "80":
                                 f.edge(curr_node, destination, label='HTTP: ' + map_dst +": "+dlabel, color = "green")
                                 http += 1
                                 interactive_graph.add_edge(curr_node, destination, color="green", smooth={"type": "curvedCW", "roundness": http/10})
@@ -187,7 +187,7 @@ class plotLan:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
                                     edge_present = True
-                            if port == "ICMP":
+                            elif port == "ICMP":
                                 f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
                                 icmp += 1
                                 interactive_graph.add_edge(curr_node, destination, color="purple", smooth={"type": "curvedCCW", "roundness": icmp/10})
@@ -195,12 +195,24 @@ class plotLan:
                                 #    vis_edges.append(edge)
                                 if edge_present == False:
                                     edge_present = True
-                            if port == "53":
+                            elif port == "53":
                                 f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
                                 dns += 1
                                 interactive_graph.add_edge(curr_node, destination, color="pink", smooth={"type": "curvedCW", "roundness": dns/10})
                                 #if edge not in vis_edges:
                                 #    vis_edges.append(edge)
+                                if edge_present == False:
+                                    edge_present = True
+                            elif int(port) in [20, 21, 23, 25, 110, 143, 139, 69, 161, 162, 1521]:
+                                f.edge(curr_node, destination, label='ClearTextProtocol: ' + str(map_dst) ,color="purple")
+                                clear_text += 1
+                                interactive_graph.add_edge(curr_node, destination, color="purple", smooth={"type": "curvedCW", "roundness": clear_text/10})
+                                if edge_present == False:
+                                    edge_present = True
+                            else:
+                                f.edge(curr_node, destination, label='UnknownProtocol: ' + str(map_dst) ,color="brown")
+                                unknown += 1
+                                interactive_graph.add_edge(curr_node, destination, color="brown", smooth={"type": "curvedCW", "roundness": unknown/10})
                                 if edge_present == False:
                                     edge_present = True
 
