@@ -99,7 +99,7 @@ class plotLan:
         print("Starting Graph Plotting")
         edge_present = False
 
-        mal, tor, http, https, icmp, dns, clear_text, unknown = 0, 0, 0, 0, 0, 0, 0, 0
+        mal, tor, http, https, icmp, dns, clear_text, unknown, covert = 0, 0, 0, 0, 0, 0, 0, 0, 0
 
         if option == "All":
             # add nodes
@@ -168,6 +168,12 @@ class plotLan:
                             interactive_graph.add_edge(curr_node, destination, color="white", title='TOR: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": tor/9})
                             #if edge not in vis_edges:toor
                             #    vis_edges.append(edge)
+                            if edge_present == False:
+                                edge_present = True
+                        elif memory.packet_db[session]["covert"]:
+                            f.edge(curr_node, destination, label='Covert: ' + str(map_dst) +": "+str(dlabel), color = "cyan")
+                            covert += 1
+                            interactive_graph.add_edge(curr_node, destination, color="cyan", title='Covert: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCCW", "roundness": https/12})
                             if edge_present == False:
                                 edge_present = True
                         else:

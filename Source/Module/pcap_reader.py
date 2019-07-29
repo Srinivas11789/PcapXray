@@ -7,6 +7,7 @@ import memory
 from netaddr import IPAddress
 import threading
 import base64
+import malicious_traffic_identifier
 
 class PcapEngine():
     """
@@ -228,9 +229,15 @@ class PcapEngine():
                             memory.packet_db[source_private_ip]["Ethernet"] = {}
 
                         # Record Payloads 
-                        if "Payload" not in memory.packet_db:
+                        if "Payload" not in memory.packet_db[source_private_ip]:
                             # Record unidirectional + bidirectional separate
                             memory.packet_db[source_private_ip]["Payload"] = {"forward":[],"reverse":[]}
+
+                        # Covert Communication Identifier
+                        if "covert" not in memory.packet_db[source_private_ip]:
+                            memory.packet_db[source_private_ip]["covert"] = False
+                        if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
+                            memory.packet_db[source_private_ip]["covert"] = True
 
                     if self.engine == "pyshark":
                         
@@ -273,7 +280,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/biz.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     

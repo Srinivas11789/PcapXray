@@ -26,6 +26,17 @@ class maliciousTrafficIdentifier:
             return 0
 
     # TODO: Covert communication module --> Add here
+    # * Only add scapy first
+    @staticmethod
+    def covert_traffic_detection(packet):
+        # covert ICMP - icmp tunneling
+        if "ICMP" in packet:
+            if "TCP in ICMP" in packet or "UDP in ICMP" in packet or "DNS" in packet:
+                #print(packet.show())
+                return 1
+            elif "padding" in packet:
+                return 1
+        return 0
 
 def main():
     cap = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
