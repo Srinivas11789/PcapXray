@@ -213,7 +213,7 @@ class PcapEngine():
                         source_private_ip = key2
                     else:
                         source_private_ip = key1
-                    source_private_ip = key
+                    #source_private_ip = key
 
                 # Fill packetDB with generated key
 
@@ -284,15 +284,12 @@ def main():
             ip, port = key.split("/")[0], int(key.split("/")[-1])
             if ip == "10.187.195.95":
                 ports.append(port)
-    
-
     print(sorted(list(set(ports))))
     print(memory.lan_hosts)
     print(memory.destination_hosts)
     #print(memory.packet_db["TCP 192.168.0.26:64707 > 172.217.12.174:443"].summary())
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")
-
 #main()
 
 # Sort payload by time...
