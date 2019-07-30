@@ -35,6 +35,18 @@ class trafficDetailsFetch():
             dns_info = "NotResolvable"
         return dns_info
 
+    @staticmethod
+    def is_multicast(ip):
+        if ":" in ip:
+            groups = ip.split(":")
+            if "FF0" in groups[0].upper():
+                return True
+        else:
+            octets = ip.split(".")
+            if int(octets[0]) >= 224:
+                return True
+        return False
+
 def main():
     capture = pcap_reader.PcapEngine('examples/test.pcap', "scapy")
     details = trafficDetailsFetch("sock")
