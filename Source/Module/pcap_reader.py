@@ -7,6 +7,7 @@ import memory
 from netaddr import IPAddress
 import threading
 import base64
+import malicious_traffic_identifier
 
 class PcapEngine():
     """
@@ -151,11 +152,13 @@ class PcapEngine():
                             source_private_ip = key1
 
                         # IntraNetwork Hosts list 
-                        # * When both are private they are LAN hosts
-                        if packet[eth_layer].src not in memory.lan_hosts:
-                            memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
-                        if packet[eth_layer].dst not in memory.lan_hosts:
-                            memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
+                        # * When both are private they are LAN host
+                        lan_key_src = packet[eth_layer].src + "/" + packet[IP].src
+                        lan_key_dst = packet[eth_layer].dst + "/" + packet[IP].dst
+                        if lan_key_src not in memory.lan_hosts:
+                            memory.lan_hosts[lan_key_src] = {"ip": packet[IP].src}
+                        if lan_key_dst not in memory.lan_hosts:
+                            memory.lan_hosts[lan_key_dst] = {"ip": packet[IP].dst}
 
                     elif private_source: # Internetwork packet
 
@@ -164,8 +167,9 @@ class PcapEngine():
                         source_private_ip = key
 
                         # IntraNetwork vs InterNetwork Hosts list
-                        if packet[eth_layer].src not in memory.lan_hosts:
-                            memory.lan_hosts[packet[eth_layer].src] = {"ip": packet[IP].src}
+                        lan_key_src = packet[eth_layer].src + "/" + packet[IP].src
+                        if lan_key_src not in memory.lan_hosts:
+                            memory.lan_hosts[lan_key_src] = {"ip": packet[IP].src}
                         if packet[IP].dst not in memory.destination_hosts:
                             memory.destination_hosts[packet[IP].dst] = {"mac": packet[eth_layer].dst}
 
@@ -176,8 +180,9 @@ class PcapEngine():
                         source_private_ip = key
 
                         # IntraNetwork vs InterNetwork Hosts list
-                        if packet[eth_layer].dst not in memory.lan_hosts:
-                            memory.lan_hosts[packet[eth_layer].dst] = {"ip": packet[IP].dst}
+                        lan_key_dst = packet[eth_layer].dst + "/" + packet[IP].dst
+                        if lan_key_dst not in memory.lan_hosts:
+                            memory.lan_hosts[lan_key_dst] = {"ip": packet[IP].dst}
                         if packet[IP].src not in memory.destination_hosts:
                             memory.destination_hosts[packet[IP].src] = {"mac": packet[eth_layer].src}
                     
@@ -228,9 +233,16 @@ class PcapEngine():
                             memory.packet_db[source_private_ip]["Ethernet"] = {}
 
                         # Record Payloads 
-                        if "Payload" not in memory.packet_db:
+                        if "Payload" not in memory.packet_db[source_private_ip]:
                             # Record unidirectional + bidirectional separate
                             memory.packet_db[source_private_ip]["Payload"] = {"forward":[],"reverse":[]}
+
+                        # Covert Communication Identifier
+                        if "covert" not in memory.packet_db[source_private_ip]:
+                            memory.packet_db[source_private_ip]["covert"] = False
+                        if memory.packet_db[source_private_ip]["covert"] == False:
+                            if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
+                                memory.packet_db[source_private_ip]["covert"] = True
 
                     if self.engine == "pyshark":
                         
@@ -273,7 +285,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "scapy")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/biz.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     
