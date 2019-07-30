@@ -30,12 +30,17 @@ class maliciousTrafficIdentifier:
     @staticmethod
     def covert_traffic_detection(packet):
         # covert ICMP - icmp tunneling
+        tunnelled_protocols = ["DNS", "HTTP"]
         if "ICMP" in packet:
             if "TCP in ICMP" in packet or "UDP in ICMP" in packet or "DNS" in packet:
                 #print(packet.show())
                 return 1
             elif "padding" in packet:
                 return 1
+            elif filter(lambda x: x in str(packet["ICMP"].payload), tunnelled_protocols):
+                return 1
+        elif "DNS" in packet:
+            print(packet.show())
         return 0
 
 def main():
