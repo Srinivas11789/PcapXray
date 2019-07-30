@@ -3,6 +3,7 @@ import memory
 
 # Custom Module Import
 import pcap_reader
+import communication_details_fetch
 
 # Library Import
 
@@ -40,7 +41,14 @@ class maliciousTrafficIdentifier:
             elif filter(lambda x: x in str(packet["ICMP"].payload), tunnelled_protocols):
                 return 1
         elif "DNS" in packet:
-            print(packet.show())
+            #print(packet["DNS"].qd.qname)
+            try:
+                if communication_details_fetch.trafficDetailsFetch.dns(packet["DNS"].qd.qname.strip()) == "NotResolvable":
+                    return 1
+                elif len(filter(str.isdigit, str(packet["DNS"].qd.qname).strip())) > 8:
+                    return 1
+            except:
+                pass
         return 0
 
 def main():

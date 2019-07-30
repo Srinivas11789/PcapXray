@@ -173,7 +173,7 @@ class plotLan:
                         elif memory.packet_db[session]["covert"]:
                             f.edge(curr_node, destination, label='Covert: ' + str(map_dst) +": "+str(dlabel), color = "cyan")
                             covert += 1
-                            interactive_graph.add_edge(curr_node, destination, color="cyan", title='Covert: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCCW", "roundness": https/12})
+                            interactive_graph.add_edge(curr_node, destination, color="cyan", title='Covert: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCCW", "roundness": covert/12})
                             if edge_present == False:
                                 edge_present = True
                         else:

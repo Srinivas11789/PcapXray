@@ -18,7 +18,7 @@ class trafficDetailsFetch():
                 if option == "whois":
                     memory.destination_hosts[host]["domain_name"] = self.whois_info_fetch(host)
                 else:
-                    memory.destination_hosts[host]["domain_name"] = self.dns(host)
+                    memory.destination_hosts[host]["domain_name"] = trafficDetailsFetch.dns(host)
 
     def whois_info_fetch(self, ip):
         try:
@@ -27,7 +27,8 @@ class trafficDetailsFetch():
            whois_info = "NoWhoIsInfo"
         return whois_info
 
-    def dns(self, ip):
+    @staticmethod
+    def dns(ip):
         try:
             dns_info = socket.gethostbyaddr(ip)[0]
         except:
