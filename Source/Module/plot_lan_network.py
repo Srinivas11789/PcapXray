@@ -214,13 +214,13 @@ class plotLan:
                                 if edge_present == False:
                                     edge_present = True
                             elif int(port) in [20, 21, 23, 25, 110, 143, 139, 69, 161, 162, 1521]:
-                                f.edge(curr_node, destination, label='ClearTextProtocol: ' + str(map_dst) ,color="violet")
+                                f.edge(curr_node, destination, label='ClearTextProtocol/'+ port +': ' +  str(map_dst) ,color="violet")
                                 clear_text += 1
                                 interactive_graph.add_edge(curr_node, destination, color="#9A2EFE", title='ClearTextProtocol/'+ port +': ' + str(map_dst), smooth={"type": "curvedCW", "roundness": clear_text/4})
                                 if edge_present == False:
                                     edge_present = True
                             else:
-                                f.edge(curr_node, destination, label='UnknownProtocol: ' + str(map_dst) ,color="brown")
+                                f.edge(curr_node, destination, label='UnknownProtocol/'+ port +': ' + str(map_dst) ,color="brown")
                                 unknown += 1
                                 interactive_graph.add_edge(curr_node, destination, color="brown", title='UnknownProtocol/' + port + ': ' + str(map_dst), smooth={"type": "curvedCW", "roundness": unknown/3})
                                 if edge_present == False:

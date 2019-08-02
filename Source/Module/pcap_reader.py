@@ -153,8 +153,10 @@ class PcapEngine():
 
                         # IntraNetwork Hosts list 
                         # * When both are private they are LAN host
-                        lan_key_src = packet[eth_layer].src + "/" + packet[IP].src
-                        lan_key_dst = packet[eth_layer].dst + "/" + packet[IP].dst
+                        # TODO: this assumes a unique mac address per LAN, investigate if we need to account duplicate MAC
+                        # * This requirement occurred when working with CTF with fake MAC like 00:00:00:00:00:00
+                        lan_key_src = packet[eth_layer].src
+                        lan_key_dst = packet[eth_layer].dst
                         if lan_key_src not in memory.lan_hosts:
                             memory.lan_hosts[lan_key_src] = {"ip": packet[IP].src}
                         if lan_key_dst not in memory.lan_hosts:
@@ -167,7 +169,7 @@ class PcapEngine():
                         source_private_ip = key
 
                         # IntraNetwork vs InterNetwork Hosts list
-                        lan_key_src = packet[eth_layer].src + "/" + packet[IP].src
+                        lan_key_src = packet[eth_layer].src
                         if lan_key_src not in memory.lan_hosts:
                             memory.lan_hosts[lan_key_src] = {"ip": packet[IP].src}
                         if packet[IP].dst not in memory.destination_hosts:
@@ -180,7 +182,7 @@ class PcapEngine():
                         source_private_ip = key
 
                         # IntraNetwork vs InterNetwork Hosts list
-                        lan_key_dst = packet[eth_layer].dst + "/" + packet[IP].dst
+                        lan_key_dst = packet[eth_layer].dst
                         if lan_key_dst not in memory.lan_hosts:
                             memory.lan_hosts[lan_key_dst] = {"ip": packet[IP].dst}
                         if packet[IP].src not in memory.destination_hosts:
