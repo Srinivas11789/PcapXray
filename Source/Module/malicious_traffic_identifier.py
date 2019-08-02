@@ -26,6 +26,40 @@ class maliciousTrafficIdentifier:
             return 0
 
     # TODO: Covert communication module --> Add here
+    # * Only add scapy first
+
+    # Covert Detection Algorithm
+    @staticmethod
+    def covert_traffic_detection(packet):
+        # covert ICMP - icmp tunneling
+        tunnelled_protocols = ["DNS", "HTTP"]
+
+        if "IP" in packet:
+            if communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].src) or communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].dst):
+                return 0
+
+        if "ICMP" in packet:
+            if "TCP in ICMP" in packet or "UDP in ICMP" in packet or "DNS" in packet:
+                #print(packet.show())
+                return 1
+            elif "padding" in packet:
+                return 1
+            elif filter(lambda x: x in str(packet["ICMP"].payload), tunnelled_protocols):
+                return 1
+        elif "DNS" in packet:
+            #print(packet["DNS"].qd.qname)
+            try:
+                if communication_details_fetch.trafficDetailsFetch.dns(packet["DNS"].qd.qname.strip()) == "NotResolvable":
+                    return 1
+                elif len(filter(str.isdigit, str(packet["DNS"].qd.qname).strip())) > 8:
+                    return 1
+            except:
+                pass
+        return 0
+    
+    # Covert payload prediction algorithm
+    ##@staticmethod
+    ##def covert_payload_prediction(session):
 
 def main():
     cap = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
