@@ -8,6 +8,7 @@ from netaddr import IPAddress
 import threading
 import base64
 import malicious_traffic_identifier
+import communication_details_fetch
 
 class PcapEngine():
     """
@@ -246,10 +247,12 @@ class PcapEngine():
                         # Covert Communication Identifier
                         if "covert" not in memory.packet_db[source_private_ip]:
                             memory.packet_db[source_private_ip]["covert"] = False
-                            
+                    
+                    src, dst, port = source_private_ip.split("/")
                     if memory.packet_db[source_private_ip]["covert"] == False:
-                        if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
-                            memory.packet_db[source_private_ip]["covert"] = True
+                        if not communication_details_fetch.trafficDetailsFetch.is_multicast(src) and not communication_details_fetch.trafficDetailsFetch.is_multicast(dst):
+                            if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
+                                memory.packet_db[source_private_ip]["covert"] = True
 
                     # Temperory Stub
                     # TODO: remove these pcap engine checks (confusing?), this is a temp block to develop/add support

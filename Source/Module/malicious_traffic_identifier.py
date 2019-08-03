@@ -35,9 +35,10 @@ class maliciousTrafficIdentifier:
         # covert ICMP - icmp tunneling
         tunnelled_protocols = ["DNS", "HTTP"]
 
-        if "IP" in packet:
-            if communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].src) or communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].dst):
-                return 0
+        # TODO: this does not handle ipv6 --> so check before calling this function
+        #if "IP" in packet:
+        #    if communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].src) or communication_details_fetch.trafficDetailsFetch.is_multicast(packet["IP"].dst):
+        #        return 0
 
         if "ICMP" in packet:
             if "TCP in ICMP" in packet or "UDP in ICMP" in packet or "DNS" in packet:
