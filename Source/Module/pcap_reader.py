@@ -252,14 +252,17 @@ class PcapEngine():
 
                         # File Signature Identifier
                         if "file_signatures" not in memory.packet_db[source_private_ip]:
-                            memory.packet_db[source_private_ip]["file_signatures"] = False
-
-
+                            memory.packet_db[source_private_ip]["file_signatures"] = []
+                    
+                    # Covert detection and store
                     src, dst, port = source_private_ip.split("/")
                     if memory.packet_db[source_private_ip]["covert"] == False:
                         if not communication_details_fetch.trafficDetailsFetch.is_multicast(src) and not communication_details_fetch.trafficDetailsFetch.is_multicast(dst):
                             if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
                                 memory.packet_db[source_private_ip]["covert"] = True
+                        
+                    # Variable to hold payload and detect covert
+                    payload_string = ""
 
                     # Temperory Stub
                     # TODO: remove these pcap engine checks (confusing?), this is a temp block to develop/add support
@@ -283,6 +286,7 @@ class PcapEngine():
                         # Refer https://github.com/KimiNewt/pyshark/issues/264
                         try:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet.get_raw_packet()))
+                            payload_string = packet.get_raw_packet()
                         except:
                             memory.packet_db[source_private_ip]["Payload"][payload].append("")
 
@@ -303,10 +307,21 @@ class PcapEngine():
                         # Payload 
                         if "TCP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload))
+                            payload_string = packet["TCP"].payload
                         elif "UDP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["UDP"].payload))
+                            payload_string = packet["UDP"].payload
                         elif "ICMP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["ICMP"].payload))
+                            payload_string = packet["ICMP"].payload
+                    
+                    # Covert file signatures
+                    if payload_string and memory.packet_db[source_private_ip]["covert"] == True:
+                        file_signs = malicious_traffic_identifier.maliciousTrafficIdentifier.covert_payload_prediction(payload_string)
+                        #print(file_signs)
+                        if file_signs:
+                            memory.packet_db[source_private_ip]["file_signatures"].extend(file_signs)
+                            memory.packet_db[source_private_ip]["file_signatures"] = list(set(memory.packet_db[source_private_ip]["file_signatures"]))
 
     # TODO: Add function memory to store all the memory data in files (DB)
     # def memory_handle():
@@ -319,7 +334,7 @@ def main():
     """
     Module Driver
     """
-    pcapfile = PcapEngine(sys.path[0]+'/examples/torExample.pcap', "pyshark")
+    pcapfile = PcapEngine(sys.path[0]+'/examples/biz.pcap', "scapy")
     print(memory.packet_db.keys())
     ports = []
     
