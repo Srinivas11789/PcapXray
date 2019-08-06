@@ -1,5 +1,5 @@
 #File Import
-import pcap_reader
+#import pcap_reader
 import communication_details_fetch
 import tor_traffic_handle
 import malicious_traffic_identifier
@@ -600,6 +600,7 @@ class plotLan:
                 
 def main():
     # draw example
+    import pcap_reader
     pcapfile = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
     print("Reading Done....")
     details = communication_details_fetch.trafficDetailsFetch("sock")

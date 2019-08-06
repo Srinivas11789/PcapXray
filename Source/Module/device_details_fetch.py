@@ -6,7 +6,6 @@ import urllib#.request
 import json
 import logging
 # Module Import
-import pcap_reader
 import memory
 import threading
 from netaddr import *
@@ -56,6 +55,7 @@ class fetchDeviceDetails:
             return "Unknown", "Unknown"
 
 def main():
+    import pcap_reader
     filename = "test.pcap"
     pcap_reader.PcapEngine('examples/test.pcap', "scapy")
     fetchDeviceDetails("ieee").fetch_info()

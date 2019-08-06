@@ -2,7 +2,6 @@
 import memory
 
 # Custom Module Import
-import pcap_reader
 import communication_details_fetch
 
 # Library Import
@@ -59,11 +58,17 @@ class maliciousTrafficIdentifier:
                 pass
         return 0
     
+    
     # Covert payload prediction algorithm
-    ##@staticmethod
-    ##def covert_payload_prediction(session):
+    @staticmethod
+    def covert_payload_prediction(payload):
+        print(payload.encode("hex"))
+        print(payload)
+        print("\n")
+    
 
 def main():
+    import pcap_reader
     cap = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
     maliciousTrafficIdentifier()
     print(memory.possible_mal_traffic)

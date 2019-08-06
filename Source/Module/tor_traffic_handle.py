@@ -2,7 +2,7 @@
 import memory
 
 # For tests
-import pcap_reader
+#import pcap_reader
 
 # Library Import
 from stem.descriptor import remote
@@ -30,6 +30,7 @@ class torTrafficHandle():
                     memory.possible_tor_traffic.append(session)
 
 def main():
+     import pcap_reader
      pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
      tor = torTrafficHandle()
      #print(memory.packet_db)
