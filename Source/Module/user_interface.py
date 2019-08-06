@@ -79,6 +79,14 @@ class pcapXrayGui:
         # Browse button
         ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10,sticky="E")     
 
+        # Pcap Engine
+        # * Add Pcap Engine with an Engine Selection here once tested with full support
+        # * Need to solve pyshark errors: main thread event loop, infinite loop in file capture
+        self.engine = StringVar()
+        #self.engines = { 'scapy', 'pyshark' }
+        #ttk.OptionMenu(FirstFrame, self.engine, "Engine", *self.engines).grid(row=0,column=3, padx=5, sticky="W")
+        self.engine.set('scapy')
+
         # Zoom 
         self.zoom = [900,900]
         ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0,column=10, padx=5, sticky="E")
@@ -188,7 +196,7 @@ class pcapXrayGui:
 
             # PcapRead - First of All!
             #result = q.Queue()
-            packet_read = threading.Thread(target=pcap_reader.PcapEngine,args=(self.pcap_file.get(),"scapy"))
+            packet_read = threading.Thread(target=pcap_reader.PcapEngine,args=(self.pcap_file.get(), self.engine.get()))
             packet_read.start()
             while packet_read.is_alive():
                 self.progressbar.update()
