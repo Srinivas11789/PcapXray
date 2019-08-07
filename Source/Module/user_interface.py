@@ -254,6 +254,7 @@ class pcapXrayGui:
 
             # Enable controls
             self.trigger['state'] = 'normal'
+            self.ibutton['state'] = 'normal'
             self.to_menu['state'] = 'normal'
             self.from_menu['state'] = 'normal'
         else:
@@ -323,7 +324,11 @@ class pcapXrayGui:
     def map_select(self, *args):
         print(self.option.get())
         print(self.to_ip.get(), self.from_ip.get())
+        self.trigger['state'] = 'disabled'
+        self.ibutton['state'] = 'disabled'
         self.generate_graph()
+        self.trigger['state'] = 'normal'
+        self.ibutton['state'] = 'normal'
 
     def zoom_in(self):
         print("zoomin")
