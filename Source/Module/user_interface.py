@@ -88,7 +88,7 @@ class pcapXrayGui:
         self.engine.set('scapy')
 
         # Zoom 
-        self.zoom = [900,900]
+        self.zoom = [900,500]
         ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0,column=10, padx=5, sticky="E")
         ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0,column=19,padx=10, sticky="E")   
 
@@ -339,7 +339,7 @@ class pcapXrayGui:
 
     def zoom_out(self):
         print("zoomout")
-        if self.zoom[0] > 700 and self.zoom[1] > 700:
+        if self.zoom[0] > 900 and self.zoom[1] > 500:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:
