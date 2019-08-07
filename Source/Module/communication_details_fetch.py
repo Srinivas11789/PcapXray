@@ -5,7 +5,7 @@ import ipwhois
 from dns import reversename, resolver
 import socket
 # Module Import
-import pcap_reader
+#import pcap_reader
 import netaddr
 
 # Class Communication or Traffic Details Fetch
@@ -48,6 +48,7 @@ class trafficDetailsFetch():
         return False
 
 def main():
+    import pcap_reader
     capture = pcap_reader.PcapEngine('examples/test.pcap', "scapy")
     details = trafficDetailsFetch("sock")
     print(memory.destination_hosts)

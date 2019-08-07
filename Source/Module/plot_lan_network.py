@@ -1,5 +1,5 @@
 #File Import
-import pcap_reader
+#import pcap_reader
 import communication_details_fetch
 import tor_traffic_handle
 import malicious_traffic_identifier
@@ -225,6 +225,20 @@ class plotLan:
                                 interactive_graph.add_edge(curr_node, destination, color="brown", title='UnknownProtocol/' + port + ': ' + str(map_dst), smooth={"type": "curvedCW", "roundness": unknown/3})
                                 if edge_present == False:
                                     edge_present = True
+                    else:
+                        # This block was just added to handle MAC SPOOF scenario
+                        # * Most of the CTF Challenges have fake identical MACs that need to be displayed
+                        if map_src in curr_node:
+                            other_node = map_dst + "\n" + memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                        else:
+                            other_node = map_src + "\n" + memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                        f.node(other_node)
+                        interactive_graph.add_node(str(other_node), str(other_node), title=str(other_node), color="yellow")
+                        f.edge(curr_node, other_node, label='WeirdTraffic/'+ port ,color="pink")
+                        unknown += 1
+                        interactive_graph.add_edge(curr_node, other_node, color="pink", title='WeirdTraffic/' + port, smooth={"type": "curvedCW", "roundness": unknown/3})
+                        if edge_present == False:
+                            edge_present = True    
 
         elif option == "HTTP":
             for session in self.sessions:
@@ -586,6 +600,7 @@ class plotLan:
                 
 def main():
     # draw example
+    import pcap_reader
     pcapfile = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
     print("Reading Done....")
     details = communication_details_fetch.trafficDetailsFetch("sock")

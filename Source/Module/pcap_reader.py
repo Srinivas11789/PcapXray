@@ -62,6 +62,8 @@ class PcapEngine():
                 logging.error("Cannot import selected pcap engine: PyShark!")
                 sys.exit()
             self.packets = pyshark.FileCapture(pcap_file_name, include_raw=True, use_json=True)
+            #self.packets.load_packets()
+            #self.packets.apply_on_packets(self.analyse_packet_data, timeout=100)
 
         # Analyse capture to populate data
         self.analyse_packet_data()
@@ -76,7 +78,7 @@ class PcapEngine():
             # - Parse the packets to create a usable DB
             # - All the protocol parsing should be included here
             """
-
+                    
             for packet in self.packets: # O(N) packet iteration
 
                 # Construct a unique key for each flow 
@@ -247,12 +249,20 @@ class PcapEngine():
                         # Covert Communication Identifier
                         if "covert" not in memory.packet_db[source_private_ip]:
                             memory.packet_db[source_private_ip]["covert"] = False
+
+                        # File Signature Identifier
+                        if "file_signatures" not in memory.packet_db[source_private_ip]:
+                            memory.packet_db[source_private_ip]["file_signatures"] = []
                     
+                    # Covert detection and store
                     src, dst, port = source_private_ip.split("/")
                     if memory.packet_db[source_private_ip]["covert"] == False:
                         if not communication_details_fetch.trafficDetailsFetch.is_multicast(src) and not communication_details_fetch.trafficDetailsFetch.is_multicast(dst):
                             if malicious_traffic_identifier.maliciousTrafficIdentifier.covert_traffic_detection(packet) == 1:
                                 memory.packet_db[source_private_ip]["covert"] = True
+                        
+                    # Variable to hold payload and detect covert
+                    payload_string = ""
 
                     # Temperory Stub
                     # TODO: remove these pcap engine checks (confusing?), this is a temp block to develop/add support
@@ -260,24 +270,36 @@ class PcapEngine():
                     if self.engine == "pyshark":
                         
                         # Ethernet Layer
-                        if eth_layer in packet:
-                            memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["ETH"].src
-                            memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["ETH"].dst
+                        # Ethernet layer: store respect mac for the IP
+                        if private_source:
+                            if "ETH" in packet:
+                                memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["ETH"].src
+                                memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["ETH"].dst
+                            payload = "forward"
+                        else:
+                            if "ETH" in packet:
+                                memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["ETH"].dst
+                                memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["ETH"].src
+                            payload = "reverse"
 
                         # <TODO>: Payload recording for pyshark
                         # Refer https://github.com/KimiNewt/pyshark/issues/264
-                        #memory.packet_db[source_private_ip]["Payload"].append(packet.get_raw_packet())
+                        try:
+                            memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet.get_raw_packet()))
+                            payload_string = packet.get_raw_packet()
+                        except:
+                            memory.packet_db[source_private_ip]["Payload"][payload].append("")
 
                     elif self.engine == "scapy":
                         
                         # Ethernet layer: store respect mac for the IP
                         if private_source:
-                            if eth_layer in packet:
+                            if "Ether" in packet:
                                 memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].src
                                 memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].dst
                             payload = "forward"
                         else:
-                            if eth_layer in packet:
+                            if "Ether" in packet:
                                 memory.packet_db[source_private_ip]["Ethernet"]["src"] = packet["Ether"].dst
                                 memory.packet_db[source_private_ip]["Ethernet"]["dst"] = packet["Ether"].src
                             payload = "reverse"
@@ -285,10 +307,21 @@ class PcapEngine():
                         # Payload 
                         if "TCP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload))
+                            payload_string = packet["TCP"].payload
                         elif "UDP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["UDP"].payload))
+                            payload_string = packet["UDP"].payload
                         elif "ICMP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["ICMP"].payload))
+                            payload_string = packet["ICMP"].payload
+                    
+                    # Covert file signatures
+                    if payload_string and memory.packet_db[source_private_ip]["covert"] == True:
+                        file_signs = malicious_traffic_identifier.maliciousTrafficIdentifier.covert_payload_prediction(payload_string)
+                        #print(file_signs)
+                        if file_signs:
+                            memory.packet_db[source_private_ip]["file_signatures"].extend(file_signs)
+                            memory.packet_db[source_private_ip]["file_signatures"] = list(set(memory.packet_db[source_private_ip]["file_signatures"]))
 
     # TODO: Add function memory to store all the memory data in files (DB)
     # def memory_handle():
@@ -305,6 +338,7 @@ def main():
     print(memory.packet_db.keys())
     ports = []
     
+    """
     for key in memory.packet_db.keys():
     #    if "192.168.11.4" in key:
             print(key)
@@ -315,6 +349,7 @@ def main():
     print(sorted(list(set(ports))))
     print(memory.lan_hosts)
     print(memory.destination_hosts)
+    """
     #print(memory.packet_db["TCP 192.168.0.26:64707 > 172.217.12.174:443"].summary())
     #print(memory.packet_db["TCP 172.217.12.174:443 > 192.168.0.26:64707"].summary())
     #memory.packet_db.conversations(type="jpg", target="> test.jpg")

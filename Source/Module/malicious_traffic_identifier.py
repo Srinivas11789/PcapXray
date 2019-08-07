@@ -2,10 +2,10 @@
 import memory
 
 # Custom Module Import
-import pcap_reader
 import communication_details_fetch
 
 # Library Import
+import os, json, sys
 
 # Module to Identify Possible Malicious Traffic
 
@@ -32,7 +32,7 @@ class maliciousTrafficIdentifier:
     # Covert Detection Algorithm
     @staticmethod
     def covert_traffic_detection(packet):
-        # covert ICMP - icmp tunneling
+        # covert ICMP - icmp tunneling ( Add TCP )
         tunnelled_protocols = ["DNS", "HTTP"]
 
         # TODO: this does not handle ipv6 --> so check before calling this function
@@ -59,11 +59,49 @@ class maliciousTrafficIdentifier:
                 pass
         return 0
     
+    
     # Covert payload prediction algorithm
-    ##@staticmethod
-    ##def covert_payload_prediction(session):
+    @staticmethod
+    def covert_payload_prediction(payload):
+
+        ### Magic Number OR File Signature Intelligence
+        # Fetch the File Signature OR Magic Numbers Intelligence from the Internet
+        # Obtained from the Internet
+        #          @ https://gist.github.com/Qti3e/6341245314bf3513abb080677cd1c93b
+        #          @ /etc/nginx/mime.types
+        #          @ http://www.garykessler.net/library/file_sigs.html
+        #          @ https://en.wikipedia.org/wiki/List_of_file_signatures
+        #
+        try:
+            if memory.signatures == {}:
+                memory.signatures = json.load(open(sys.path[0]+"/magic_numbers.txt"))
+            matches = []
+            # Fetch payload from Packet in hex format
+            string_payload = str(payload)
+            try:
+                payload = bytes(payload).hex()
+            except:
+                payload = str(payload)
+            # Check dictionary for possible matches
+            try:
+                for file_type in memory.signatures.keys():
+                    for sign in memory.signatures[file_type]["signs"]:
+                        offset, magic = sign.split(",")
+                        magic = magic.strip()
+                        #print(magic, file_type)
+                        #print(magic, string_payload, file_type)
+                        if magic.lower() in payload or magic in string_payload:
+                            matches.append(file_type)
+            except:
+                pass
+            #print(matches, string_payload)
+            return matches
+        except:
+            print("File signature analysis failed!")
+            return []
 
 def main():
+    import pcap_reader
     cap = pcap_reader.PcapEngine('examples/torExample.pcap', "scapy")
     maliciousTrafficIdentifier()
     print(memory.possible_mal_traffic)
