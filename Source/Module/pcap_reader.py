@@ -10,6 +10,9 @@ import base64
 import malicious_traffic_identifier
 import communication_details_fetch
 
+# Feature toggle
+tls_view_feature = False
+
 class PcapEngine():
     """
     PcapEngine: To support different pcap parser backend engine to operate reading pcap
@@ -50,6 +53,17 @@ class PcapEngine():
             except:
                 logging.error("Cannot import selected pcap engine: Scapy!")
                 sys.exit()
+            
+            try:
+                from scapy.all import load_layer
+                global tls_view_feature
+                tls_view_feature = True
+                logging.info("tls view feature enabled")
+            except:
+                logging.info("tls view feature not enabled")
+            
+            if tls_view_feature:
+                load_layer("tls")
 
             # Scapy sessions and other types use more O(N) iterations so just
             # - use rdpcap + our own iteration (create full duplex streams)
@@ -305,8 +319,20 @@ class PcapEngine():
                             payload = "reverse"
                         
                         # Payload 
+                        global tls_view_feature
                         if "TCP" in packet:
-                            memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload))
+                            if tls_view_feature:
+                                if "TLS" in packet:
+                                    memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TLS"].msg))
+                                elif "SSLv2" in packet:
+                                    memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["SSLv2"].msg))
+                                elif "SSLv3" in packet:
+                                    memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["SSLv3"].msg))
+                                else:
+                                    memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload)) 
+                            else:
+                                # TODO: clean this payload dump
+                                memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["TCP"].payload))
                             payload_string = packet["TCP"].payload
                         elif "UDP" in packet:
                             memory.packet_db[source_private_ip]["Payload"][payload].append(str(packet["UDP"].payload))
