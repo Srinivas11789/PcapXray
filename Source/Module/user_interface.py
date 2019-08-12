@@ -63,7 +63,8 @@ class pcapXrayGui:
         # Browse button
         #self.filename = StringVar()
         ttk.Button(InitFrame, text="Browse", command=lambda: self.browse_directory("pcap")).grid(column=2, row=0, padx=10, pady=10,sticky="E")
-        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=3, row=0, padx=10, pady=10,sticky="E")
+        self.analyze_button = ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse)
+        self.analyze_button.grid(column=3, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=4, row=0, padx=10, pady=10, sticky="E")
 
         # First Frame with Report Directory
@@ -191,6 +192,7 @@ class pcapXrayGui:
             self.ibutton['state'] = 'disabled'
             self.to_menu['state'] = 'disabled'
             self.from_menu['state'] = 'disabled'
+            self.analyze_button['state'] = 'disabled'
 
             self.progressbar.start()
 
@@ -257,6 +259,7 @@ class pcapXrayGui:
             self.ibutton['state'] = 'normal'
             self.to_menu['state'] = 'normal'
             self.from_menu['state'] = 'normal'
+            self.analyze_button['state'] = 'normal'
         else:
             mb.showerror("Error","File Not Found !")
 
@@ -325,10 +328,12 @@ class pcapXrayGui:
         print(self.option.get())
         print(self.to_ip.get(), self.from_ip.get())
         self.trigger['state'] = 'disabled'
+        self.analyze_button['state'] = 'disabled'
         self.ibutton['state'] = 'disabled'
         self.generate_graph()
         self.trigger['state'] = 'normal'
         self.ibutton['state'] = 'normal'
+        self.analyze_button['state'] = 'normal'
 
     def zoom_in(self):
         print("zoomin")
