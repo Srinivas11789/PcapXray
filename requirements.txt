@@ -29,3 +29,6 @@ matplotlib
 cefpython3
 pyvis
 
+# Ciphersuites
+cryptography
+

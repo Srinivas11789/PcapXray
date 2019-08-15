@@ -50,6 +50,11 @@ python3 Source/main.py
 ```
 ( Make sure to escalate privilege to allow file creations - Run with `sudo` )
 
+For MAC:
+```
+brew install graphviz
+```
+
 * Python 2
 
 ```bash

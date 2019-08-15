@@ -41,7 +41,10 @@ class plotLan:
                 'fontcolor': 'black',
                 'color': ' black',
                 'style': 'filled',
-                'fillcolor': 'yellow'
+                'fillcolor': 'yellow',
+                'fixedsize': 'true',
+                'width': '3',
+                'height': '3'
             }
         }
 

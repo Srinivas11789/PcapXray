@@ -63,7 +63,8 @@ class pcapXrayGui:
         # Browse button
         #self.filename = StringVar()
         ttk.Button(InitFrame, text="Browse", command=lambda: self.browse_directory("pcap")).grid(column=2, row=0, padx=10, pady=10,sticky="E")
-        ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse).grid(column=3, row=0, padx=10, pady=10,sticky="E")
+        self.analyze_button = ttk.Button(InitFrame, text="Analyze!", command=self.pcap_analyse)
+        self.analyze_button.grid(column=3, row=0, padx=10, pady=10,sticky="E")
         self.progressbar.grid(column=4, row=0, padx=10, pady=10, sticky="E")
 
         # First Frame with Report Directory
@@ -88,7 +89,7 @@ class pcapXrayGui:
         self.engine.set('scapy')
 
         # Zoom 
-        self.zoom = [900,900]
+        self.zoom = [900,500]
         ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0,column=10, padx=5, sticky="E")
         ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0,column=19,padx=10, sticky="E")   
 
@@ -191,6 +192,7 @@ class pcapXrayGui:
             self.ibutton['state'] = 'disabled'
             self.to_menu['state'] = 'disabled'
             self.from_menu['state'] = 'disabled'
+            self.analyze_button['state'] = 'disabled'
 
             self.progressbar.start()
 
@@ -254,8 +256,10 @@ class pcapXrayGui:
 
             # Enable controls
             self.trigger['state'] = 'normal'
+            self.ibutton['state'] = 'normal'
             self.to_menu['state'] = 'normal'
             self.from_menu['state'] = 'normal'
+            self.analyze_button['state'] = 'normal'
         else:
             mb.showerror("Error","File Not Found !")
 
@@ -323,7 +327,13 @@ class pcapXrayGui:
     def map_select(self, *args):
         print(self.option.get())
         print(self.to_ip.get(), self.from_ip.get())
+        self.trigger['state'] = 'disabled'
+        self.analyze_button['state'] = 'disabled'
+        self.ibutton['state'] = 'disabled'
         self.generate_graph()
+        self.trigger['state'] = 'normal'
+        self.ibutton['state'] = 'normal'
+        self.analyze_button['state'] = 'normal'
 
     def zoom_in(self):
         print("zoomin")
@@ -334,7 +344,7 @@ class pcapXrayGui:
 
     def zoom_out(self):
         print("zoomout")
-        if self.zoom[0] > 700 and self.zoom[1] > 700:
+        if self.zoom[0] > 900 and self.zoom[1] > 500:
             self.zoom[0] -= 100
             self.zoom[1] -= 100
         else:

@@ -2,7 +2,7 @@ import memory
 
 # Library Import
 import ipwhois
-from dns import reversename, resolver
+#from dns import reversename, resolver
 import socket
 # Module Import
 #import pcap_reader
@@ -26,6 +26,20 @@ class trafficDetailsFetch():
         except:
            whois_info = "NoWhoIsInfo"
         return whois_info
+    
+    """
+    @staticmethod
+    def dns_using_library(ip):
+        try:
+            reverse_query = reversename.from_address(ip)
+            resolve_bot = resolve.Resolver()
+            resolve_bot.timeout = 1
+            resolve_bot.lifetime = 1
+            dns_info = str(resolve_bot.query(reverse_query,"PTR")[0])
+        except:
+            dns_info = "NotResolvable"
+        return dns_info
+    """
 
     @staticmethod
     def dns(ip):
