@@ -1,4 +1,4 @@
-# PcapXray [![Build Status](https://travis-ci.org/Srinivas11789/PcapXray.svg?branch=master)](https://travis-ci.org/Srinivas11789/PcapXray) [![codecov](https://codecov.io/gh/Srinivas11789/PcapXray/branch/master/graph/badge.svg)](https://codecov.io/gh/Srinivas11789/PcapXray)
+# PcapXray [![Build Status](https://travis-ci.org/Srinivas11789/PcapXray.svg?branch=master)](https://travis-ci.org/Srinivas11789/PcapXray) [![codecov](https://codecov.io/gh/Srinivas11789/PcapXray/branch/master/graph/badge.svg)](https://codecov.io/gh/Srinivas11789/PcapXray) [![defcon27](https://img.shields.io/badge/defcon27-demolabs-blue)](https://www.defcon.org/html/defcon-27/dc-27-demolabs.html#PcapXray)
     A Network Forensics Tool - To visualize a Packet Capture offline as a Network Diagram including device identification, highlight important communication and file extraction
 ![Alt text](https://srinivas11789.github.io/PcapXray/logo.png?width=20px "PcapXray")
 ## PcapXray Design Specification
