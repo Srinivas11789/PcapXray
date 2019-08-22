@@ -31,7 +31,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     #docker run --rm -d --name pcapxray -e DISPLAY=$IP:0 -v /tmp/.X11-unix:/tmp/.X11-unix srinivas11789/pcapxray
     # Run Docker Image - Staging (Develop)
     docker run --rm -d --name pcapxray -v ${PWD}/artifacts:/tmp/artifacts -e DISPLAY=$IP:0 -v /tmp/.X11-unix:/tmp/.X11-unix srinivas11789/pcapxray-2_9
-
+    echo "XQuartz should be started and incoming connections should be allowed for this to work."
+    echo "Set the Report to /tmp/artifacts in UI to get reports in the shared directory /artifacts"
 
 #elif [[ "$OSTYPE" == "linux-gnu" ]]; then
 else
@@ -45,6 +46,7 @@ else
     #docker run --rm --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" srinivas11789/pcapxray
     # Run docker - Staging (Develop)
     docker run --rm -d --name pcapxray -v ${PWD}/artifacts:/tmp/artifacts --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" srinivas11789/pcapxray-2_9
+    echo "Set the Report to /tmp/artifacts in UI to get reports in the shared directory /artifacts"
 fi
 
 #else
