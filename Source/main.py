@@ -9,7 +9,13 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('TkAgg')
 
-from cefpython3 import cefpython as cef
+interactive_graph_support = False
+try:
+    from cefpython3 import cefpython as cef
+    interactive_graph_support = True
+except:
+    print("Interactive graph in app wont work as python version/platform is not supported (will launch in default browser)")
+    pass
 
 try:
     # for Python2
@@ -37,9 +43,11 @@ def main():
     icon = PhotoImage(file=logo_file)
     base.tk.call('wm','iconphoto',base._w,icon)
     user_interface.pcapXrayGui(base)
-    cef.Initialize()
+    if interactive_graph_support:
+        cef.Initialize()
     base.mainloop()
-    cef.Shutdown()
+    if interactive_graph_support:
+        cef.Shutdown()
 
 main()
 
