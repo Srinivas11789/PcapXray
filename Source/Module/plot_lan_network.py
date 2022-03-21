@@ -3,11 +3,9 @@
 import communication_details_fetch
 import tor_traffic_handle
 import malicious_traffic_identifier
-#import device_details_fetch
 import memory
 
 import networkx as nx
-#import matplotlib.pyplot as plt
 
 from graphviz import Digraph
 import threading
@@ -48,7 +46,9 @@ class plotLan:
             }
         }
 
-        self.sessions = memory.packet_db.keys()
+        # self.sessions = memory.packet_db.keys()
+        self.packets = memory.packet_db.get_all()
+
         #device_details_fetch.fetchDeviceDetails("ieee").fetch_info()
         if option == "Malicious" or option == "All":
             self.mal_identify = malicious_traffic_identifier.maliciousTrafficIdentifier()
@@ -79,9 +79,17 @@ class plotLan:
         )
         return graph
 
+    
+    def interactive_graph_node_add(self, interactive_graph, curr_node, destination):
+        # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
+        try:
+            interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
+            interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
+        except Exception as e:
+            print("Interactive graph error occurred: "+str(e))
+        
+
     def draw_graph(self, option="All", to_ip="All", from_ip="All"):
-        #f = Digraph('network_diagram - '+option, filename=self.filename, engine="dot", format="png")
-        #f.attr(rankdir='LR', size='8,5')
         if len(memory.lan_hosts) > 40:
             f = Digraph('network_diagram - '+option, filename=self.filename, engine="sfdp", format="png")
         elif len(memory.lan_hosts) > 20:
@@ -91,8 +99,6 @@ class plotLan:
         
         interactive_graph = Network(directed=True, height="750px", width="100%", bgcolor="#222222", font_color="white")
         interactive_graph.barnes_hut()
-        vis_nodes = []
-        vis_edges = []
 
         f.attr('node', shape='doublecircle')
         #f.node('defaultGateway')
@@ -106,7 +112,8 @@ class plotLan:
 
         if option == "All":
             # add nodes
-            for session in self.sessions:
+            for packet in self.packets:
+                session = packet["session_key"]
                 src, dst, port = session.split("/")
 
                 #print(from_ip, to_ip, src, dst)
@@ -126,11 +133,11 @@ class plotLan:
                         map_dst = dst
                     
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -143,25 +150,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
-                    
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
 
-                    #if (curr_node, curr_node, title=curr_node, color="yellow") not in vis_nodes:
-                    #    vis_nodes.append((curr_node, curr_node, title=curr_node, color="yellow"))
-                    #if (destination, destination, title=destination, color="yellow") not in vis_nodes:
-                    #    vis_nodes.append((destination, destination, title=destination, color="yellow"))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if curr_node != destination:
                         if session in memory.possible_tor_traffic:
@@ -173,7 +170,7 @@ class plotLan:
                             #    vis_edges.append(edge)
                             if edge_present == False:
                                 edge_present = True
-                        elif memory.packet_db[session]["covert"]:
+                        elif packet["covert"]:
                             if port == "53":
                                 protocol = "DNS"
                             else:
@@ -188,32 +185,28 @@ class plotLan:
                                 f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst) +": "+str(dlabel), color = "blue")
                                 https += 1
                                 interactive_graph.add_edge(curr_node, destination, color="blue", title='HTTPS: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCCW", "roundness": https/10})
-                                #if edge not in vis_edges:
-                                #    vis_edges.append(edge)
+                                
                                 if edge_present == False:
                                     edge_present = True
                             elif port == "80":
                                 f.edge(curr_node, destination, label='HTTP: ' + str(map_dst) +": "+str(dlabel), color = "green")
                                 http += 1
                                 interactive_graph.add_edge(curr_node, destination, color="green", title='HTTP: ' + str(map_dst) +": "+dlabel, smooth={"type": "curvedCW", "roundness": http/12})
-                                #if edge not in vis_edges:
-                                #    vis_edges.append(edge)
+                                
                                 if edge_present == False:
                                     edge_present = True
                             elif port == "ICMP":
                                 f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
                                 icmp += 1
                                 interactive_graph.add_edge(curr_node, destination, color="purple", title='ICMP: ' + str(map_dst), smooth={"type": "curvedCCW", "roundness": icmp/6})
-                                #if edge not in vis_edges:
-                                #    vis_edges.append(edge)
+                                
                                 if edge_present == False:
                                     edge_present = True
                             elif port == "53":
                                 f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
                                 dns += 1
                                 interactive_graph.add_edge(curr_node, destination, color="pink", title='DNS: ' + str(map_dst), smooth={"type": "curvedCW", "roundness": dns/5})
-                                #if edge not in vis_edges:
-                                #    vis_edges.append(edge)
+                                
                                 if edge_present == False:
                                     edge_present = True
                             elif int(port) in [20, 21, 23, 25, 110, 143, 139, 69, 161, 162, 1521]:
@@ -232,9 +225,9 @@ class plotLan:
                         # This block was just added to handle MAC SPOOF scenario
                         # * Most of the CTF Challenges have fake identical MACs that need to be displayed
                         if map_src in curr_node:
-                            other_node = map_dst + "\n" + memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            other_node = map_dst + "\n" + packet["Ethernet"]["dst"].replace(":",".")
                         else:
-                            other_node = map_src + "\n" + memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                            other_node = map_src + "\n" + packet["Ethernet"]["src"].replace(":",".")
                         f.node(other_node)
                         interactive_graph.add_node(str(other_node), str(other_node), title=str(other_node), color="yellow")
                         f.edge(curr_node, other_node, label='WeirdTraffic/'+ port ,color="pink")
@@ -244,8 +237,8 @@ class plotLan:
                             edge_present = True    
 
         elif option == "HTTP":
-            for session in self.sessions:
-                src, dst, port = session.split("/")
+            for packet in self.packets:
+                src, dst, port = packet["session_key"].split("/")
 
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
@@ -263,11 +256,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -280,20 +273,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
                     
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if port == "80" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTP: ' + str(map_dst)+": "+dlabel, color = "green")
@@ -303,8 +291,8 @@ class plotLan:
                             edge_present = True
 
         elif option == "HTTPS":
-            for session in self.sessions:
-                src, dst, port = session.split("/")
+            for packet in self.packets:
+                src, dst, port = packet["session_key"].split("/")
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
                         (to_ip == "All" and from_ip == src) or \
@@ -321,11 +309,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -338,20 +326,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
                     
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if port == "443" and curr_node != destination:
                         f.edge(curr_node, destination, label='HTTPS: ' + str(map_dst)+": "+dlabel, color = "blue")
@@ -361,8 +344,8 @@ class plotLan:
                             edge_present = True
 
         elif option == "Tor":
-            for session in self.sessions:
-                src, dst, port = session.split("/")
+            for packet in self.packets:
+                src, dst, port = packet["session_key"].split("/")
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
                         (to_ip == "All" and from_ip == src) or \
@@ -379,11 +362,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -396,20 +379,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if session in memory.possible_tor_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='TOR: ' + str(map_dst) ,color="white")
@@ -420,8 +398,8 @@ class plotLan:
 
         elif option == "Malicious":
             # TODO: would we need to iterate over and over all the session irrespective of the properties
-            for session in self.sessions:
-                src, dst, port = session.split("/")
+            for packet in self.packets:
+                src, dst, port = packet["session_key"].split("/")
 
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
@@ -439,11 +417,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -456,20 +434,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if session in memory.possible_mal_traffic and curr_node != destination:
                         f.edge(curr_node, destination, label='Malicious: ' + str(map_dst) ,color="red")
@@ -479,8 +452,8 @@ class plotLan:
                             edge_present = True
             
         elif option == "ICMP":
-            for session in self.sessions:
-                src, dst, protocol = session.split("/")
+            for packet in self.packets:
+                src, dst, protocol = packet["session_key"].split("/")
 
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
@@ -496,11 +469,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -513,20 +486,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if protocol == "ICMP" and curr_node != destination:
                         f.edge(curr_node, destination, label='ICMP: ' + str(map_dst) ,color="black")
@@ -536,8 +504,8 @@ class plotLan:
                             edge_present = True
     
         elif option == "DNS":
-            for session in self.sessions:
-                src, dst, port = session.split("/")
+            for packet in self.packets:
+                src, dst, port = packet["session_key"].split("/")
                 if (src == from_ip and dst == to_ip) or \
                     (from_ip == "All" and to_ip == "All") or \
                         (to_ip == "All" and from_ip == src) or \
@@ -552,11 +520,11 @@ class plotLan:
                         map_dst = dst
 
                     # Lan Host
-                    if memory.packet_db[session]["Ethernet"]["src"] not in memory.lan_hosts:
-                        curr_node = map_src+"\n"+memory.packet_db[session]["Ethernet"]["src"].replace(":",".")
+                    if packet["Ethernet"]["src"] not in memory.lan_hosts:
+                        curr_node = map_src+"\n"+packet["Ethernet"]["src"].replace(":",".")
                         f.node(curr_node)
                     else:
-                        curr_node = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["src"]]["node"]
+                        curr_node = memory.lan_hosts[packet["Ethernet"]["src"]]["node"]
                         f.node(curr_node)
 
                     # Destination
@@ -569,20 +537,15 @@ class plotLan:
                             destination += "\n"+"PossibleGateway"
                             dlabel = memory.destination_hosts[dst]["domain_name"]
                     else:
-                        if memory.packet_db[session]["Ethernet"]["dst"] in memory.lan_hosts:
-                            destination = memory.lan_hosts[memory.packet_db[session]["Ethernet"]["dst"]]["node"]
+                        if packet["Ethernet"]["dst"] in memory.lan_hosts:
+                            destination = memory.lan_hosts[packet["Ethernet"]["dst"]]["node"]
                             dlabel = ""
                         else:
-                            destination = memory.packet_db[session]["Ethernet"]["dst"].replace(":",".")
+                            destination = packet["Ethernet"]["dst"].replace(":",".")
                             destination += "\n"+"PossibleGateway"
                             dlabel = ""
 
-                    # Interactive Graph on Beta, so for now add safety checks ( potential failures in python2)
-                    try:
-                        interactive_graph.add_node(str(curr_node), str(curr_node), title=str(curr_node), color="yellow")
-                        interactive_graph.add_node(str(destination), str(destination), title=str(destination), color="yellow")
-                    except Exception as e:
-                        print("Interactive graph error occurred: "+str(e))
+                    self.interactive_graph_node_add(interactive_graph, curr_node, destination)
 
                     if port == "53" and curr_node != destination:
                         f.edge(curr_node, destination, label='DNS: ' + str(map_dst) ,color="orange")
@@ -610,5 +573,8 @@ def main():
     import sys
     print(sys.path[0])
     network = plotLan("test", sys.path[0])
+    print(pcapfile)
+    print(details)
+    print(network)
 
 #main()

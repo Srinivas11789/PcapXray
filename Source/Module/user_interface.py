@@ -154,7 +154,7 @@ class pcapXrayGui:
             self.pcap_file.set(fd.askopenfilename(initialdir = sys.path[0],title = "Select Packet Capture File!",filetypes = (("All","*.pcap *.pcapng"),("pcap files","*.pcap"),("pcapng files","*.pcapng"))))
             self.filename = self.pcap_file.get().replace(".pcap","")
             if "/" in self.filename:
-                self.filename = self.filename.split("/")[-1]
+                self.filename = os.path.basename(self.filename)
             #,("all files","*.*")
             #self.filename_field.delete(0, END)
             #self.filename_field.insert(0, self.pcap_file)

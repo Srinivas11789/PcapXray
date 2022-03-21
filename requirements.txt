@@ -24,6 +24,8 @@ stem
 networkx
 graphviz
 matplotlib
+tk
+tk-tools
 
 # Interactive Maps
 cefpython3
@@ -31,4 +33,3 @@ pyvis
 
 # Ciphersuites
 cryptography
-

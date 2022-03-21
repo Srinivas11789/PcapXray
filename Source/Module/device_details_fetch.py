@@ -12,16 +12,21 @@ from netaddr import *
 
 class fetchDeviceDetails:
 
+    # This class uses the OUI in hosts to identify device details of hosts in the host list.
+    # Two options possible :
+    # - option=macvendors_api
+    # - option=ieee
+    # With the macvendors_api option, the class uses the http://macvendors.co/ api to detect the vendor, while with the ieee option, it uses tyhe native netaddr.eui class.
     def __init__(self, option="ieee"):
         """
         Init
         """
-        self.target_oui_database = option
+        self.oui_database_option = option
 
     def fetch_info(self):
         for host in memory.lan_hosts:
             mac = host.split("/")[0]
-            if self.target_oui_database == "api":
+            if self.oui_database_option == "macvendors_api":
                 memory.lan_hosts[host]["device_vendor"] = self.oui_identification_via_api(mac)
             else:
                 memory.lan_hosts[host]["device_vendor"], memory.lan_hosts[host]["vendor_address"] = self.oui_identification_via_ieee(mac)
@@ -36,8 +41,8 @@ class fetchDeviceDetails:
         url = "http://macvendors.co/api/" + mac
         api_request = urllib.request.Request(url, headers={'User-Agent':'PcapXray'})
         try:
-            apiResponse = urllib.request.urlopen(api_request)
-            details = json.loads(apiResponse.read())
+            api_response = urllib.request.urlopen(api_request)
+            details = json.loads(api_response.read())
             #reportThread = threading.Thread(target=reportGen.reportGen().deviceDetailsReport,args=(details,))
             #reportThread.start()
             return details["result"]["company"], details["result"]["address"]
