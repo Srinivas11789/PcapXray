@@ -8,7 +8,8 @@ import memory
 from stem.descriptor import remote
 
 # Tor Traffic Module Class
-
+# This class, using stem.descriptor.remote, retrieves potential descriptors of tor nodes and stores them in memory.
+# It then associates the possible tor nodes with the sessions already stored.
 class torTrafficHandle():
 
     def __init__(self):
@@ -24,7 +25,7 @@ class torTrafficHandle():
 
     def tor_traffic_detection(self):
         if memory.tor_nodes:
-            for session in memory.packet_db:
+            for session in memory.packet_db.session_keys():
                 current_session = session.split("/")
                 if current_session[2].isdigit() and (current_session[1], int(current_session[2])) in memory.tor_nodes:
                     memory.possible_tor_traffic.append(session)
