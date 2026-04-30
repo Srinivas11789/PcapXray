@@ -175,6 +175,53 @@ class pcapXrayGui:
         self.ThirdFrame.columnconfigure(0, weight=1)
         self.ThirdFrame.rowconfigure(0, weight=1)
 
+        # Fourth Frame — Wireshark-style packet browser (hidden until analysis)
+        self.FourthFrame = ttk.Frame(base, padding="8 4 8 4", relief=GROOVE)
+        # Not gridded yet — shown by _populate_packet_table() after analysis
+
+        _search_bar = ttk.Frame(self.FourthFrame)
+        _search_bar.grid(row=0, column=0, columnspan=2, sticky="EW", pady=(0, 4))
+        ttk.Label(_search_bar, text="Search:", style="BW.TLabel").pack(side=LEFT, padx=(0, 4))
+        self._search_var = tk.StringVar()
+        self._search_entry = ttk.Entry(_search_bar, textvariable=self._search_var, width=28)
+        self._search_entry.pack(side=LEFT, padx=2)
+        self._search_entry.bind("<Return>", lambda e: self._search_packets())
+        ttk.Button(_search_bar, text="Search", command=self._search_packets).pack(side=LEFT, padx=4)
+        self._search_count_label = tk.Label(_search_bar, text="", fg="#aaaaaa", font=("Courier", 10))
+        self._search_count_label.pack(side=LEFT, padx=8)
+        ttk.Button(_search_bar, text="◀", command=lambda: self._nav_packet(-1), width=2).pack(side=LEFT, padx=2)
+        ttk.Button(_search_bar, text="▶", command=lambda: self._nav_packet(1), width=2).pack(side=LEFT, padx=2)
+        ttk.Button(_search_bar, text="Clear", command=self._clear_search).pack(side=LEFT, padx=8)
+
+        _cols = ("src", "dst", "port", "flags", "payload")
+        self._pkt_tree = ttk.Treeview(self.FourthFrame, columns=_cols, show="headings", height=6)
+        for _hdr, _col, _w, _anchor, _stretch in [
+            ("Src IP",          "src",     130, "w",      False),
+            ("Dst IP",          "dst",     130, "w",      False),
+            ("Port",            "port",     65, "center", False),
+            ("Flags",           "flags",    90, "center", False),
+            ("Payload Preview", "payload",   0, "w",      True),
+        ]:
+            self._pkt_tree.heading(_col, text=_hdr)
+            self._pkt_tree.column(_col, width=_w, anchor=_anchor, stretch=_stretch)
+
+        _tv_vsb = ttk.Scrollbar(self.FourthFrame, orient=VERTICAL, command=self._pkt_tree.yview)
+        self._pkt_tree.configure(yscrollcommand=_tv_vsb.set)
+        self._pkt_tree.grid(row=1, column=0, sticky="NSEW")
+        _tv_vsb.grid(row=1, column=1, sticky="NS")
+        self.FourthFrame.columnconfigure(0, weight=1)
+        self.FourthFrame.rowconfigure(1, weight=1)
+
+        self._pkt_tree.tag_configure("malicious", background="#4a1010", foreground="#ff8a80")
+        self._pkt_tree.tag_configure("tor",       background="#2d1a3e", foreground="#ce93d8")
+        self._pkt_tree.tag_configure("covert",    background="#0d3040", foreground="#80deea")
+        self._pkt_tree.tag_configure("match",     background="#1a3a1a", foreground="#a5d6a7")
+        self._pkt_tree.bind("<<TreeviewSelect>>", self._on_packet_select)
+
+        self._pkt_rows: list[str] = []
+        self._search_matches: list[str] = []
+        self._search_idx: int = -1
+
         base.resizable(False, False)
         base.rowconfigure(40, weight=1)
         base.columnconfigure(10, weight=1)
@@ -456,6 +503,7 @@ class pcapXrayGui:
         self.to_hosts = list(set(self.to_hosts + self.from_hosts))
         self.to_menu['values'] = self.to_hosts
         self.from_menu['values'] = self.from_hosts
+        self._populate_packet_table()
 
     def _re_enable_controls(self) -> None:
         # Graph Panel and Interactive Graph stay disabled until Visualize! succeeds
@@ -497,6 +545,7 @@ class pcapXrayGui:
         else:
             self.label.grid_forget()
             self.load_image()
+        self._populate_packet_table()
         # Both graph buttons become available once a graph exists
         self.ibutton['state'] = 'normal'
         self.browser_button['state'] = 'normal'
@@ -548,6 +597,127 @@ class pcapXrayGui:
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, image=self.img, anchor=NW)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
+
+    # ------------------------------------------------------------------
+    # Packet browser helpers
+    # ------------------------------------------------------------------
+
+    def _populate_packet_table(self) -> None:
+        self._pkt_tree.delete(*self._pkt_tree.get_children())
+        self._pkt_rows = []
+        self._search_matches = []
+        self._search_idx = -1
+        self._search_count_label.config(text="")
+
+        for key, session in memory.packet_db.items():
+            parts = key.split("/")
+            if len(parts) != 3:
+                continue
+            src, dst, port = parts
+            is_mal = key in memory.possible_mal_traffic
+            is_tor = key in memory.possible_tor_traffic
+            is_cov = session.covert
+            flags = " ".join(f for f, v in [("MAL", is_mal), ("TOR", is_tor), ("COV", is_cov)] if v) or "—"
+            fwd = session.Payload.get("forward", [])
+            preview = str(fwd[0])[:80] if fwd else "—"
+            tag = "malicious" if is_mal else "tor" if is_tor else "covert" if is_cov else ""
+            self._pkt_tree.insert("", END, iid=key,
+                                  values=(src, dst, port, flags, preview),
+                                  tags=(tag,) if tag else ())
+            self._pkt_rows.append(key)
+
+        if not self.FourthFrame.winfo_ismapped():
+            self.FourthFrame.grid(column=10, row=50, sticky=(N, W, E, S))
+            self.base.rowconfigure(50, weight=0)
+
+    def _search_packets(self) -> None:
+        import re as _re
+        query = self._search_var.get().strip()
+        if not query:
+            self._clear_search()
+            return
+
+        use_regex = query.startswith("re:")
+        pattern = query[3:] if use_regex else query.lower()
+
+        for key in self._search_matches:
+            self._restore_row_tag(key)
+        self._search_matches = []
+
+        for key in self._pkt_rows:
+            if not self._pkt_tree.exists(key):
+                continue
+            session = memory.packet_db.get(key)
+            if not session:
+                continue
+            fwd = session.Payload.get("forward", [])
+            rev = session.Payload.get("reverse", [])
+            haystack = (key + " " + " ".join(fwd + rev)).lower()
+            try:
+                matched = bool(_re.search(pattern, haystack)) if use_regex else pattern in haystack
+            except _re.error:
+                matched = pattern in haystack
+            if matched:
+                self._search_matches.append(key)
+
+        for key in self._search_matches:
+            if self._pkt_tree.exists(key):
+                self._pkt_tree.item(key, tags=("match",))
+
+        count = len(self._search_matches)
+        self._search_count_label.config(text=f"{count} match{'es' if count != 1 else ''}")
+        if self._search_matches:
+            self._search_idx = 0
+            self._scroll_to_match(0)
+        else:
+            self._search_idx = -1
+
+    def _nav_packet(self, direction: int) -> None:
+        if not self._search_matches:
+            return
+        self._search_idx = (self._search_idx + direction) % len(self._search_matches)
+        self._scroll_to_match(self._search_idx)
+
+    def _scroll_to_match(self, idx: int) -> None:
+        key = self._search_matches[idx]
+        if self._pkt_tree.exists(key):
+            self._pkt_tree.selection_set(key)
+            self._pkt_tree.see(key)
+        count = len(self._search_matches)
+        self._search_count_label.config(
+            text=f"{idx + 1}/{count} match{'es' if count != 1 else ''}")
+
+    def _clear_search(self) -> None:
+        self._search_var.set("")
+        for key in self._search_matches:
+            self._restore_row_tag(key)
+        self._search_matches = []
+        self._search_idx = -1
+        self._search_count_label.config(text="")
+
+    def _restore_row_tag(self, key: str) -> None:
+        if not self._pkt_tree.exists(key):
+            return
+        session = memory.packet_db.get(key)
+        if not session:
+            return
+        is_mal = key in memory.possible_mal_traffic
+        is_tor = key in memory.possible_tor_traffic
+        tag = "malicious" if is_mal else "tor" if is_tor else "covert" if session.covert else ""
+        self._pkt_tree.item(key, tags=(tag,) if tag else ())
+
+    def _on_packet_select(self, event) -> None:
+        sel = self._pkt_tree.selection()
+        if not sel:
+            return
+        parts = sel[0].split("/")
+        if len(parts) != 3:
+            return
+        src, dst, _ = parts
+        if src in self.from_menu["values"]:
+            self.from_menu.set(src)
+        if dst in self.to_menu["values"]:
+            self.to_menu.set(dst)
 
     def map_select(self, *args):
         log.debug("map_select: option=%s to=%s from=%s", self.option.get(), self.to_ip.get(), self.from_ip.get())
