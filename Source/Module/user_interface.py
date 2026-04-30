@@ -566,27 +566,15 @@ class pcapXrayGui:
             mb.showerror("Error", "Interactive HTML not found. Click Visualize! first.")
 
     def load_image(self):
-        if not hasattr(self, '_canvas_w'):
-            # Expand to graph-viewing size on first load, then lock.
-            # Add FourthFrame height so canvas probe measures full graph area.
-            fourth_h = self.FourthFrame.winfo_reqheight() if self.FourthFrame.winfo_ismapped() else 0
+        if not hasattr(self, '_zoom_factor'):
+            self._zoom_factor = 1.0
             self.base.resizable(True, True)
-            self.base.geometry(f"1100x{780 + fourth_h}")
-            probe = Canvas(self.ThirdFrame, bd=0)
-            probe.grid(column=0, row=0, sticky=(N, W, E, S))
-            self.base.update_idletasks()
-            self._canvas_w = probe.winfo_width() or 900
-            self._canvas_h = probe.winfo_height() or 500
-            self.zoom = [self._canvas_w, self._canvas_h]
-            probe.destroy()
-            self.base.resizable(True, True)
+            self.base.geometry("1100x780")
 
-        self.canvas = Canvas(self.ThirdFrame, width=self._canvas_w, height=self._canvas_h,
-                             bd=0, bg="navy",
+        self.canvas = Canvas(self.ThirdFrame, bd=0, bg="navy",
                              xscrollcommand=self.xscrollbar.set,
                              yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
-        self._redraw_image()
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
         self.canvas.bind("<Configure>", lambda e: self._redraw_image(e.width, e.height))
@@ -594,12 +582,14 @@ class pcapXrayGui:
     def _redraw_image(self, w=None, h=None):
         if not hasattr(self, 'image_file') or not self.image_file:
             return
-        w = w or self.zoom[0]
-        h = h or self.zoom[1]
-        self.zoom = [w, h]
+        if w is None or h is None:
+            w = self.canvas.winfo_width()
+            h = self.canvas.winfo_height()
+        if w <= 1 or h <= 1:
+            return
         src = Image.open(self.image_file)
         orig_w, orig_h = src.size
-        ratio = min(w / orig_w, h / orig_h)
+        ratio = min(w / orig_w, h / orig_h) * self._zoom_factor
         fit_w = max(1, int(orig_w * ratio))
         fit_h = max(1, int(orig_h * ratio))
         self.img = ImageTk.PhotoImage(src.resize((fit_w, fit_h), Image.LANCZOS))
@@ -810,19 +800,14 @@ class pcapXrayGui:
         self.base.after(100, self._force_focus)
 
     def zoom_in(self):
-        self.zoom[0] += 100
-        self.zoom[1] += 100
         if self.img:
-            self._redraw_image(self.zoom[0], self.zoom[1])
+            self._zoom_factor = min(self._zoom_factor * 1.25, 8.0)
+            self._redraw_image()
 
     def zoom_out(self):
-        min_w = getattr(self, '_canvas_w', 900)
-        min_h = getattr(self, '_canvas_h', 500)
-        if self.zoom[0] > min_w and self.zoom[1] > min_h:
-            self.zoom[0] -= 100
-            self.zoom[1] -= 100
         if self.img:
-            self._redraw_image(self.zoom[0], self.zoom[1])
+            self._zoom_factor = max(self._zoom_factor / 1.25, 0.1)
+            self._redraw_image()
 
 class OtherFrame(Toplevel):
 
