@@ -44,7 +44,8 @@ class PlotLan:
                 'bgcolor': 'grey',
                 'rankdir': 'LR', # BT
                 'dpi':'300',
-                'size': '10, 10',
+                'size': '20, 14',
+                'ratio': 'expand',
                 'overlap': 'scale'
             },
             'nodes': {
@@ -613,7 +614,7 @@ class PlotLan:
             # Discard all the bloated disconnected nodes — lay out a trivial graph instead.
             f = Digraph("no_traffic", filename=self.filename, engine="dot", format="png")
             f.attr(label="No " + option + " Traffic between nodes!", fontsize="20",
-                   bgcolor="grey", size="5,5", dpi="300")
+                   bgcolor="grey", size="20,14", dpi="300")
 
         self.apply_styles(f, self.styles)
 
