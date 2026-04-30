@@ -40,14 +40,15 @@ class PlotLan:
             options += f"_{target_w}x{target_h}"
         self.filename = os.path.join(self.directory, filename+"_"+options)
 
-        # Render at 1.5× canvas pixels for zoom headroom while keeping node sizes
-        # proportional. Physical size in inches = canvas_px * 1.5 / dpi.
-        self._dpi = 150
+        # Render at 2× canvas pixels (300 DPI) so zoom-in reveals detail rather
+        # than upscaling. Node inch dimensions are halved vs the old 150 DPI values
+        # so their pixel size on screen at zoom=1 is identical (1.5in × 300 = 450px).
+        self._dpi = 300
         if target_w and target_h:
-            self._size_w = round(target_w * 1.5 / self._dpi, 2)
-            self._size_h = round(target_h * 1.5 / self._dpi, 2)
+            self._size_w = round(target_w / 150, 2)   # physical inches → 2× canvas pixels at 300 DPI
+            self._size_h = round(target_h / 150, 2)
         else:
-            self._size_w, self._size_h = 13.0, 9.0  # ~1950×1350 @ 150 DPI fallback
+            self._size_w, self._size_h = 13.0, 9.0    # ~3900×2700 @ 300 DPI fallback
 
         self.styles = {
             'graph': {
@@ -62,15 +63,15 @@ class PlotLan:
                 'overlap': 'scale'
             },
             'nodes': {
-                'fontname': 'Helvetica',
+                'fontname': 'DejaVu Sans',  # available on Linux; Helvetica falls back to bitmap
                 'shape': 'circle',
                 'fontcolor': 'black',
-                'color': ' black',
+                'color': 'black',
                 'style': 'filled',
                 'fillcolor': 'yellow',
                 'fixedsize': 'true',
-                'width': '3',
-                'height': '3'
+                'width': '1.5',   # 1.5in × 300 DPI = 450px → same visual size as 3in @ 150 DPI
+                'height': '1.5'
             }
         }
 
