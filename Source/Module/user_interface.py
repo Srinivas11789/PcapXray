@@ -533,10 +533,25 @@ class pcapXrayGui:
             threading.Thread(target=rpt.communicationDetailsReport, daemon=True).start()
             threading.Thread(target=rpt.deviceDetailsReport, daemon=True).start()
 
-        options = self.option.get() + "_" + self.to_ip.get().replace(".", "-") + "_" + self.from_ip.get().replace(".", "-")
+        # Expand window to display state so ThirdFrame reports its real dimensions
+        if not hasattr(self, '_zoom_factor'):
+            self.base.resizable(True, True)
+            self.base.geometry("1100x780")
+            self.base.update_idletasks()
+        render_w = max(self.ThirdFrame.winfo_width() - 34, 800)
+        render_h = max(self.ThirdFrame.winfo_height() - 20, 400)
+
+        options = (self.option.get() + "_" + self.to_ip.get().replace(".", "-")
+                   + "_" + self.from_ip.get().replace(".", "-")
+                   + f"_{render_w}x{render_h}")
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename + "_" + options + ".png")
         if not os.path.exists(self.image_file):
-            t1, exc_box = self._run_in_thread(plot_lan_network.PlotLan, self.filename, self.destination_report.get(), self.option.get(), self.to_ip.get(), self.from_ip.get())
+            t1, exc_box = self._run_in_thread(
+                plot_lan_network.PlotLan,
+                self.filename, self.destination_report.get(),
+                self.option.get(), self.to_ip.get(), self.from_ip.get(),
+                render_w, render_h
+            )
             self._spin_start("Rendering graph")
             self._poll_thread(t1)
             if exc_box:

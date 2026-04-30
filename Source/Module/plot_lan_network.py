@@ -28,13 +28,22 @@ def _node_label(mac: str) -> str:
 
 class PlotLan:
 
-    def __init__(self, filename, path, option="Tor", to_ip="All", from_ip="All"):
-        log.info("plotLan init: option=%s to=%s from=%s", option, to_ip, from_ip)
+    def __init__(self, filename, path, option="Tor", to_ip="All", from_ip="All",
+                 target_w=None, target_h=None):
+        log.info("plotLan init: option=%s to=%s from=%s target=%sx%s",
+                 option, to_ip, from_ip, target_w, target_h)
         self.directory = os.path.join(path, "Report")
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         options = option + "_" + to_ip.replace(".", "-") + "_" + from_ip.replace(".", "-")
         self.filename = os.path.join(self.directory, filename+"_"+options)
+
+        self._dpi = 150
+        if target_w and target_h:
+            self._size_w = round(target_w / self._dpi, 2)
+            self._size_h = round(target_h / self._dpi, 2)
+        else:
+            self._size_w, self._size_h = 13.0, 9.0  # ~1950×1350 @ 150 DPI fallback
 
         self.styles = {
             'graph': {
@@ -42,9 +51,9 @@ class PlotLan:
                 'fontsize': '16',
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
-                'rankdir': 'LR', # BT
-                'dpi':'300',
-                'size': '20, 14',
+                'rankdir': 'LR',
+                'dpi': str(self._dpi),
+                'size': f'{self._size_w}, {self._size_h}',
                 'ratio': 'fill',
                 'overlap': 'scale'
             },
@@ -614,7 +623,7 @@ class PlotLan:
             # Discard all the bloated disconnected nodes — lay out a trivial graph instead.
             f = Digraph("no_traffic", filename=self.filename, engine="dot", format="png")
             f.attr(label="No " + option + " Traffic between nodes!", fontsize="20",
-                   bgcolor="grey", size="20,14", dpi="300")
+                   bgcolor="grey", size=f'{self._size_w},{self._size_h}', dpi=str(self._dpi))
 
         self.apply_styles(f, self.styles)
 
