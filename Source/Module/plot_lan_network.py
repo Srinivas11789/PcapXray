@@ -64,14 +64,12 @@ class PlotLan:
             },
             'nodes': {
                 'fontname': 'DejaVu Sans',  # available on Linux; Helvetica falls back to bitmap
-                'shape': 'circle',
+                'fontsize': '11',
+                'shape': 'ellipse',
                 'fontcolor': 'black',
                 'color': 'black',
                 'style': 'filled',
                 'fillcolor': 'yellow',
-                'fixedsize': 'true',
-                'width': '1.5',   # 1.5in × 300 DPI = 450px → same visual size as 3in @ 150 DPI
-                'height': '1.5'
             }
         }
 
