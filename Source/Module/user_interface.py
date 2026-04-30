@@ -567,8 +567,10 @@ class pcapXrayGui:
     def load_image(self):
         if not hasattr(self, '_canvas_w'):
             # Expand to graph-viewing size on first load, then lock.
+            # Add FourthFrame height so canvas probe measures full graph area.
+            fourth_h = self.FourthFrame.winfo_reqheight() if self.FourthFrame.winfo_ismapped() else 0
             self.base.resizable(True, True)
-            self.base.geometry("1100x780")
+            self.base.geometry(f"1100x{780 + fourth_h}")
             probe = Canvas(self.ThirdFrame, bd=0)
             probe.grid(column=0, row=0, sticky=(N, W, E, S))
             self.base.update_idletasks()
