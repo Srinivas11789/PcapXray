@@ -28,27 +28,13 @@ def _node_label(mac: str) -> str:
 
 class PlotLan:
 
-    def __init__(self, filename, path, option="Tor", to_ip="All", from_ip="All",
-                 target_w=None, target_h=None):
-        log.info("plotLan init: option=%s to=%s from=%s target=%sx%s",
-                 option, to_ip, from_ip, target_w, target_h)
+    def __init__(self, filename, path, option="Tor", to_ip="All", from_ip="All"):
+        log.info("plotLan init: option=%s to=%s from=%s", option, to_ip, from_ip)
         self.directory = os.path.join(path, "Report")
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         options = option + "_" + to_ip.replace(".", "-") + "_" + from_ip.replace(".", "-")
-        if target_w and target_h:
-            options += f"_{target_w}x{target_h}"
         self.filename = os.path.join(self.directory, filename+"_"+options)
-
-        # Render at 2× canvas pixels (300 DPI) so zoom-in reveals detail rather
-        # than upscaling. Node inch dimensions are halved vs the old 150 DPI values
-        # so their pixel size on screen at zoom=1 is identical (1.5in × 300 = 450px).
-        self._dpi = 300
-        if target_w and target_h:
-            self._size_w = round(target_w / 150, 2)   # physical inches → 2× canvas pixels at 300 DPI
-            self._size_h = round(target_h / 150, 2)
-        else:
-            self._size_w, self._size_h = 13.0, 9.0    # ~3900×2700 @ 300 DPI fallback
 
         self.styles = {
             'graph': {
@@ -57,19 +43,19 @@ class PlotLan:
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
                 'rankdir': 'LR',
-                'dpi': str(self._dpi),
-                'size': f'{self._size_w}, {self._size_h}',
-                'ratio': 'fill',
-                'overlap': 'scale'
+                'dpi': '150',
+                # No size/ratio/overlap — graphviz chooses natural layout dimensions.
+                # PIL fits the result to the canvas preserving aspect ratio.
             },
             'nodes': {
-                'fontname': 'DejaVu Sans',  # available on Linux; Helvetica falls back to bitmap
-                'fontsize': '11',
+                'fontname': 'DejaVu Sans',
+                'fontsize': '14',
                 'shape': 'ellipse',
                 'fontcolor': 'black',
                 'color': 'black',
                 'style': 'filled',
                 'fillcolor': 'yellow',
+                # No fixedsize — nodes auto-size to fit their label text.
             }
         }
 
@@ -626,7 +612,7 @@ class PlotLan:
             # Discard all the bloated disconnected nodes — lay out a trivial graph instead.
             f = Digraph("no_traffic", filename=self.filename, engine="dot", format="png")
             f.attr(label="No " + option + " Traffic between nodes!", fontsize="20",
-                   bgcolor="grey", size=f'{self._size_w},{self._size_h}', dpi=str(self._dpi))
+                   bgcolor="grey")
 
         self.apply_styles(f, self.styles)
 
