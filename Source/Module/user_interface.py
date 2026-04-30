@@ -192,6 +192,9 @@ class pcapXrayGui:
         ttk.Button(_search_bar, text="◀", command=lambda: self._nav_packet(-1), width=2).pack(side=LEFT, padx=2)
         ttk.Button(_search_bar, text="▶", command=lambda: self._nav_packet(1), width=2).pack(side=LEFT, padx=2)
         ttk.Button(_search_bar, text="Clear", command=self._clear_search).pack(side=LEFT, padx=8)
+        self._detail_btn = ttk.Button(_search_bar, text="inspect →",
+                                      command=self._open_selected_detail, state="disabled")
+        self._detail_btn.pack(side=RIGHT, padx=(8, 4))
 
         _cols = ("src", "dst", "port", "flags", "files", "payload")
         self._pkt_tree = ttk.Treeview(self.FourthFrame, columns=_cols, show="headings", height=6)
@@ -713,7 +716,9 @@ class pcapXrayGui:
     def _on_packet_select(self, event) -> None:
         sel = self._pkt_tree.selection()
         if not sel:
+            self._detail_btn.configure(state="disabled")
             return
+        self._detail_btn.configure(state="normal")
         parts = sel[0].split("/")
         if len(parts) != 3:
             return
@@ -722,6 +727,11 @@ class pcapXrayGui:
             self.from_menu.set(src)
         if dst in self.to_menu["values"]:
             self.to_menu.set(dst)
+
+    def _open_selected_detail(self) -> None:
+        sel = self._pkt_tree.selection()
+        if sel:
+            self._open_session_detail(None)
 
     def _open_session_detail(self, event) -> None:
         sel = self._pkt_tree.selection()
