@@ -218,6 +218,7 @@ class pcapXrayGui:
         self._pkt_tree.tag_configure("covert",    background="#0d3040", foreground="#80deea")
         self._pkt_tree.tag_configure("match",     background="#1a3a1a", foreground="#a5d6a7")
         self._pkt_tree.bind("<<TreeviewSelect>>", self._on_packet_select)
+        self._pkt_tree.bind("<Double-1>", self._open_session_detail)
 
         self._pkt_rows: list[str] = []
         self._search_matches: list[str] = []
@@ -731,6 +732,70 @@ class pcapXrayGui:
             self.from_menu.set(src)
         if dst in self.to_menu["values"]:
             self.to_menu.set(dst)
+
+    def _open_session_detail(self, event) -> None:
+        sel = self._pkt_tree.selection()
+        if not sel:
+            return
+        key = sel[0]
+        session = memory.packet_db.get(key)
+        if not session:
+            return
+
+        parts = key.split("/")
+        src, dst, port = parts if len(parts) == 3 else ("?", "?", "?")
+
+        win = Toplevel(self.base)
+        win.title(f"Session: {key}")
+        win.geometry("700x520")
+        win.resizable(True, True)
+        win.columnconfigure(0, weight=1)
+        win.rowconfigure(1, weight=1)
+
+        # ── Header ──────────────────────────────────────────────────────
+        hdr = ttk.Frame(win, padding="12 10 12 6")
+        hdr.grid(row=0, column=0, sticky="EW")
+        hdr.columnconfigure(1, weight=1)
+
+        def _row(r, label, value):
+            ttk.Label(hdr, text=label, style="BW.TLabel",
+                      font=("Courier", 10, "bold")).grid(row=r, column=0, sticky="W", padx=(0, 8))
+            ttk.Label(hdr, text=value, style="BW.TLabel",
+                      font=("Courier", 10)).grid(row=r, column=1, sticky="W")
+
+        is_mal = key in memory.possible_mal_traffic
+        is_tor = key in memory.possible_tor_traffic
+        flag_parts = (["Malicious"] if is_mal else []) + (["Tor"] if is_tor else []) + (["Covert"] if session.covert else [])
+        dst_host = memory.destination_hosts.get(dst)
+        domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
+
+        _row(0, "Session:", key)
+        _row(1, "Flags:",   ", ".join(flag_parts) if flag_parts else "None")
+        _row(2, "Files:",   ", ".join(session.file_signatures) if session.file_signatures else "None")
+        _row(3, "Ethernet:", f"{session.Ethernet.get('src', '—')} → {session.Ethernet.get('dst', '—')}")
+        _row(4, "Domain:",  domain)
+
+        # ── Payload tabs ────────────────────────────────────────────────
+        nb = ttk.Notebook(win)
+        nb.grid(row=1, column=0, sticky="NSEW", padx=10, pady=4)
+
+        for label, lines in [("Forward", session.Payload.get("forward", [])),
+                              ("Reverse", session.Payload.get("reverse", []))]:
+            tab = ttk.Frame(nb)
+            nb.add(tab, text=f"{label} ({len(lines)} entries)")
+            tab.rowconfigure(0, weight=1)
+            tab.columnconfigure(0, weight=1)
+            txt = tk.Text(tab, wrap="word", font=("Courier", 10),
+                          bg="#1e1e2e", fg="#e0e0e0", relief="flat")
+            vsb = ttk.Scrollbar(tab, orient=VERTICAL, command=txt.yview)
+            txt.configure(yscrollcommand=vsb.set)
+            txt.grid(row=0, column=0, sticky="NSEW")
+            vsb.grid(row=0, column=1, sticky="NS")
+            txt.insert("1.0", "\n".join(lines) if lines else "(no payload)")
+            txt.configure(state="disabled")
+
+        ttk.Button(win, text="Close", command=win.destroy).grid(row=2, column=0, pady=8)
+        win.after(100, lambda: (win.lift(), win.focus_force()))
 
     def map_select(self, *args):
         log.debug("map_select: option=%s to=%s from=%s", self.option.get(), self.to_ip.get(), self.from_ip.get())
