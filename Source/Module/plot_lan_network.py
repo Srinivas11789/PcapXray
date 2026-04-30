@@ -36,6 +36,8 @@ class PlotLan:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         options = option + "_" + to_ip.replace(".", "-") + "_" + from_ip.replace(".", "-")
+        if target_w and target_h:
+            options += f"_{target_w}x{target_h}"
         self.filename = os.path.join(self.directory, filename+"_"+options)
 
         self._dpi = 150
