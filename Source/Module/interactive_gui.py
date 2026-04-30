@@ -17,11 +17,15 @@ __all__ = ["gimmick_initialize", "open_live_panel", "refresh_live", "set_panel_t
 
 log = logging.getLogger(__name__)
 
+_FILTER_OPTIONS = ["All", "Malicious", "Tor", "Covert", "HTTP", "HTTPS", "DNS", "ICMP"]
+
 _container: tk.Frame | None = None
 _figure = None
 _ax = None
 _canvas_widget = None
 _info_var: tk.StringVar | None = None
+_filter_var: tk.StringVar | None = None
+_live_mode: bool = False
 _base: tk.Tk | None = None
 
 
@@ -172,13 +176,33 @@ def refresh_live() -> None:
     """
     if _ax is None or _canvas_widget is None:
         return
-    G, pos, node_colors, edge_colors = _build_graph_data(live=True)
+    filt = _filter_var.get() if _filter_var is not None else "All"
+    G, pos, node_colors, edge_colors = _build_graph_data(live=True, filter_option=filt)
     if G is None:
         return
     _draw_on_axes(_ax, G, pos, node_colors, edge_colors)
     _figure.subplots_adjust(left=0.02, right=0.98, top=0.98, bottom=0.02)
     _canvas_widget.draw()
     log.debug("refresh_live: %d nodes", len(G.nodes))
+
+
+def _apply_panel_filter(*_) -> None:
+    """Redraw the panel with the currently selected filter option."""
+    if _ax is None or _canvas_widget is None or _filter_var is None:
+        return
+    filt = _filter_var.get()
+    G, pos, node_colors, edge_colors = _build_graph_data(live=_live_mode, filter_option=filt)
+    if G is None:
+        _ax.cla()
+        _ax.set_facecolor("#1e1e2e")
+        _ax.text(0.5, 0.5, f"No {filt} traffic", ha="center", va="center",
+                 color="white", fontsize=14, transform=_ax.transAxes)
+        _ax.axis("off")
+    else:
+        _draw_on_axes(_ax, G, pos, node_colors, edge_colors)
+    _figure.subplots_adjust(left=0.02, right=0.98, top=0.98, bottom=0.02)
+    _canvas_widget.draw()
+    log.debug("_apply_panel_filter(%s): %d nodes", filt, len(G.nodes) if G else 0)
 
 
 def open_live_panel(base: tk.Tk) -> None:
@@ -196,7 +220,7 @@ def set_panel_title(title: str) -> None:
 
 def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None:
     """Open (or close) the interactive graph panel."""
-    global _container, _figure, _ax, _canvas_widget, _info_var, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _live_mode, _base
 
     if _container is not None and _container.winfo_exists():
         _close()
@@ -215,6 +239,7 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
         return
 
     _base = base
+    _live_mode = live
 
     G, pos, node_colors, edge_colors = _build_graph_data(live=live)
     if G is None and not live:
@@ -252,8 +277,17 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     nav = NavigationToolbar2Tk(cw, toolbar_row, pack_toolbar=False)
     nav.update()
     nav.pack(side=tk.LEFT)
+
     ttk.Button(toolbar_row, text="Close", command=_close).pack(
         side=tk.RIGHT, padx=4, pady=2)
+
+    filter_var = tk.StringVar(value="All")
+    filter_cb = ttk.Combobox(toolbar_row, textvariable=filter_var,
+                             values=_FILTER_OPTIONS, state="readonly", width=10)
+    filter_cb.pack(side=tk.RIGHT, padx=(2, 6), pady=2)
+    ttk.Label(toolbar_row, text="Filter:").pack(side=tk.RIGHT, padx=(8, 0), pady=2)
+    filter_var.trace_add("write", _apply_panel_filter)
+    _filter_var = filter_var
 
     cw.get_tk_widget().grid(row=1, column=0, sticky="nsew")
 
@@ -301,7 +335,7 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
 
 
 def _close() -> None:
-    global _container, _figure, _ax, _canvas_widget, _info_var, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _live_mode, _base
     import matplotlib.pyplot as plt
     if _figure is not None:
         plt.close(_figure)
@@ -309,6 +343,8 @@ def _close() -> None:
     _ax = None
     _canvas_widget = None
     _info_var = None
+    _filter_var = None
+    _live_mode = False
     if _container is not None and _container.winfo_exists():
         b = _container.winfo_toplevel()
         _container.destroy()
