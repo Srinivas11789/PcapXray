@@ -193,13 +193,14 @@ class pcapXrayGui:
         ttk.Button(_search_bar, text="▶", command=lambda: self._nav_packet(1), width=2).pack(side=LEFT, padx=2)
         ttk.Button(_search_bar, text="Clear", command=self._clear_search).pack(side=LEFT, padx=8)
 
-        _cols = ("src", "dst", "port", "flags", "payload")
+        _cols = ("src", "dst", "port", "flags", "files", "payload")
         self._pkt_tree = ttk.Treeview(self.FourthFrame, columns=_cols, show="headings", height=6)
         for _hdr, _col, _w, _anchor, _stretch in [
             ("Src IP",          "src",     130, "w",      False),
             ("Dst IP",          "dst",     130, "w",      False),
             ("Port",            "port",     65, "center", False),
-            ("Flags",           "flags",    90, "center", False),
+            ("Flags",           "flags",   110, "center", False),
+            ("Files",           "files",   110, "center", False),
             ("Payload Preview", "payload",   0, "w",      True),
         ]:
             self._pkt_tree.heading(_col, text=_hdr)
@@ -622,12 +623,17 @@ class pcapXrayGui:
             is_mal = key in memory.possible_mal_traffic
             is_tor = key in memory.possible_tor_traffic
             is_cov = session.covert
-            flags = " ".join(f for f, v in [("MAL", is_mal), ("TOR", is_tor), ("COV", is_cov)] if v) or "—"
+            flag_parts = []
+            if is_mal: flag_parts.append("Malicious")
+            if is_tor: flag_parts.append("Tor")
+            if is_cov: flag_parts.append("Covert")
+            flags = ", ".join(flag_parts) if flag_parts else "—"
+            files = ", ".join(session.file_signatures) if session.file_signatures else "—"
             fwd = session.Payload.get("forward", [])
             preview = str(fwd[0])[:80] if fwd else "—"
             tag = "malicious" if is_mal else "tor" if is_tor else "covert" if is_cov else ""
             self._pkt_tree.insert("", END, iid=key,
-                                  values=(src, dst, port, flags, preview),
+                                  values=(src, dst, port, flags, files, preview),
                                   tags=(tag,) if tag else ())
             self._pkt_rows.append(key)
 
