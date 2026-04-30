@@ -593,7 +593,12 @@ class pcapXrayGui:
         w = w or self.zoom[0]
         h = h or self.zoom[1]
         self.zoom = [w, h]
-        self.img = ImageTk.PhotoImage(Image.open(self.image_file).resize((w, h), Image.LANCZOS))
+        src = Image.open(self.image_file)
+        orig_w, orig_h = src.size
+        ratio = min(w / orig_w, h / orig_h)
+        fit_w = max(1, int(orig_w * ratio))
+        fit_h = max(1, int(orig_h * ratio))
+        self.img = ImageTk.PhotoImage(src.resize((fit_w, fit_h), Image.LANCZOS))
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, image=self.img, anchor=NW)
         self.canvas.config(scrollregion=self.canvas.bbox(ALL))
