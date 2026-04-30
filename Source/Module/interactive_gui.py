@@ -122,16 +122,11 @@ def _build_graph_data(live: bool = False, filter_option: str = "All", node_filte
     if not G.nodes:
         return None, None, None, None
 
-    if live:
-        pos = nx.spring_layout(G, k=2.5, iterations=50, seed=42)
-    else:
-        n_lan = len(memory.lan_hosts)
-        prog = "sfdp" if n_lan > 40 else "circo" if n_lan > 20 else "dot"
-        try:
-            pos = nx.nx_pydot.graphviz_layout(G, prog=prog)
-        except Exception as exc:
-            log.warning("graphviz_layout failed (%s), falling back to spring_layout", exc)
-            pos = nx.spring_layout(G, k=2.5, iterations=60, seed=42)
+    # Always use spring_layout in the interactive panel — no subprocess overhead,
+    # consistent behaviour on filter changes, and graphviz is reserved for the
+    # static PNG rendered by plot_lan_network.
+    iterations = 50 if live else 80
+    pos = nx.spring_layout(G, k=2.5, iterations=iterations, seed=42)
 
     pos = _normalize_pos(pos)
 

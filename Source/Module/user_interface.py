@@ -589,13 +589,27 @@ class pcapXrayGui:
             self.base.resizable(True, True)
             self.base.geometry("1100x780")
 
+        # Destroy previous canvas so its <Configure> binding stops firing
+        if hasattr(self, 'canvas') and self.canvas and self.canvas.winfo_exists():
+            self.canvas.destroy()
+
+        self._src_img = None          # cached PIL source; cleared when image_file changes
+        self._src_img_path = None
+        self._resize_job = None       # pending debounce after-id
+
         self.canvas = Canvas(self.ThirdFrame, bd=0, bg="navy",
                              xscrollcommand=self.xscrollbar.set,
                              yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
-        self.canvas.bind("<Configure>", lambda e: self._redraw_image(e.width, e.height))
+        self.canvas.bind("<Configure>", self._on_canvas_resize)
+
+    def _on_canvas_resize(self, event):
+        """Debounce rapid <Configure> events — only redraw after 120ms of quiet."""
+        if hasattr(self, '_resize_job') and self._resize_job:
+            self.base.after_cancel(self._resize_job)
+        self._resize_job = self.base.after(120, lambda: self._redraw_image(event.width, event.height))
 
     def _redraw_image(self, w=None, h=None):
         if not hasattr(self, 'image_file') or not self.image_file:
@@ -605,10 +619,13 @@ class pcapXrayGui:
             h = self.canvas.winfo_height()
         if w <= 1 or h <= 1:
             return
-        src = Image.open(self.image_file)
+        # Open source image once; reuse across resize/zoom calls
+        if self._src_img is None or self._src_img_path != self.image_file:
+            self._src_img = Image.open(self.image_file)
+            self._src_img_path = self.image_file
         fit_w = max(1, int(w * self._zoom_factor))
         fit_h = max(1, int(h * self._zoom_factor))
-        self.img = ImageTk.PhotoImage(src.resize((fit_w, fit_h), Image.LANCZOS))
+        self.img = ImageTk.PhotoImage(self._src_img.resize((fit_w, fit_h), Image.LANCZOS))
         self.canvas.delete("all")
         x = max(0, (w - fit_w) // 2)
         y = max(0, (h - fit_h) // 2)
@@ -826,11 +843,17 @@ class pcapXrayGui:
 
     def zoom_in(self):
         if self.img:
+            if hasattr(self, '_resize_job') and self._resize_job:
+                self.base.after_cancel(self._resize_job)
+                self._resize_job = None
             self._zoom_factor = min(self._zoom_factor * 1.25, 8.0)
             self._redraw_image()
 
     def zoom_out(self):
         if self.img:
+            if hasattr(self, '_resize_job') and self._resize_job:
+                self.base.after_cancel(self._resize_job)
+                self._resize_job = None
             self._zoom_factor = max(self._zoom_factor / 1.25, 0.1)
             self._redraw_image()
 
