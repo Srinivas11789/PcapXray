@@ -25,25 +25,44 @@ _info_var: tk.StringVar | None = None
 _base: tk.Tk | None = None
 
 
-def _build_graph_data(live: bool = False):
+def _build_graph_data(live: bool = False, filter_option: str = "All"):
     """Build networkx graph + layout from current memory state.
 
     Returns (G, pos, node_colors, edge_colors) or (None, ...) if nothing to show.
     live=True uses spring_layout (~100ms); live=False tries graphviz first.
+    For each (src, dst) pair only the highest-severity edge is kept so malicious/
+    Tor edges are never overdrawn by lower-priority normal edges.
     """
     try:
         import networkx as nx
     except ImportError:
         return None, None, None, None
 
-    G = nx.MultiDiGraph()
-    seen_edges: set[tuple] = set()
+    # Collect highest-priority edge per (src_label, dst_label) pair.
+    # priority: malicious=4 > tor=3 > covert=2 > normal=1
+    edge_best: dict[tuple, tuple] = {}
 
     for session_key, session in list(memory.packet_db.items()):
         parts = session_key.split("/")
         if len(parts) != 3:
             continue
         src_ip, dst_ip, port = parts
+
+        # Apply traffic filter
+        if filter_option == "Malicious" and session_key not in memory.possible_mal_traffic:
+            continue
+        if filter_option == "Tor" and session_key not in memory.possible_tor_traffic:
+            continue
+        if filter_option == "Covert" and not session.covert:
+            continue
+        if filter_option == "HTTP" and port != "80":
+            continue
+        if filter_option == "HTTPS" and port != "443":
+            continue
+        if filter_option == "DNS" and port != "53":
+            continue
+        if filter_option == "ICMP" and port != "ICMP":
+            continue
 
         eth_src = session.Ethernet.get("src", "")
         eth_dst = session.Ethernet.get("dst", "")
@@ -73,12 +92,14 @@ def _build_graph_data(live: bool = False):
         is_tor = session_key in memory.possible_tor_traffic
         is_mal = session_key in memory.possible_mal_traffic
         color, proto = _edge_attrs(port, session.covert, is_tor, is_mal)
+        priority = 4 if is_mal else 3 if is_tor else 2 if session.covert else 1
 
-        sig = (src_label, dst_label, color)
-        if sig in seen_edges:
-            continue
-        seen_edges.add(sig)
+        pair = (src_label, dst_label)
+        if pair not in edge_best or priority > edge_best[pair][0]:
+            edge_best[pair] = (priority, color, proto, src_ip, dst_ip, src_kind, dst_kind)
 
+    G = nx.MultiDiGraph()
+    for (src_label, dst_label), (_, color, proto, src_ip, dst_ip, src_kind, dst_kind) in edge_best.items():
         G.add_node(src_label, kind=src_kind, ip=src_ip)
         G.add_node(dst_label, kind=dst_kind, ip=dst_ip)
         G.add_edge(src_label, dst_label, color=color, proto=proto)
