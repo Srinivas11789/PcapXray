@@ -40,16 +40,14 @@ class PlotLan:
             options += f"_{target_w}x{target_h}"
         self.filename = os.path.join(self.directory, filename+"_"+options)
 
-        # Render at 2× the canvas pixel count so zoom-in stays sharp.
-        # Physical size in inches is based on the 1× density (150 dpi equivalent),
-        # but we output at 300 dpi to double the pixel dimensions.
-        _layout_dpi = 150
-        self._dpi = 300
+        # Render at 1.5× canvas pixels for zoom headroom while keeping node sizes
+        # proportional. Physical size in inches = canvas_px * 1.5 / dpi.
+        self._dpi = 150
         if target_w and target_h:
-            self._size_w = round(target_w / _layout_dpi, 2)
-            self._size_h = round(target_h / _layout_dpi, 2)
+            self._size_w = round(target_w * 1.5 / self._dpi, 2)
+            self._size_h = round(target_h * 1.5 / self._dpi, 2)
         else:
-            self._size_w, self._size_h = 13.0, 9.0  # ~3900×2700 @ 300 DPI fallback
+            self._size_w, self._size_h = 13.0, 9.0  # ~1950×1350 @ 150 DPI fallback
 
         self.styles = {
             'graph': {
