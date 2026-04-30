@@ -219,7 +219,7 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     base.geometry(f"{base.winfo_width() + 700}x{max(base.winfo_height(), 600)}")
 
     _container = tk.Frame(base, bg="#1e1e2e")
-    _container.grid(row=10, column=11, rowspan=31, sticky="nsew",
+    _container.grid(row=10, column=11, rowspan=41, sticky="nsew",
                     padx=(8, 8), pady=(8, 8))
     _container.rowconfigure(1, weight=1)
     _container.columnconfigure(0, weight=1)
