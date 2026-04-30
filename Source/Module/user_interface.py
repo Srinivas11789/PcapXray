@@ -597,8 +597,10 @@ class pcapXrayGui:
         fit_h = max(1, int(orig_h * ratio))
         self.img = ImageTk.PhotoImage(src.resize((fit_w, fit_h), Image.LANCZOS))
         self.canvas.delete("all")
-        self.canvas.create_image(0, 0, image=self.img, anchor=NW)
-        self.canvas.config(scrollregion=self.canvas.bbox(ALL))
+        x = max(0, (w - fit_w) // 2)
+        y = max(0, (h - fit_h) // 2)
+        self.canvas.create_image(x, y, image=self.img, anchor=NW)
+        self.canvas.config(scrollregion=(0, 0, max(w, fit_w), max(h, fit_h)))
 
     # ------------------------------------------------------------------
     # Packet browser helpers
