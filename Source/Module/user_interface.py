@@ -591,10 +591,8 @@ class pcapXrayGui:
         if w <= 1 or h <= 1:
             return
         src = Image.open(self.image_file)
-        orig_w, orig_h = src.size
-        ratio = min(w / orig_w, h / orig_h) * self._zoom_factor
-        fit_w = max(1, int(orig_w * ratio))
-        fit_h = max(1, int(orig_h * ratio))
+        fit_w = max(1, int(w * self._zoom_factor))
+        fit_h = max(1, int(h * self._zoom_factor))
         self.img = ImageTk.PhotoImage(src.resize((fit_w, fit_h), Image.LANCZOS))
         self.canvas.delete("all")
         x = max(0, (w - fit_w) // 2)

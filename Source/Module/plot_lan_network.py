@@ -45,7 +45,7 @@ class PlotLan:
                 'rankdir': 'LR', # BT
                 'dpi':'300',
                 'size': '20, 14',
-                'ratio': 'expand',
+                'ratio': 'fill',
                 'overlap': 'scale'
             },
             'nodes': {
