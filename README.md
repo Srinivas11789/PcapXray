@@ -59,6 +59,9 @@ Make a network diagram with the following features:
 *Static network graph with interactive matplotlib panel*
 ![Network graph](Samples/screen5_1_2.png)
 
+*Static network graph — natural layout with auto-fit zoom*
+![Network graph v5.2](Samples/screen_5_2_2.png)
+
 ---
 
 ## Demo
