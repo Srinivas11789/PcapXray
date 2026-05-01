@@ -176,6 +176,35 @@ Located at project root. Adds `Source/Module` to `sys.path` and exports `EXAMPLE
 
 ---
 
+## Code Review Standards
+
+When reviewing or implementing any change, evaluate it as a staff-level engineer and architect. Every non-trivial PR should be assessed across these axes before merge:
+
+### Correctness and robustness
+- **Closure / stale capture bugs** — closures in event handlers (Tkinter `bind`, matplotlib `mpl_connect`) must not capture mutable locals that change after registration. Promote to module-level or instance-level state instead.
+- **Race conditions** — debounced `after()` callbacks can fire after the widget is destroyed. Always guard with `winfo_exists()` before touching Tk widgets inside a delayed callback.
+- **Thread safety** — any `memory.*` mutation outside `_on_packet` (which holds `self._lock`) is a bug. Never read-modify-write shared containers from the Tk main thread without a lock.
+- **Edge cases** — test mentally: empty PCAP (zero sessions), single node, live capture → Stop → Visualize!, re-running Visualize! with a cached PNG, closing the panel mid-refresh.
+
+### Performance and resource safety
+- **Main-thread blocking** — `spring_layout`, graphviz render, DNS lookups, file I/O must not run on the Tk main thread. Use `_run_in_thread` + `_poll_thread`. Event bindings that trigger expensive ops (e.g., `<FocusOut>` → layout) are a latent freeze.
+- **Resource leaks** — every `StringVar.trace_add()` needs a matching `trace_remove()` on teardown. Every `plt.subplots()` needs `plt.close()`. Every `Toplevel` needs a `destroy()` path. Tk canvas image references must be kept alive on `self`.
+- **Memory** — PIL images opened in resize callbacks must be cached, not re-opened per event. Debounce rapid `<Configure>` events (120ms minimum).
+
+### Safety and PII
+- **Payload display** — raw packet payload shown in the UI is expected (forensics tool), but never log payload content at INFO/WARNING level; use DEBUG only.
+- **No data exfiltration** — the only outbound calls allowed are: DNS reverse-lookup (`gethostbyaddr`), whois/RDAP (`ipwhois`), OUI vendor lookup (`device_details_fetch`), Tor consensus (`stem`). Any new network call must be documented and opt-in.
+- **Output path isolation** — all file writes (PNG, HTML, TXT, SQLite) go to the user-specified output directory only. Never write to `/tmp`, `~`, or relative paths.
+- **No credentials in logs** — never log HTTP Authorization headers, cookie values, or TLS pre-master secrets even at DEBUG.
+- **SQL safety** — all SQLite queries use parameterised statements (`?` placeholders). No f-string or `%`-formatted SQL.
+
+### Architecture consistency
+- **Module boundaries** — `interactive_gui` reads `memory.*` but never writes it. `user_interface` drives analysis but delegates rendering to `plot_lan_network` and `interactive_gui`. Cross-module writes outside these contracts are bugs.
+- **Global state in `interactive_gui`** — all panel state lives in module-level `_*` variables. Any new state variable needs a reset in `_close()` and a guard in every function that reads it (`if _ax is None: return`).
+- **Pydantic models** — use attribute access, never dict-style. Use `.model_dump()` for serialisation.
+
+---
+
 ## CI (GitHub Actions)
 
 Workflow: `.github/workflows/test.yml`
