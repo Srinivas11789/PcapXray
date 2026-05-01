@@ -93,8 +93,9 @@ class pcapXrayGui:
         self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="WE")
         ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10, sticky="E")
         self.zoom = [900, 500]
-        ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0, column=4, padx=5, sticky="E")
-        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0, column=5, padx=10, sticky="E")
+        ttk.Button(FirstFrame, text="zoomIn",  command=self.zoom_in).grid(row=0, column=4, padx=5, sticky="E")
+        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0, column=5, padx=2, sticky="E")
+        ttk.Button(FirstFrame, text="Fit",     command=self.zoom_fit).grid(row=0, column=6, padx=5, sticky="E")
 
         # Live Capture Frame
         LiveFrame = ttk.Frame(base, width=50, padding="10 2 0 2", relief=GROOVE)
@@ -131,7 +132,7 @@ class pcapXrayGui:
         self.browser_button['state'] = 'disabled'
 
         self.img = ""
-        self._store = sqlite_store.SqliteStore()
+        self._store: sqlite_store.SqliteStore | None = None
         
         ## Filters
         self.from_ip = StringVar()
@@ -192,14 +193,18 @@ class pcapXrayGui:
         ttk.Button(_search_bar, text="◀", command=lambda: self._nav_packet(-1), width=2).pack(side=LEFT, padx=2)
         ttk.Button(_search_bar, text="▶", command=lambda: self._nav_packet(1), width=2).pack(side=LEFT, padx=2)
         ttk.Button(_search_bar, text="Clear", command=self._clear_search).pack(side=LEFT, padx=8)
+        self._detail_btn = ttk.Button(_search_bar, text="inspect →",
+                                      command=self._open_selected_detail, state="disabled")
+        self._detail_btn.pack(side=RIGHT, padx=(8, 4))
 
-        _cols = ("src", "dst", "port", "flags", "payload")
+        _cols = ("src", "dst", "port", "flags", "files", "payload")
         self._pkt_tree = ttk.Treeview(self.FourthFrame, columns=_cols, show="headings", height=6)
         for _hdr, _col, _w, _anchor, _stretch in [
             ("Src IP",          "src",     130, "w",      False),
             ("Dst IP",          "dst",     130, "w",      False),
             ("Port",            "port",     65, "center", False),
-            ("Flags",           "flags",    90, "center", False),
+            ("Flags",           "flags",   110, "center", False),
+            ("Files",           "files",   110, "center", False),
             ("Payload Preview", "payload",   0, "w",      True),
         ]:
             self._pkt_tree.heading(_col, text=_hdr)
@@ -217,6 +222,7 @@ class pcapXrayGui:
         self._pkt_tree.tag_configure("covert",    background="#0d3040", foreground="#80deea")
         self._pkt_tree.tag_configure("match",     background="#1a3a1a", foreground="#a5d6a7")
         self._pkt_tree.bind("<<TreeviewSelect>>", self._on_packet_select)
+        self._pkt_tree.bind("<Double-1>", self._open_session_detail)
 
         self._pkt_rows: list[str] = []
         self._search_matches: list[str] = []
@@ -331,7 +337,7 @@ class pcapXrayGui:
             finally:
                 self._spin_stop(f"✓ {len(memory.packet_db)} sessions captured")
             import time
-            self._store.save_session(f"live_{iface}_{int(time.time())}")
+            self._open_store().save_session(f"live_{iface}_{int(time.time())}")
 
         self.live_button.config(text="▶ Start Live")
         self._live_status.config(text="📡 Captured — click Visualize! for snapshot", fg="#81c784")
@@ -381,6 +387,17 @@ class pcapXrayGui:
         self.base.lift()
         self.base.focus_force()
         self.base.after(200, lambda: self.base.attributes('-topmost', False))
+
+    def _open_store(self) -> sqlite_store.SqliteStore:
+        """Return the session store, creating it under destination_report/Report/ if needed."""
+        report_dir = os.path.join(self.destination_report.get(), "Report")
+        os.makedirs(report_dir, exist_ok=True)
+        db_path = os.path.join(report_dir, "pcapxray_sessions.db")
+        if self._store is None or self._store._db_path != db_path:
+            if self._store is not None:
+                self._store.close()
+            self._store = sqlite_store.SqliteStore(db_path)
+        return self._store
 
     def _spin_start(self, text: str = "Working") -> None:
         if self._spin_job is not None:
@@ -439,7 +456,7 @@ class pcapXrayGui:
             mb.showerror("Error", "Permission denied to create report! Run with higher privilege.")
             return
 
-        log.info("pcap_analyse: file=%s", self.pcap_file.get())
+        log.info("pcap_analyse: file=%s", os.path.basename(self.pcap_file.get()))
         if not os.path.exists(self.pcap_file.get()):
             mb.showerror("Error", "File Not Found!")
             return
@@ -456,13 +473,14 @@ class pcapXrayGui:
             self.filename = os.path.basename(self.pcap_file.get()).replace(".pcap", "").replace(".pcapng", "")
 
         # Offer to reload from SQLite cache if this PCAP was analyzed before
-        if self.filename and self._store.has_session(self.filename):
+        store = self._open_store()
+        if self.filename and store.has_session(self.filename):
             if mb.askyesno("Reload Session",
                            f"Cached analysis found for '{self.filename}'.\n"
                            "Reload without re-parsing the PCAP?"):
                 log.info("pcap_analyse: reloading session '%s' from cache", self.filename)
                 self._spin_start("Loading cache")
-                self._store.load_session(self.filename)
+                store.load_session(self.filename)
                 self._spin_stop(f"✓ {len(memory.packet_db)} sessions (cached)")
                 self._populate_filter_menus()
                 self._re_enable_controls()
@@ -485,7 +503,7 @@ class pcapXrayGui:
         threading.Thread(target=report_generator.ReportGenerator(self.destination_report.get(), self.filename).packetDetails, args=(), daemon=True).start()
 
         if self.filename:
-            self._store.save_session(self.filename)
+            self._open_store().save_session(self.filename)
         self._populate_filter_menus()
         self._re_enable_controls()
 
@@ -528,10 +546,15 @@ class pcapXrayGui:
             threading.Thread(target=rpt.communicationDetailsReport, daemon=True).start()
             threading.Thread(target=rpt.deviceDetailsReport, daemon=True).start()
 
-        options = self.option.get() + "_" + self.to_ip.get().replace(".", "-") + "_" + self.from_ip.get().replace(".", "-")
+        options = (self.option.get() + "_" + self.to_ip.get().replace(".", "-")
+                   + "_" + self.from_ip.get().replace(".", "-"))
         self.image_file = os.path.join(self.destination_report.get(), "Report", self.filename + "_" + options + ".png")
         if not os.path.exists(self.image_file):
-            t1, exc_box = self._run_in_thread(plot_lan_network.PlotLan, self.filename, self.destination_report.get(), self.option.get(), self.to_ip.get(), self.from_ip.get())
+            t1, exc_box = self._run_in_thread(
+                plot_lan_network.PlotLan,
+                self.filename, self.destination_report.get(),
+                self.option.get(), self.to_ip.get(), self.from_ip.get()
+            )
             self._spin_start("Rendering graph")
             self._poll_thread(t1)
             if exc_box:
@@ -564,39 +587,79 @@ class pcapXrayGui:
             mb.showerror("Error", "Interactive HTML not found. Click Visualize! first.")
 
     def load_image(self):
-        if not hasattr(self, '_canvas_w'):
-            # Expand to graph-viewing size on first load, then lock.
+        if not hasattr(self, '_zoom_factor'):
+            self._zoom_factor = 1.0
             self.base.resizable(True, True)
             self.base.geometry("1100x780")
-            probe = Canvas(self.ThirdFrame, bd=0)
-            probe.grid(column=0, row=0, sticky=(N, W, E, S))
-            self.base.update_idletasks()
-            self._canvas_w = probe.winfo_width() or 900
-            self._canvas_h = probe.winfo_height() or 500
-            self.zoom = [self._canvas_w, self._canvas_h]
-            probe.destroy()
-            self.base.resizable(True, True)
 
-        self.canvas = Canvas(self.ThirdFrame, width=self._canvas_w, height=self._canvas_h,
-                             bd=0, bg="navy",
+        # Destroy previous canvas so its <Configure> binding stops firing
+        if hasattr(self, 'canvas') and self.canvas and self.canvas.winfo_exists():
+            self.canvas.destroy()
+
+        self._src_img = None          # cached PIL source; cleared when image_file changes
+        self._src_img_path = None
+        self._resize_job = None       # pending debounce after-id
+
+        self.canvas = Canvas(self.ThirdFrame, bd=0, bg="grey",
                              xscrollcommand=self.xscrollbar.set,
                              yscrollcommand=self.yscrollbar.set)
         self.canvas.grid(column=0, row=0, sticky=(N, W, E, S))
-        self._redraw_image()
         self.xscrollbar.config(command=self.canvas.xview)
         self.yscrollbar.config(command=self.canvas.yview)
-        self.canvas.bind("<Configure>", lambda e: self._redraw_image(e.width, e.height))
+        self.canvas.bind("<Configure>", self._on_canvas_resize)
+
+    def _on_canvas_resize(self, event):
+        """Debounce rapid <Configure> events — only redraw after 120ms of quiet."""
+        if hasattr(self, '_resize_job') and self._resize_job:
+            self.base.after_cancel(self._resize_job)
+        self._resize_job = self.base.after(120, lambda: self._redraw_image(event.width, event.height))
+
+    def _zoom_fill_factor(self, src_w: int, src_h: int) -> float:
+        """Return the _zoom_factor that fills the canvas viewport (cover behaviour)."""
+        w = self.canvas.winfo_width() or 1
+        h = self.canvas.winfo_height() or 1
+        fit   = min(w / src_w, h / src_h)
+        cover = max(w / src_w, h / src_h)
+        return cover / fit   # always ≥ 1.0
+
+    def zoom_fit(self):
+        """Reset zoom to the fill-viewport level (the default on first load)."""
+        if not (hasattr(self, '_src_img') and self._src_img):
+            return
+        if hasattr(self, '_resize_job') and self._resize_job:
+            self.base.after_cancel(self._resize_job)
+            self._resize_job = None
+        src_w, src_h = self._src_img.size
+        self._zoom_factor = self._zoom_fill_factor(src_w, src_h)
+        self._redraw_image()
 
     def _redraw_image(self, w=None, h=None):
         if not hasattr(self, 'image_file') or not self.image_file:
             return
-        w = w or self.zoom[0]
-        h = h or self.zoom[1]
-        self.zoom = [w, h]
-        self.img = ImageTk.PhotoImage(Image.open(self.image_file).resize((w, h), Image.LANCZOS))
+        if w is None or h is None:
+            w = self.canvas.winfo_width()
+            h = self.canvas.winfo_height()
+        if w <= 1 or h <= 1:
+            return
+        new_image = self._src_img is None or self._src_img_path != self.image_file
+        if new_image:
+            self._src_img = Image.open(self.image_file)
+            self._src_img_path = self.image_file
+        src_w, src_h = self._src_img.size
+        if new_image:
+            # Auto-zoom: fill the viewport so the graph occupies the full canvas.
+            # For a tall dot layout (nodes stacked), fills the canvas width with
+            # vertical scrollbars. For a wide layout, fills the canvas height.
+            self._zoom_factor = self._zoom_fill_factor(src_w, src_h)
+        scale = min(w / src_w, h / src_h) * self._zoom_factor
+        fit_w = max(1, int(src_w * scale))
+        fit_h = max(1, int(src_h * scale))
+        self.img = ImageTk.PhotoImage(self._src_img.resize((fit_w, fit_h), Image.LANCZOS))
         self.canvas.delete("all")
-        self.canvas.create_image(0, 0, image=self.img, anchor=NW)
-        self.canvas.config(scrollregion=self.canvas.bbox(ALL))
+        x = max(0, (w - fit_w) // 2)
+        y = max(0, (h - fit_h) // 2)
+        self.canvas.create_image(x, y, image=self.img, anchor=NW)
+        self.canvas.config(scrollregion=(0, 0, max(w, fit_w), max(h, fit_h)))
 
     # ------------------------------------------------------------------
     # Packet browser helpers
@@ -617,12 +680,17 @@ class pcapXrayGui:
             is_mal = key in memory.possible_mal_traffic
             is_tor = key in memory.possible_tor_traffic
             is_cov = session.covert
-            flags = " ".join(f for f, v in [("MAL", is_mal), ("TOR", is_tor), ("COV", is_cov)] if v) or "—"
+            flag_parts = []
+            if is_mal: flag_parts.append("Malicious")
+            if is_tor: flag_parts.append("Tor")
+            if is_cov: flag_parts.append("Covert")
+            flags = ", ".join(flag_parts) if flag_parts else "—"
+            files = ", ".join(session.file_signatures) if session.file_signatures else "—"
             fwd = session.Payload.get("forward", [])
             preview = str(fwd[0])[:80] if fwd else "—"
             tag = "malicious" if is_mal else "tor" if is_tor else "covert" if is_cov else ""
             self._pkt_tree.insert("", END, iid=key,
-                                  values=(src, dst, port, flags, preview),
+                                  values=(src, dst, port, flags, files, preview),
                                   tags=(tag,) if tag else ())
             self._pkt_rows.append(key)
 
@@ -709,7 +777,9 @@ class pcapXrayGui:
     def _on_packet_select(self, event) -> None:
         sel = self._pkt_tree.selection()
         if not sel:
+            self._detail_btn.configure(state="disabled")
             return
+        self._detail_btn.configure(state="normal")
         parts = sel[0].split("/")
         if len(parts) != 3:
             return
@@ -718,6 +788,75 @@ class pcapXrayGui:
             self.from_menu.set(src)
         if dst in self.to_menu["values"]:
             self.to_menu.set(dst)
+
+    def _open_selected_detail(self) -> None:
+        sel = self._pkt_tree.selection()
+        if sel:
+            self._open_session_detail(None)
+
+    def _open_session_detail(self, event) -> None:
+        sel = self._pkt_tree.selection()
+        if not sel:
+            return
+        key = sel[0]
+        session = memory.packet_db.get(key)
+        if not session:
+            return
+
+        parts = key.split("/")
+        src, dst, port = parts if len(parts) == 3 else ("?", "?", "?")
+
+        win = Toplevel(self.base)
+        win.title(f"Session: {key}")
+        win.geometry("700x520")
+        win.resizable(True, True)
+        win.columnconfigure(0, weight=1)
+        win.rowconfigure(1, weight=1)
+
+        # ── Header ──────────────────────────────────────────────────────
+        hdr = ttk.Frame(win, padding="12 10 12 6")
+        hdr.grid(row=0, column=0, sticky="EW")
+        hdr.columnconfigure(1, weight=1)
+
+        def _row(r, label, value):
+            ttk.Label(hdr, text=label, style="BW.TLabel",
+                      font=("Courier", 10, "bold")).grid(row=r, column=0, sticky="W", padx=(0, 8))
+            ttk.Label(hdr, text=value, style="BW.TLabel",
+                      font=("Courier", 10)).grid(row=r, column=1, sticky="W")
+
+        is_mal = key in memory.possible_mal_traffic
+        is_tor = key in memory.possible_tor_traffic
+        flag_parts = (["Malicious"] if is_mal else []) + (["Tor"] if is_tor else []) + (["Covert"] if session.covert else [])
+        dst_host = memory.destination_hosts.get(dst)
+        domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
+
+        _row(0, "Session:", key)
+        _row(1, "Flags:",   ", ".join(flag_parts) if flag_parts else "None")
+        _row(2, "Files:",   ", ".join(session.file_signatures) if session.file_signatures else "None")
+        _row(3, "Ethernet:", f"{session.Ethernet.get('src', '—')} → {session.Ethernet.get('dst', '—')}")
+        _row(4, "Domain:",  domain)
+
+        # ── Payload tabs ────────────────────────────────────────────────
+        nb = ttk.Notebook(win)
+        nb.grid(row=1, column=0, sticky="NSEW", padx=10, pady=4)
+
+        for label, lines in [("Forward", session.Payload.get("forward", [])),
+                              ("Reverse", session.Payload.get("reverse", []))]:
+            tab = ttk.Frame(nb)
+            nb.add(tab, text=f"{label} ({len(lines)} entries)")
+            tab.rowconfigure(0, weight=1)
+            tab.columnconfigure(0, weight=1)
+            txt = tk.Text(tab, wrap="word", font=("Courier", 10),
+                          bg="#1e1e2e", fg="#e0e0e0", relief="flat")
+            vsb = ttk.Scrollbar(tab, orient=VERTICAL, command=txt.yview)
+            txt.configure(yscrollcommand=vsb.set)
+            txt.grid(row=0, column=0, sticky="NSEW")
+            vsb.grid(row=0, column=1, sticky="NS")
+            txt.insert("1.0", "\n".join(lines) if lines else "(no payload)")
+            txt.configure(state="disabled")
+
+        ttk.Button(win, text="Close", command=win.destroy).grid(row=2, column=0, pady=8)
+        win.after(100, lambda: (win.lift(), win.focus_force()))
 
     def map_select(self, *args):
         log.debug("map_select: option=%s to=%s from=%s", self.option.get(), self.to_ip.get(), self.from_ip.get())
@@ -732,19 +871,20 @@ class pcapXrayGui:
         self.base.after(100, self._force_focus)
 
     def zoom_in(self):
-        self.zoom[0] += 100
-        self.zoom[1] += 100
         if self.img:
-            self._redraw_image(self.zoom[0], self.zoom[1])
+            if hasattr(self, '_resize_job') and self._resize_job:
+                self.base.after_cancel(self._resize_job)
+                self._resize_job = None
+            self._zoom_factor = min(self._zoom_factor * 1.25, 8.0)
+            self._redraw_image()
 
     def zoom_out(self):
-        min_w = getattr(self, '_canvas_w', 900)
-        min_h = getattr(self, '_canvas_h', 500)
-        if self.zoom[0] > min_w and self.zoom[1] > min_h:
-            self.zoom[0] -= 100
-            self.zoom[1] -= 100
         if self.img:
-            self._redraw_image(self.zoom[0], self.zoom[1])
+            if hasattr(self, '_resize_job') and self._resize_job:
+                self.base.after_cancel(self._resize_job)
+                self._resize_job = None
+            self._zoom_factor = max(self._zoom_factor / 1.25, 0.1)
+            self._redraw_image()
 
 class OtherFrame(Toplevel):
 

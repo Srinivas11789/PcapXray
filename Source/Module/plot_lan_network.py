@@ -42,21 +42,20 @@ class PlotLan:
                 'fontsize': '16',
                 'fontcolor': 'black',
                 'bgcolor': 'grey',
-                'rankdir': 'LR', # BT
-                'dpi':'300',
-                'size': '10, 10',
-                'overlap': 'scale'
+                'rankdir': 'LR',
+                'dpi': '150',
+                # No size/ratio/overlap — graphviz chooses natural layout dimensions.
+                # PIL fits the result to the canvas preserving aspect ratio.
             },
             'nodes': {
-                'fontname': 'Helvetica',
-                'shape': 'circle',
+                'fontname': 'DejaVu Sans',
+                'fontsize': '14',
+                'shape': 'ellipse',
                 'fontcolor': 'black',
-                'color': ' black',
+                'color': 'black',
                 'style': 'filled',
                 'fillcolor': 'yellow',
-                'fixedsize': 'true',
-                'width': '3',
-                'height': '3'
+                # No fixedsize — nodes auto-size to fit their label text.
             }
         }
 
@@ -613,7 +612,7 @@ class PlotLan:
             # Discard all the bloated disconnected nodes — lay out a trivial graph instead.
             f = Digraph("no_traffic", filename=self.filename, engine="dot", format="png")
             f.attr(label="No " + option + " Traffic between nodes!", fontsize="20",
-                   bgcolor="grey", size="5,5", dpi="300")
+                   bgcolor="grey")
 
         self.apply_styles(f, self.styles)
 

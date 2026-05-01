@@ -2,9 +2,9 @@
 Module sqlite_store — SQLite session persistence for PcapXray.
 
 Saves the full analysis state (packet_db, lan_hosts, destination_hosts,
-tor/malicious traffic lists) to ~/PcapXray_sessions.db, keyed by PCAP
-filename. On re-analysis of the same file the GUI offers to reload from
-the cache instead of re-parsing — making repeat runs near-instant.
+tor/malicious traffic lists) to <output_dir>/Report/pcapxray_sessions.db,
+keyed by PCAP filename. On re-analysis of the same file the GUI offers to
+reload from the cache instead of re-parsing — making repeat runs near-instant.
 
 Original concept and prototype: Matt Bernardo (@mbernardo) / Technica
 Corporation — PR #70 (March 2022). Rewritten here for the Pydantic-based

@@ -17,33 +17,60 @@ __all__ = ["gimmick_initialize", "open_live_panel", "refresh_live", "set_panel_t
 
 log = logging.getLogger(__name__)
 
+_FILTER_OPTIONS = ["All", "Malicious", "Tor", "Covert", "HTTP", "HTTPS", "DNS", "ICMP"]
+
 _container: tk.Frame | None = None
 _figure = None
 _ax = None
 _canvas_widget = None
 _info_var: tk.StringVar | None = None
+_filter_var: tk.StringVar | None = None
+_node_filter_var: tk.StringVar | None = None
+_live_mode: bool = False
 _base: tk.Tk | None = None
+_panel_G = None
+_panel_pos: dict | None = None
 
 
-def _build_graph_data(live: bool = False):
+def _build_graph_data(live: bool = False, filter_option: str = "All", node_filter: str = ""):
     """Build networkx graph + layout from current memory state.
 
     Returns (G, pos, node_colors, edge_colors) or (None, ...) if nothing to show.
     live=True uses spring_layout (~100ms); live=False tries graphviz first.
+    For each (src, dst) pair only the highest-severity edge is kept so malicious/
+    Tor edges are never overdrawn by lower-priority normal edges.
+    node_filter: if non-empty, keep only edges where src or dst label/IP contains it.
     """
     try:
         import networkx as nx
     except ImportError:
         return None, None, None, None
 
-    G = nx.MultiDiGraph()
-    seen_edges: set[tuple] = set()
+    # Collect highest-priority edge per (src_label, dst_label) pair.
+    # priority: malicious=4 > tor=3 > covert=2 > normal=1
+    edge_best: dict[tuple, tuple] = {}
 
     for session_key, session in list(memory.packet_db.items()):
         parts = session_key.split("/")
         if len(parts) != 3:
             continue
         src_ip, dst_ip, port = parts
+
+        # Apply traffic filter
+        if filter_option == "Malicious" and session_key not in memory.possible_mal_traffic:
+            continue
+        if filter_option == "Tor" and session_key not in memory.possible_tor_traffic:
+            continue
+        if filter_option == "Covert" and not session.covert:
+            continue
+        if filter_option == "HTTP" and port != "80":
+            continue
+        if filter_option == "HTTPS" and port != "443":
+            continue
+        if filter_option == "DNS" and port != "53":
+            continue
+        if filter_option == "ICMP" and port != "ICMP":
+            continue
 
         eth_src = session.Ethernet.get("src", "")
         eth_dst = session.Ethernet.get("dst", "")
@@ -73,12 +100,23 @@ def _build_graph_data(live: bool = False):
         is_tor = session_key in memory.possible_tor_traffic
         is_mal = session_key in memory.possible_mal_traffic
         color, proto = _edge_attrs(port, session.covert, is_tor, is_mal)
+        priority = 4 if is_mal else 3 if is_tor else 2 if session.covert else 1
 
-        sig = (src_label, dst_label, color)
-        if sig in seen_edges:
-            continue
-        seen_edges.add(sig)
+        pair = (src_label, dst_label)
+        if pair not in edge_best or priority > edge_best[pair][0]:
+            edge_best[pair] = (priority, color, proto, src_ip, dst_ip, src_kind, dst_kind)
 
+    # Apply node filter: keep only edges where src or dst label/IP matches
+    if node_filter:
+        nf = node_filter.lower()
+        edge_best = {
+            (s, d): v for (s, d), v in edge_best.items()
+            if nf in s.lower() or nf in d.lower()
+            or nf in v[3].lower() or nf in v[4].lower()  # src_ip, dst_ip
+        }
+
+    G = nx.MultiDiGraph()
+    for (src_label, dst_label), (_, color, proto, src_ip, dst_ip, src_kind, dst_kind) in edge_best.items():
         G.add_node(src_label, kind=src_kind, ip=src_ip)
         G.add_node(dst_label, kind=dst_kind, ip=dst_ip)
         G.add_edge(src_label, dst_label, color=color, proto=proto)
@@ -86,37 +124,32 @@ def _build_graph_data(live: bool = False):
     if not G.nodes:
         return None, None, None, None
 
-    if live:
-        pos = nx.spring_layout(G, k=2.5, iterations=50, seed=42)
-    else:
-        n_lan = len(memory.lan_hosts)
-        prog = "sfdp" if n_lan > 40 else "circo" if n_lan > 20 else "dot"
-        try:
-            pos = nx.nx_pydot.graphviz_layout(G, prog=prog)
-        except Exception as exc:
-            log.warning("graphviz_layout failed (%s), falling back to spring_layout", exc)
-            pos = nx.spring_layout(G, k=2.5, iterations=60, seed=42)
+    # Always use spring_layout in the interactive panel — no subprocess overhead,
+    # consistent behaviour on filter changes, and graphviz is reserved for the
+    # static PNG rendered by plot_lan_network.
+    iterations = 50 if live else 80
+    pos = nx.spring_layout(G, k=2.5, iterations=iterations, seed=42)
 
     pos = _normalize_pos(pos)
 
-    mal_ips = {s.split("/")[0] for s in memory.possible_mal_traffic} | \
-              {s.split("/")[1] for s in memory.possible_mal_traffic}
-    tor_ips = {s.split("/")[1] for s in memory.possible_tor_traffic}
+    # Threat IPs for external nodes only (destination side); LAN/GW nodes keep role color
+    mal_dst_ips = {s.split("/")[1] for s in memory.possible_mal_traffic}
+    tor_dst_ips = {s.split("/")[1] for s in memory.possible_tor_traffic}
 
     node_colors = []
     for node in G.nodes:
         ip   = G.nodes[node].get("ip", "")
         kind = G.nodes[node].get("kind", "")
-        if ip in tor_ips:
-            node_colors.append("#9c27b0")
-        elif ip in mal_ips:
-            node_colors.append("#f44336")
-        elif kind == "lan":
-            node_colors.append("#1e88e5")
+        if kind == "lan":
+            node_colors.append("#1e88e5")    # always blue for LAN hosts
         elif kind == "gw":
-            node_colors.append("#78909c")
+            node_colors.append("#78909c")    # always gray for gateways
+        elif ip in tor_dst_ips:
+            node_colors.append("#9c27b0")    # purple — Tor exit/relay
+        elif ip in mal_dst_ips:
+            node_colors.append("#f44336")    # red — known malicious external
         else:
-            node_colors.append("#ff7043")
+            node_colors.append("#ff7043")    # orange — generic external
 
     edge_colors = [d.get("color", "#607d8b") for _, _, d in G.edges(data=True)]
     return G, pos, node_colors, edge_colors
@@ -151,13 +184,39 @@ def refresh_live() -> None:
     """
     if _ax is None or _canvas_widget is None:
         return
-    G, pos, node_colors, edge_colors = _build_graph_data(live=True)
+    filt = _filter_var.get() if _filter_var is not None else "All"
+    nf   = _node_filter_var.get() if _node_filter_var is not None else ""
+    G, pos, node_colors, edge_colors = _build_graph_data(live=True, filter_option=filt, node_filter=nf)
     if G is None:
         return
     _draw_on_axes(_ax, G, pos, node_colors, edge_colors)
     _figure.subplots_adjust(left=0.02, right=0.98, top=0.98, bottom=0.02)
     _canvas_widget.draw()
     log.debug("refresh_live: %d nodes", len(G.nodes))
+
+
+def _apply_panel_filter(*_) -> None:
+    """Redraw the panel with the current traffic + node filter options."""
+    global _panel_G, _panel_pos
+    if _ax is None or _canvas_widget is None or _filter_var is None:
+        return
+    filt = _filter_var.get()
+    nf   = _node_filter_var.get() if _node_filter_var is not None else ""
+    G, pos, node_colors, edge_colors = _build_graph_data(live=_live_mode, filter_option=filt, node_filter=nf)
+    _panel_G = G
+    _panel_pos = pos
+    if G is None:
+        _ax.cla()
+        _ax.set_facecolor("#1e1e2e")
+        label = filt if not nf else f"{filt} / node '{nf}'"
+        _ax.text(0.5, 0.5, f"No {label} traffic", ha="center", va="center",
+                 color="white", fontsize=14, transform=_ax.transAxes)
+        _ax.axis("off")
+    else:
+        _draw_on_axes(_ax, G, pos, node_colors, edge_colors)
+    _figure.subplots_adjust(left=0.02, right=0.98, top=0.98, bottom=0.02)
+    _canvas_widget.draw()
+    log.debug("_apply_panel_filter(%s, node=%r): %d nodes", filt, nf, len(G.nodes) if G else 0)
 
 
 def open_live_panel(base: tk.Tk) -> None:
@@ -173,9 +232,36 @@ def set_panel_title(title: str) -> None:
         _info_var.set(title)
 
 
+def _on_click(event) -> None:
+    """Click-to-inspect handler — reads from current _panel_G/_panel_pos globals."""
+    if _panel_G is None or _panel_pos is None or _ax is None:
+        return
+    if event.inaxes != _ax or event.xdata is None:
+        return
+    closest, min_dist = None, float("inf")
+    for node, (x, y) in _panel_pos.items():
+        d = (event.xdata - x) ** 2 + (event.ydata - y) ** 2
+        if d < min_dist:
+            min_dist, closest = d, node
+    if closest is None or min_dist > 0.25:
+        return
+    ip = _panel_G.nodes[closest].get("ip", "?")
+    sessions = [s for s in memory.packet_db if ip in s.split("/")[:2]]
+    dst_host = memory.destination_hosts.get(ip)
+    domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
+    protos = sorted({_panel_G[u][v][k].get("proto", "")
+                     for u, v, k in _panel_G.edges(keys=True)
+                     if u == closest or v == closest})
+    if _info_var is not None:
+        _info_var.set(
+            f"Node: {closest}  |  IP: {ip}  |  Domain: {domain}  |  "
+            f"Sessions: {len(sessions)}  |  Protocols: {', '.join(protos)}"
+        )
+
+
 def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None:
     """Open (or close) the interactive graph panel."""
-    global _container, _figure, _ax, _canvas_widget, _info_var, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base, _panel_G, _panel_pos
 
     if _container is not None and _container.winfo_exists():
         _close()
@@ -194,11 +280,14 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
         return
 
     _base = base
+    _live_mode = live
 
     G, pos, node_colors, edge_colors = _build_graph_data(live=live)
     if G is None and not live:
         log.info("Interactive graph: no sessions in memory, nothing to show")
         return
+    _panel_G = G
+    _panel_pos = pos
 
     # ── Figure ────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(9, 7))
@@ -219,7 +308,7 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     base.geometry(f"{base.winfo_width() + 700}x{max(base.winfo_height(), 600)}")
 
     _container = tk.Frame(base, bg="#1e1e2e")
-    _container.grid(row=10, column=11, rowspan=31, sticky="nsew",
+    _container.grid(row=10, column=11, rowspan=41, sticky="nsew",
                     padx=(8, 8), pady=(8, 8))
     _container.rowconfigure(1, weight=1)
     _container.columnconfigure(0, weight=1)
@@ -231,8 +320,24 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     nav = NavigationToolbar2Tk(cw, toolbar_row, pack_toolbar=False)
     nav.update()
     nav.pack(side=tk.LEFT)
+
     ttk.Button(toolbar_row, text="Close", command=_close).pack(
         side=tk.RIGHT, padx=4, pady=2)
+
+    filter_var = tk.StringVar(value="All")
+    filter_cb = ttk.Combobox(toolbar_row, textvariable=filter_var,
+                             values=_FILTER_OPTIONS, state="readonly", width=10)
+    filter_cb.pack(side=tk.RIGHT, padx=(2, 6), pady=2)
+    ttk.Label(toolbar_row, text="Filter:").pack(side=tk.RIGHT, padx=(8, 0), pady=2)
+    filter_var.trace_add("write", _apply_panel_filter)
+    _filter_var = filter_var
+
+    node_filter_var = tk.StringVar()
+    node_entry = ttk.Entry(toolbar_row, textvariable=node_filter_var, width=14)
+    node_entry.pack(side=tk.RIGHT, padx=(2, 2), pady=2)
+    ttk.Label(toolbar_row, text="Node:").pack(side=tk.RIGHT, padx=(8, 0), pady=2)
+    node_entry.bind("<Return>", _apply_panel_filter)
+    _node_filter_var = node_filter_var
 
     cw.get_tk_widget().grid(row=1, column=0, sticky="nsew")
 
@@ -251,36 +356,13 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     _canvas_widget = cw
     _info_var = info_var
 
-    # Click-to-inspect (only meaningful when G exists)
-    if G is not None:
-        def _on_click(event):
-            if event.inaxes != ax or event.xdata is None:
-                return
-            closest, min_dist = None, float("inf")
-            for node, (x, y) in pos.items():
-                d = (event.xdata - x) ** 2 + (event.ydata - y) ** 2
-                if d < min_dist:
-                    min_dist, closest = d, node
-            if closest is None or min_dist > 0.25:
-                return
-            ip = G.nodes[closest].get("ip", "?")
-            sessions = [s for s in memory.packet_db if ip in s.split("/")[:2]]
-            dst_host = memory.destination_hosts.get(ip)
-            domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
-            protos = sorted({G[u][v][k].get("proto", "")
-                             for u, v, k in G.edges(keys=True)
-                             if u == closest or v == closest})
-            info_var.set(
-                f"Node: {closest}  |  IP: {ip}  |  Domain: {domain}  |  "
-                f"Sessions: {len(sessions)}  |  Protocols: {', '.join(protos)}"
-            )
-        fig.canvas.mpl_connect("button_press_event", _on_click)
+    fig.canvas.mpl_connect("button_press_event", _on_click)
 
     base.after(250, lambda: (base.lift(), base.focus_force()))
 
 
 def _close() -> None:
-    global _container, _figure, _ax, _canvas_widget, _info_var, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base, _panel_G, _panel_pos
     import matplotlib.pyplot as plt
     if _figure is not None:
         plt.close(_figure)
@@ -288,6 +370,11 @@ def _close() -> None:
     _ax = None
     _canvas_widget = None
     _info_var = None
+    _filter_var = None
+    _node_filter_var = None
+    _live_mode = False
+    _panel_G = None
+    _panel_pos = None
     if _container is not None and _container.winfo_exists():
         b = _container.winfo_toplevel()
         _container.destroy()
