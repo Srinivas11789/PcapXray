@@ -93,8 +93,9 @@ class pcapXrayGui:
         self.report_field = ttk.Entry(FirstFrame, width=30, textvariable=self.destination_report, style="BW.TEntry").grid(column=1, row=0, sticky="WE")
         ttk.Button(FirstFrame, text="Browse", command=lambda: self.browse_directory("report")).grid(column=2, row=0, padx=10, pady=10, sticky="E")
         self.zoom = [900, 500]
-        ttk.Button(FirstFrame, text="zoomIn", command=self.zoom_in).grid(row=0, column=4, padx=5, sticky="E")
-        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0, column=5, padx=10, sticky="E")
+        ttk.Button(FirstFrame, text="zoomIn",  command=self.zoom_in).grid(row=0, column=4, padx=5, sticky="E")
+        ttk.Button(FirstFrame, text="zoomOut", command=self.zoom_out).grid(row=0, column=5, padx=2, sticky="E")
+        ttk.Button(FirstFrame, text="Fit",     command=self.zoom_fit).grid(row=0, column=6, padx=5, sticky="E")
 
         # Live Capture Frame
         LiveFrame = ttk.Frame(base, width=50, padding="10 2 0 2", relief=GROOVE)
@@ -601,6 +602,25 @@ class pcapXrayGui:
             self.base.after_cancel(self._resize_job)
         self._resize_job = self.base.after(120, lambda: self._redraw_image(event.width, event.height))
 
+    def _zoom_fill_factor(self, src_w: int, src_h: int) -> float:
+        """Return the _zoom_factor that fills the canvas viewport (cover behaviour)."""
+        w = self.canvas.winfo_width() or 1
+        h = self.canvas.winfo_height() or 1
+        fit   = min(w / src_w, h / src_h)
+        cover = max(w / src_w, h / src_h)
+        return cover / fit   # always ≥ 1.0
+
+    def zoom_fit(self):
+        """Reset zoom to the fill-viewport level (the default on first load)."""
+        if not (hasattr(self, '_src_img') and self._src_img):
+            return
+        if hasattr(self, '_resize_job') and self._resize_job:
+            self.base.after_cancel(self._resize_job)
+            self._resize_job = None
+        src_w, src_h = self._src_img.size
+        self._zoom_factor = self._zoom_fill_factor(src_w, src_h)
+        self._redraw_image()
+
     def _redraw_image(self, w=None, h=None):
         if not hasattr(self, 'image_file') or not self.image_file:
             return
@@ -609,13 +629,16 @@ class pcapXrayGui:
             h = self.canvas.winfo_height()
         if w <= 1 or h <= 1:
             return
-        if self._src_img is None or self._src_img_path != self.image_file:
+        new_image = self._src_img is None or self._src_img_path != self.image_file
+        if new_image:
             self._src_img = Image.open(self.image_file)
             self._src_img_path = self.image_file
         src_w, src_h = self._src_img.size
-        # Fit image inside canvas preserving aspect ratio; zoom_factor scales from there.
-        # Graphviz natural layout is typically wider than the canvas so scale < 1 → PIL
-        # downscales → crisp text. Zoom > 1 enlarges beyond canvas; scrollbars appear.
+        if new_image:
+            # Auto-zoom: fill the viewport so the graph occupies the full canvas.
+            # For a tall dot layout (nodes stacked), fills the canvas width with
+            # vertical scrollbars. For a wide layout, fills the canvas height.
+            self._zoom_factor = self._zoom_fill_factor(src_w, src_h)
         scale = min(w / src_w, h / src_h) * self._zoom_factor
         fit_w = max(1, int(src_w * scale))
         fit_h = max(1, int(src_h * scale))
