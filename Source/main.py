@@ -12,6 +12,10 @@ logging.basicConfig(
         logging.StreamHandler(),
     ],
 )
+try:
+    os.chmod(_log_file, 0o600)
+except OSError:
+    pass
 log = logging.getLogger(__name__)
 log.info("PcapXray starting — log file: %s", _log_file)
 

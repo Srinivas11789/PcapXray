@@ -28,6 +28,8 @@ _filter_var: tk.StringVar | None = None
 _node_filter_var: tk.StringVar | None = None
 _live_mode: bool = False
 _base: tk.Tk | None = None
+_panel_G = None
+_panel_pos: dict | None = None
 
 
 def _build_graph_data(live: bool = False, filter_option: str = "All", node_filter: str = ""):
@@ -195,11 +197,14 @@ def refresh_live() -> None:
 
 def _apply_panel_filter(*_) -> None:
     """Redraw the panel with the current traffic + node filter options."""
+    global _panel_G, _panel_pos
     if _ax is None or _canvas_widget is None or _filter_var is None:
         return
     filt = _filter_var.get()
     nf   = _node_filter_var.get() if _node_filter_var is not None else ""
     G, pos, node_colors, edge_colors = _build_graph_data(live=_live_mode, filter_option=filt, node_filter=nf)
+    _panel_G = G
+    _panel_pos = pos
     if G is None:
         _ax.cla()
         _ax.set_facecolor("#1e1e2e")
@@ -227,9 +232,36 @@ def set_panel_title(title: str) -> None:
         _info_var.set(title)
 
 
+def _on_click(event) -> None:
+    """Click-to-inspect handler — reads from current _panel_G/_panel_pos globals."""
+    if _panel_G is None or _panel_pos is None or _ax is None:
+        return
+    if event.inaxes != _ax or event.xdata is None:
+        return
+    closest, min_dist = None, float("inf")
+    for node, (x, y) in _panel_pos.items():
+        d = (event.xdata - x) ** 2 + (event.ydata - y) ** 2
+        if d < min_dist:
+            min_dist, closest = d, node
+    if closest is None or min_dist > 0.25:
+        return
+    ip = _panel_G.nodes[closest].get("ip", "?")
+    sessions = [s for s in memory.packet_db if ip in s.split("/")[:2]]
+    dst_host = memory.destination_hosts.get(ip)
+    domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
+    protos = sorted({_panel_G[u][v][k].get("proto", "")
+                     for u, v, k in _panel_G.edges(keys=True)
+                     if u == closest or v == closest})
+    if _info_var is not None:
+        _info_var.set(
+            f"Node: {closest}  |  IP: {ip}  |  Domain: {domain}  |  "
+            f"Sessions: {len(sessions)}  |  Protocols: {', '.join(protos)}"
+        )
+
+
 def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None:
     """Open (or close) the interactive graph panel."""
-    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base, _panel_G, _panel_pos
 
     if _container is not None and _container.winfo_exists():
         _close()
@@ -254,6 +286,8 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     if G is None and not live:
         log.info("Interactive graph: no sessions in memory, nothing to show")
         return
+    _panel_G = G
+    _panel_pos = pos
 
     # ── Figure ────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(9, 7))
@@ -303,7 +337,6 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     node_entry.pack(side=tk.RIGHT, padx=(2, 2), pady=2)
     ttk.Label(toolbar_row, text="Node:").pack(side=tk.RIGHT, padx=(8, 0), pady=2)
     node_entry.bind("<Return>", _apply_panel_filter)
-    node_entry.bind("<FocusOut>", _apply_panel_filter)
     _node_filter_var = node_filter_var
 
     cw.get_tk_widget().grid(row=1, column=0, sticky="nsew")
@@ -323,36 +356,13 @@ def gimmick_initialize(base: tk.Tk, _html_path: str, live: bool = False) -> None
     _canvas_widget = cw
     _info_var = info_var
 
-    # Click-to-inspect (only meaningful when G exists)
-    if G is not None:
-        def _on_click(event):
-            if event.inaxes != ax or event.xdata is None:
-                return
-            closest, min_dist = None, float("inf")
-            for node, (x, y) in pos.items():
-                d = (event.xdata - x) ** 2 + (event.ydata - y) ** 2
-                if d < min_dist:
-                    min_dist, closest = d, node
-            if closest is None or min_dist > 0.25:
-                return
-            ip = G.nodes[closest].get("ip", "?")
-            sessions = [s for s in memory.packet_db if ip in s.split("/")[:2]]
-            dst_host = memory.destination_hosts.get(ip)
-            domain = dst_host.domain_name if dst_host and dst_host.domain_name else "—"
-            protos = sorted({G[u][v][k].get("proto", "")
-                             for u, v, k in G.edges(keys=True)
-                             if u == closest or v == closest})
-            info_var.set(
-                f"Node: {closest}  |  IP: {ip}  |  Domain: {domain}  |  "
-                f"Sessions: {len(sessions)}  |  Protocols: {', '.join(protos)}"
-            )
-        fig.canvas.mpl_connect("button_press_event", _on_click)
+    fig.canvas.mpl_connect("button_press_event", _on_click)
 
     base.after(250, lambda: (base.lift(), base.focus_force()))
 
 
 def _close() -> None:
-    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base
+    global _container, _figure, _ax, _canvas_widget, _info_var, _filter_var, _node_filter_var, _live_mode, _base, _panel_G, _panel_pos
     import matplotlib.pyplot as plt
     if _figure is not None:
         plt.close(_figure)
@@ -363,6 +373,8 @@ def _close() -> None:
     _filter_var = None
     _node_filter_var = None
     _live_mode = False
+    _panel_G = None
+    _panel_pos = None
     if _container is not None and _container.winfo_exists():
         b = _container.winfo_toplevel()
         _container.destroy()

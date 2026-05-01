@@ -132,7 +132,7 @@ class pcapXrayGui:
         self.browser_button['state'] = 'disabled'
 
         self.img = ""
-        self._store = sqlite_store.SqliteStore()
+        self._store: sqlite_store.SqliteStore | None = None
         
         ## Filters
         self.from_ip = StringVar()
@@ -337,7 +337,7 @@ class pcapXrayGui:
             finally:
                 self._spin_stop(f"✓ {len(memory.packet_db)} sessions captured")
             import time
-            self._store.save_session(f"live_{iface}_{int(time.time())}")
+            self._open_store().save_session(f"live_{iface}_{int(time.time())}")
 
         self.live_button.config(text="▶ Start Live")
         self._live_status.config(text="📡 Captured — click Visualize! for snapshot", fg="#81c784")
@@ -387,6 +387,17 @@ class pcapXrayGui:
         self.base.lift()
         self.base.focus_force()
         self.base.after(200, lambda: self.base.attributes('-topmost', False))
+
+    def _open_store(self) -> sqlite_store.SqliteStore:
+        """Return the session store, creating it under destination_report/Report/ if needed."""
+        report_dir = os.path.join(self.destination_report.get(), "Report")
+        os.makedirs(report_dir, exist_ok=True)
+        db_path = os.path.join(report_dir, "pcapxray_sessions.db")
+        if self._store is None or self._store._db_path != db_path:
+            if self._store is not None:
+                self._store.close()
+            self._store = sqlite_store.SqliteStore(db_path)
+        return self._store
 
     def _spin_start(self, text: str = "Working") -> None:
         if self._spin_job is not None:
@@ -445,7 +456,7 @@ class pcapXrayGui:
             mb.showerror("Error", "Permission denied to create report! Run with higher privilege.")
             return
 
-        log.info("pcap_analyse: file=%s", self.pcap_file.get())
+        log.info("pcap_analyse: file=%s", os.path.basename(self.pcap_file.get()))
         if not os.path.exists(self.pcap_file.get()):
             mb.showerror("Error", "File Not Found!")
             return
@@ -462,13 +473,14 @@ class pcapXrayGui:
             self.filename = os.path.basename(self.pcap_file.get()).replace(".pcap", "").replace(".pcapng", "")
 
         # Offer to reload from SQLite cache if this PCAP was analyzed before
-        if self.filename and self._store.has_session(self.filename):
+        store = self._open_store()
+        if self.filename and store.has_session(self.filename):
             if mb.askyesno("Reload Session",
                            f"Cached analysis found for '{self.filename}'.\n"
                            "Reload without re-parsing the PCAP?"):
                 log.info("pcap_analyse: reloading session '%s' from cache", self.filename)
                 self._spin_start("Loading cache")
-                self._store.load_session(self.filename)
+                store.load_session(self.filename)
                 self._spin_stop(f"✓ {len(memory.packet_db)} sessions (cached)")
                 self._populate_filter_menus()
                 self._re_enable_controls()
@@ -491,7 +503,7 @@ class pcapXrayGui:
         threading.Thread(target=report_generator.ReportGenerator(self.destination_report.get(), self.filename).packetDetails, args=(), daemon=True).start()
 
         if self.filename:
-            self._store.save_session(self.filename)
+            self._open_store().save_session(self.filename)
         self._populate_filter_menus()
         self._re_enable_controls()
 
